@@ -28,9 +28,7 @@ def temp_repo():
 class TestKiroAdapterDetection:
     """Tests for KiroAdapter.detect()"""
 
-    def test_detect_with_valid_kiro_directory(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_detect_with_valid_kiro_directory(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should detect when .kiro/specs exists with spec files."""
         # Create valid Kiro structure
         spec_dir = temp_repo / ".kiro" / "specs" / "my-feature"
@@ -45,18 +43,14 @@ class TestKiroAdapterDetection:
         """Should not detect when .kiro directory is missing."""
         assert adapter.detect(str(temp_repo)) is False
 
-    def test_detect_with_empty_specs_directory(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_detect_with_empty_specs_directory(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should not detect when specs directory is empty."""
         specs_dir = temp_repo / ".kiro" / "specs"
         specs_dir.mkdir(parents=True)
 
         assert adapter.detect(str(temp_repo)) is False
 
-    def test_detect_with_design_file_only(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_detect_with_design_file_only(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should detect when only design.md exists."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -64,9 +58,7 @@ class TestKiroAdapterDetection:
 
         assert adapter.detect(str(temp_repo)) is True
 
-    def test_detect_with_tasks_file_only(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_detect_with_tasks_file_only(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should detect when only tasks.md exists."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -137,9 +129,7 @@ class TestKiroAdapterRequirementsParsing:
 class TestKiroAdapterDesignParsing:
     """Tests for parsing design.md files."""
 
-    def test_parse_design_sections(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_parse_design_sections(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should extract design sections."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -174,9 +164,7 @@ Various components work together to provide functionality.
 class TestKiroAdapterTasksParsing:
     """Tests for parsing tasks.md files."""
 
-    def test_parse_tasks_with_checkboxes(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_parse_tasks_with_checkboxes(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should extract tasks from checkbox lists."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -196,9 +184,7 @@ class TestKiroAdapterTasksParsing:
         task_blocks = [b for b in blocks if b.type == SpecType.TASK]
         assert len(task_blocks) >= 3
 
-    def test_completed_tasks_marked_as_legacy(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_completed_tasks_marked_as_legacy(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Completed tasks (checked) should be marked as legacy."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -240,9 +226,7 @@ class TestKiroAdapterErrorHandling:
         blocks = adapter.load(str(temp_repo))
         assert isinstance(blocks, list)
 
-    def test_handles_empty_files(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_handles_empty_files(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should handle empty files gracefully."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)
@@ -254,9 +238,7 @@ class TestKiroAdapterErrorHandling:
         blocks = adapter.load(str(temp_repo))
         assert isinstance(blocks, list)
 
-    def test_handles_missing_files(
-        self, adapter: KiroAdapter, temp_repo: Path
-    ) -> None:
+    def test_handles_missing_files(self, adapter: KiroAdapter, temp_repo: Path) -> None:
         """Should handle missing files gracefully."""
         spec_dir = temp_repo / ".kiro" / "specs" / "feature"
         spec_dir.mkdir(parents=True)

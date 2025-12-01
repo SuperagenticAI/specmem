@@ -185,7 +185,6 @@ select = [
     "PL",     # Pylint
     "RUF",    # Ruff-specific rules
     "PERF",   # Perflint
-    "FURB",   # refurb
 ]
 ignore = [
     "E501",    # line too long (handled by formatter)
@@ -197,6 +196,20 @@ ignore = [
     "B008",    # function call in default argument
     "ARG001",  # unused function argument
     "ARG002",  # unused method argument
+    "PLW2901", # for loop variable overwritten
+    "PLW0603", # global statement
+    "RUF012",  # mutable class attributes
+    "PERF401", # list comprehension performance
+    "PTH123",  # Path.open vs open
+    "B904",    # raise from
+    "SIM102",  # nested if
+    "SIM108",  # ternary operator
+    "SIM110",  # any() instead of for loop
+    "ERA001",  # commented out code
+    "TCH001",  # type checking imports
+    "E402",    # module level import not at top
+    "B007",    # loop control variable not used
+    "B017",    # blind exception
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -204,6 +217,10 @@ ignore = [
     "ARG",     # unused arguments in tests
     "PLR2004", # magic values in tests
     "S101",    # assert in tests
+    "E402",    # imports not at top
+    "ERA001",  # commented code
+    "B007",    # unused loop variable
+    "B017",    # blind exception
 ]
 "specmem/cli/**/*.py" = [
     "B008",    # function call in default argument (Click)

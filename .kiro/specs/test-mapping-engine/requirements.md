@@ -107,4 +107,3 @@ This feature provides a Test Mapping Engine that enables SpecMem to output which
 2. WHEN running `specmem tests --file <path>` THEN the system SHALL display tests for specs related to that file
 3. WHEN displaying tests THEN the system SHALL show framework, path, selector, and confidence
 4. WHEN no tests are found THEN the system SHALL display a helpful message
-

@@ -13,19 +13,19 @@ classDiagram
         +get_context(query, options) ContextResponse
         +estimate_tokens(text) int
     }
-    
+
     class ContextOptimizer {
         +optimize(blocks, token_budget) list[ContextChunk]
         +truncate_to_budget(chunks, budget) list[ContextChunk]
         +estimate_total_tokens(chunks) int
     }
-    
+
     class TokenEstimator {
         +count_tokens(text) int
         +count_with_format(text, format) int
         +set_tokenizer(tokenizer) void
     }
-    
+
     class AgentProfile {
         +name: str
         +context_window: int
@@ -33,7 +33,7 @@ classDiagram
         +preferred_format: str
         +type_filters: list[str]
     }
-    
+
     class ContextChunk {
         +block: SpecBlock
         +text: str
@@ -41,13 +41,13 @@ classDiagram
         +relevance: float
         +truncated: bool
     }
-    
+
     class ContextFormatter {
         +format_json(chunks) str
         +format_markdown(chunks) str
         +format_text(chunks) str
     }
-    
+
     StreamingContextAPI --> ContextOptimizer
     StreamingContextAPI --> TokenEstimator
     StreamingContextAPI --> AgentProfile
@@ -65,7 +65,7 @@ The main API class for streaming context to agents:
 ```python
 class StreamingContextAPI:
     """API for streaming context to AI agents."""
-    
+
     def __init__(
         self,
         memory_bank: MemoryBank,
@@ -73,7 +73,7 @@ class StreamingContextAPI:
         default_budget: int = 4000,
     ) -> None:
         """Initialize the streaming API."""
-        
+
     async def stream_query(
         self,
         query: str,
@@ -83,7 +83,7 @@ class StreamingContextAPI:
         profile: str | None = None,
     ) -> AsyncGenerator[ContextChunk, None]:
         """Stream relevant context chunks for a query."""
-        
+
     def get_context(
         self,
         query: str,
@@ -101,10 +101,10 @@ Handles token budget optimization and content truncation:
 ```python
 class ContextOptimizer:
     """Optimizes context to fit within token budgets."""
-    
+
     def __init__(self, token_estimator: TokenEstimator) -> None:
         """Initialize with token estimator."""
-        
+
     def optimize(
         self,
         blocks: list[SpecBlock],
@@ -113,13 +113,13 @@ class ContextOptimizer:
         format: str = "json",
     ) -> list[ContextChunk]:
         """Optimize blocks to fit within token budget.
-        
+
         Prioritizes:
         1. Pinned blocks (always included if budget allows)
         2. Higher relevance scores
         3. Complete content over truncated
         """
-        
+
     def truncate_to_budget(
         self,
         chunks: list[ContextChunk],
@@ -135,18 +135,18 @@ Estimates token counts for various content:
 ```python
 class TokenEstimator:
     """Estimates token counts for text content."""
-    
+
     DEFAULT_CHARS_PER_TOKEN = 4  # Conservative estimate
-    
+
     def __init__(self, tokenizer: str = "cl100k_base") -> None:
         """Initialize with tokenizer name."""
-        
+
     def count_tokens(self, text: str) -> int:
         """Count tokens in text."""
-        
+
     def count_with_format(self, text: str, format: str) -> int:
         """Count tokens including format overhead."""
-        
+
     def estimate_overhead(self, format: str, num_blocks: int) -> int:
         """Estimate formatting overhead tokens."""
 ```
@@ -159,17 +159,17 @@ Configuration for agent-specific settings:
 @dataclass
 class AgentProfile:
     """Profile defining agent context preferences."""
-    
+
     name: str
     context_window: int = 8000  # Total context window
     token_budget: int = 4000    # Budget for spec memory
     preferred_format: str = "json"
     type_filters: list[str] = field(default_factory=list)
-    
+
     @classmethod
     def load(cls, name: str) -> "AgentProfile":
         """Load profile from configuration."""
-        
+
     def save(self) -> None:
         """Save profile to configuration."""
 ```
@@ -181,16 +181,16 @@ Formats context chunks for different output types:
 ```python
 class ContextFormatter:
     """Formats context chunks for agent consumption."""
-    
+
     def format(self, chunks: list[ContextChunk], format: str) -> str:
         """Format chunks in specified format."""
-        
+
     def format_json(self, chunks: list[ContextChunk]) -> str:
         """Format as JSON with metadata."""
-        
+
     def format_markdown(self, chunks: list[ContextChunk]) -> str:
         """Format as structured Markdown."""
-        
+
     def format_text(self, chunks: list[ContextChunk]) -> str:
         """Format as plain text with separators."""
 ```
@@ -203,7 +203,7 @@ class ContextFormatter:
 @dataclass
 class ContextChunk:
     """A chunk of context optimized for agent consumption."""
-    
+
     block_id: str
     block_type: str
     source: str
@@ -221,7 +221,7 @@ class ContextChunk:
 @dataclass
 class ContextResponse:
     """Response from context query."""
-    
+
     chunks: list[ContextChunk]
     total_tokens: int
     token_budget: int
@@ -236,7 +236,7 @@ class ContextResponse:
 @dataclass
 class StreamCompletion:
     """Completion signal for streaming."""
-    
+
     total_chunks: int
     total_tokens: int
     token_budget: int

@@ -92,17 +92,17 @@ from specmem.core.specir import SpecBlock
 
 class SpecAdapter(ABC):
     """Base interface for all spec framework adapters."""
-    
+
     @abstractmethod
     def detect(self, repo_path: str) -> bool:
         """Check if this adapter's framework is present in the repository."""
         pass
-    
+
     @abstractmethod
     def load(self, repo_path: str) -> List[SpecBlock]:
         """Load and parse specs, returning normalized SpecBlocks."""
         pass
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
@@ -119,28 +119,28 @@ from specmem.core.specir import SpecBlock
 
 class VectorStore(ABC):
     """Abstract interface for vector database backends."""
-    
+
     @abstractmethod
     def initialize(self) -> None:
         """Initialize the vector store and create schema if needed."""
         pass
-    
+
     @abstractmethod
     def store(self, blocks: List[SpecBlock], embeddings: List[List[float]]) -> None:
         """Store SpecBlocks with their embeddings."""
         pass
-    
+
     @abstractmethod
-    def query(self, embedding: List[float], top_k: int = 10, 
+    def query(self, embedding: List[float], top_k: int = 10,
               include_legacy: bool = False) -> List[SpecBlock]:
         """Query for similar SpecBlocks by embedding vector."""
         pass
-    
+
     @abstractmethod
     def get_pinned(self) -> List[SpecBlock]:
         """Retrieve all pinned (deterministic) SpecBlocks."""
         pass
-    
+
     @abstractmethod
     def update_status(self, block_id: str, status: str) -> None:
         """Update the lifecycle status of a SpecBlock."""
@@ -161,17 +161,17 @@ from specmem.vectordb.base import VectorStore
 
 class LanceDBStore(VectorStore):
     """LanceDB implementation using DiskANN for fast vector search."""
-    
+
     def __init__(self, db_path: str = ".specmem/vectordb"):
         self.db_path = db_path
         self.db = None
         self.table = None
-    
+
     def initialize(self) -> None:
         """Initialize LanceDB and create table schema."""
         self.db = lancedb.connect(self.db_path)
         # Schema includes: id, type, text, source, status, tags, links, pinned, vector
-        
+
     def store(self, blocks: List[SpecBlock], embeddings: List[List[float]]) -> None:
         """Store blocks with embeddings using LanceDB's columnar format."""
         data = [
@@ -189,7 +189,7 @@ class LanceDBStore(VectorStore):
             for block, embedding in zip(blocks, embeddings)
         ]
         self.table = self.db.create_table("specblocks", data, mode="overwrite")
-    
+
     def query(self, embedding: List[float], top_k: int = 10,
               include_legacy: bool = False) -> List[SpecBlock]:
         """Query using DiskANN-based approximate nearest neighbor search."""
@@ -211,25 +211,25 @@ from specmem.vectordb.base import VectorStore
 
 class AgentVectorDBStore(VectorStore):
     """AgentVectorDB implementation for advanced agent memory features.
-    
+
     Reference: https://github.com/superagentic/agentvectordb
     """
-    
+
     def __init__(self, config: dict):
         self.config = config
         self.client = None
-    
+
     def initialize(self) -> None:
         """Initialize AgentVectorDB with optimized agent memory schema."""
         # Uses specialized schema for agent memory patterns
         # Includes: memory_type, importance_score, access_count, decay_factor
         pass
-    
+
     def store(self, blocks: List[SpecBlock], embeddings: List[List[float]]) -> None:
         """Store with agent-specific metadata for memory management."""
         # Adds importance scoring and access tracking
         pass
-    
+
     def query(self, embedding: List[float], top_k: int = 10,
               include_legacy: bool = False) -> List[SpecBlock]:
         """Query with agent-aware ranking and context optimization."""
@@ -259,12 +259,12 @@ from typing import List
 
 class EmbeddingProvider(ABC):
     """Abstract interface for embedding generation."""
-    
+
     @abstractmethod
     def embed(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for a list of texts."""
         pass
-    
+
     @property
     @abstractmethod
     def dimension(self) -> int:
@@ -298,7 +298,7 @@ class SpecStatus(str, Enum):
 
 class SpecBlock(BaseModel):
     """Canonical representation of a specification unit."""
-    
+
     id: str = Field(..., description="Unique deterministic ID")
     type: SpecType = Field(..., description="Classification of the spec block")
     text: str = Field(..., min_length=1, description="Content of the specification")
@@ -307,24 +307,24 @@ class SpecBlock(BaseModel):
     tags: List[str] = Field(default_factory=list)
     links: List[str] = Field(default_factory=list, description="Related SpecBlock IDs")
     pinned: bool = Field(default=False, description="Deterministic memory flag")
-    
+
     @field_validator('text')
     @classmethod
     def text_not_empty(cls, v: str) -> str:
         if not v.strip():
             raise ValueError('text cannot be empty or whitespace only')
         return v
-    
+
     @classmethod
     def generate_id(cls, source: str, text: str) -> str:
         """Generate deterministic ID from source and content."""
         content = f"{source}:{text}"
         return hashlib.sha256(content.encode()).hexdigest()[:16]
-    
+
     def to_json(self) -> str:
         """Serialize to JSON string."""
         return self.model_dump_json()
-    
+
     @classmethod
     def from_json(cls, json_str: str) -> "SpecBlock":
         """Deserialize from JSON string."""
@@ -344,7 +344,7 @@ class EmbeddingConfig(BaseModel):
 
 class VectorDBConfig(BaseModel):
     """Vector database configuration.
-    
+
     Backends:
     - lancedb (default): Fast DiskANN-based search, serverless, columnar storage
     - agentvectordb: Agent-optimized memory from Superagentic AI
@@ -357,7 +357,7 @@ class VectorDBConfig(BaseModel):
     # AgentVectorDB-specific options
     agentvectordb_api_key: Optional[str] = None
     agentvectordb_endpoint: Optional[str] = None
-    
+
 class SpecMemConfig(BaseModel):
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     vectordb: VectorDBConfig = Field(default_factory=VectorDBConfig)

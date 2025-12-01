@@ -146,31 +146,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Need full history for diff
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install specmem pytest
-      
+
       - name: Get changed files
         id: changed
         run: |
           echo "files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
-      
+
       - name: Get selective tests
         id: tests
         run: |
           TESTS=$(specmem impact --files ${{ steps.changed.outputs.files }} --tests --format list)
           echo "tests=$TESTS" >> $GITHUB_OUTPUT
-      
+
       - name: Run selective tests
         if: steps.tests.outputs.tests != ''
         run: pytest ${{ steps.tests.outputs.tests }}
-      
+
       - name: No tests needed
         if: steps.tests.outputs.tests == ''
         run: echo "No tests affected by changes"

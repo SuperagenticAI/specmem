@@ -1,7 +1,6 @@
 """REST API endpoints for SpecMem Web UI."""
 
 from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -25,20 +24,21 @@ from specmem.ui.models import (
     StatsResponse,
 )
 
+
 router = APIRouter(prefix="/api", tags=["api"])
 
 # These will be set by the server when it starts
 _blocks: list[SpecBlock] = []
 _vector_store = None
 _pack_builder = None
-_workspace_path: Path = Path(".")
+_workspace_path: Path = Path()
 
 
 def set_context(
     blocks: list[SpecBlock],
     vector_store=None,
     pack_builder=None,
-    workspace_path: Path = Path("."),
+    workspace_path: Path = Path(),
 ):
     """Set the context for API endpoints."""
     global _blocks, _vector_store, _pack_builder, _workspace_path
@@ -55,13 +55,13 @@ def get_blocks() -> list[SpecBlock]:
 
 @router.get("/blocks", response_model=BlockListResponse)
 async def list_blocks(
-    status: Optional[str] = Query(None, description="Filter by status: active, legacy, or all"),
-    type: Optional[str] = Query(None, description="Filter by type: requirement, design, task, etc."),
+    status: str | None = Query(None, description="Filter by status: active, legacy, or all"),
+    type: str | None = Query(None, description="Filter by type: requirement, design, task, etc."),
 ) -> BlockListResponse:
     """List all blocks with optional filters."""
     filtered = filter_blocks(_blocks, status=status, block_type=type)
     total, active_count, legacy_count, pinned_count = calculate_counts(filtered)
-    
+
     return BlockListResponse(
         blocks=[BlockSummary.from_spec_block(b) for b in filtered],
         total=total,
@@ -86,10 +86,10 @@ async def get_stats() -> StatsResponse:
     total, active_count, legacy_count, pinned_count = calculate_counts(_blocks)
     by_type = count_by_type(_blocks)
     by_source = count_by_source(_blocks)
-    
+
     # Estimate memory size (rough approximation)
     memory_size = sum(len(b.text.encode("utf-8")) for b in _blocks)
-    
+
     return StatsResponse(
         total_blocks=total,
         active_count=active_count,
@@ -116,34 +116,38 @@ async def search_blocks(
                 # Simple relevance: position-based score
                 pos = block.text.lower().find(query_lower)
                 score = 1.0 - (pos / len(block.text)) if pos >= 0 else 0.0
-                results.append(SearchResult(
-                    block=BlockSummary.from_spec_block(block),
-                    score=score,
-                ))
+                results.append(
+                    SearchResult(
+                        block=BlockSummary.from_spec_block(block),
+                        score=score,
+                    )
+                )
         # Sort by score descending
         results.sort(key=lambda r: r.score, reverse=True)
         return SearchResponse(results=results[:limit], query=q)
-    
+
     # Use vector store for semantic search
     try:
         query_results = _vector_store.query(q, top_k=limit)
         results = []
         for block, score in query_results:
-            results.append(SearchResult(
-                block=BlockSummary.from_spec_block(block),
-                score=score,
-            ))
+            results.append(
+                SearchResult(
+                    block=BlockSummary.from_spec_block(block),
+                    score=score,
+                )
+            )
         # Results should already be sorted by score from vector store
         return SearchResponse(results=results, query=q)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search error: {e!s}")
 
 
 @router.get("/pinned", response_model=PinnedListResponse)
 async def get_pinned() -> PinnedListResponse:
     """Get all pinned blocks."""
     pinned = get_pinned_blocks(_blocks)
-    
+
     responses = []
     for block in pinned:
         reason = "Contains critical specification keyword (SHALL)"
@@ -151,12 +155,14 @@ async def get_pinned() -> PinnedListResponse:
             reason = "Core requirement specification"
         elif "design" in block.type.value.lower():
             reason = "Architecture decision"
-        
-        responses.append(PinnedBlockResponse(
-            block=BlockSummary.from_spec_block(block),
-            reason=reason,
-        ))
-    
+
+        responses.append(
+            PinnedBlockResponse(
+                block=BlockSummary.from_spec_block(block),
+                reason=reason,
+            )
+        )
+
     return PinnedListResponse(blocks=responses, total=len(responses))
 
 
@@ -169,7 +175,7 @@ async def export_pack() -> ExportResponse:
             output_path="",
             message="Pack builder not initialized. Run 'specmem build' first.",
         )
-    
+
     try:
         output_path = _workspace_path / ".specmem"
         _pack_builder.build(_blocks, output_path)
@@ -182,7 +188,7 @@ async def export_pack() -> ExportResponse:
         return ExportResponse(
             success=False,
             output_path="",
-            message=f"Export failed: {str(e)}",
+            message=f"Export failed: {e!s}",
         )
 
 

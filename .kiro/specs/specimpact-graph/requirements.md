@@ -103,4 +103,3 @@ This feature enhances SpecMem with a dynamic SpecImpact Graph - a bidirectional 
 2. WHEN running `specmem graph show <node_id>` THEN the system SHALL display node relationships
 3. WHEN running `specmem graph export` THEN the system SHALL output graph in specified format
 4. WHEN running `specmem graph stats` THEN the system SHALL display graph statistics
-

@@ -7,7 +7,8 @@ import json
 import tempfile
 from pathlib import Path
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.agentx.pack_builder import PackBuilder
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
@@ -91,15 +92,13 @@ def test_agent_pack_completeness(active_blocks: list[SpecBlock]) -> None:
 
         # All active blocks should be in memory
         active_block_ids = {b.id for b in active_blocks}
-        assert active_block_ids == memory_block_ids, (
-            f"Expected {active_block_ids}, got {memory_block_ids}"
-        )
+        assert (
+            active_block_ids == memory_block_ids
+        ), f"Expected {active_block_ids}, got {memory_block_ids}"
 
 
 @given(
-    blocks=st.lists(
-        active_specblock_strategy(), min_size=1, max_size=5, unique_by=lambda b: b.id
-    )
+    blocks=st.lists(active_specblock_strategy(), min_size=1, max_size=5, unique_by=lambda b: b.id)
 )
 @settings(max_examples=30)
 def test_knowledge_index_contains_all_blocks(blocks: list[SpecBlock]) -> None:
@@ -123,9 +122,9 @@ def test_knowledge_index_contains_all_blocks(blocks: list[SpecBlock]) -> None:
             all_indexed_ids.update(ids)
 
         block_ids = {b.id for b in blocks}
-        assert block_ids == all_indexed_ids, (
-            f"Expected {block_ids} in type_index, got {all_indexed_ids}"
-        )
+        assert (
+            block_ids == all_indexed_ids
+        ), f"Expected {block_ids} in type_index, got {all_indexed_ids}"
 
 
 def test_pack_creates_all_files() -> None:

@@ -11,18 +11,18 @@ graph TD
         S2[auth/design.md]
         S3[auth/tasks.md]
     end
-    
+
     subgraph Code
         C1[auth/service.py]
         C2[auth/models.py]
         C3[auth/routes.py]
     end
-    
+
     subgraph Tests
         T1[test_auth.py]
         T2[test_models.py]
     end
-    
+
     S1 --> S2
     S2 --> S3
     S2 --> C1

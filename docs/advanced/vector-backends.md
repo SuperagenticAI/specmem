@@ -248,19 +248,19 @@ from specmem.vectordb.base import VectorStore, SearchResult
 class MyVectorStore(VectorStore):
     def add(self, id: str, embedding: list[float], metadata: dict) -> None:
         pass
-    
+
     def search(self, embedding: list[float], top_k: int, filters: dict | None) -> list[SearchResult]:
         pass
-    
+
     def get(self, id: str) -> dict | None:
         pass
-    
+
     def delete(self, id: str) -> bool:
         pass
-    
+
     def count(self) -> int:
         pass
-    
+
     def clear(self) -> None:
         pass
 

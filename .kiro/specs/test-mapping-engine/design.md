@@ -17,7 +17,7 @@ classDiagram
         +detect_frameworks(path) list[TestFramework]
         +parse_test_file(path, framework) list[TestMapping]
     }
-    
+
     class TestMapping {
         +framework: str
         +path: str
@@ -25,7 +25,7 @@ classDiagram
         +confidence: float
         +spec_ids: list[str]
     }
-    
+
     class CodeRef {
         +language: str
         +file_path: str
@@ -33,7 +33,7 @@ classDiagram
         +line_range: tuple[int, int]
         +confidence: float
     }
-    
+
     class SpecCandidate {
         +suggested_id: str
         +title: str
@@ -43,13 +43,13 @@ classDiagram
         +code_refs: list[CodeRef]
         +suggested_content: str
     }
-    
+
     class CodeAnalyzer {
         +analyze_file(path) CodeAnalysis
         +extract_symbols(content, language) list[Symbol]
         +infer_specs(path) list[SpecCandidate]
     }
-    
+
     class TestFramework {
         <<enumeration>>
         PYTEST
@@ -59,7 +59,7 @@ classDiagram
         MOCHA
         UNKNOWN
     }
-    
+
     TestMappingEngine --> TestMapping
     TestMappingEngine --> TestFramework
     CodeAnalyzer --> SpecCandidate
@@ -77,16 +77,16 @@ Framework-agnostic test reference:
 @dataclass
 class TestMapping:
     """Framework-agnostic test reference."""
-    
+
     framework: str      # pytest, jest, vitest, playwright, mocha
     path: str          # test file path
     selector: str      # test selector (e.g., test_auth::test_login)
     confidence: float  # 0.0 to 1.0
     spec_ids: list[str] = field(default_factory=list)  # linked spec IDs
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-        
+
     @classmethod
     def from_dict(cls, data: dict) -> "TestMapping":
         """Deserialize from dictionary."""
@@ -100,16 +100,16 @@ Code reference linking spec to implementation:
 @dataclass
 class CodeRef:
     """Reference linking spec to implementation code."""
-    
+
     language: str                    # python, javascript, typescript
     file_path: str                   # source file path
     symbols: list[str]               # function/class names
     line_range: tuple[int, int] | None = None  # (start, end) lines
     confidence: float = 1.0          # 0.0 to 1.0
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-        
+
     @classmethod
     def from_dict(cls, data: dict) -> "CodeRef":
         """Deserialize from dictionary."""
@@ -123,7 +123,7 @@ Extended SpecBlock with test mappings and code refs:
 @dataclass
 class SpecBlock:
     """Enhanced SpecBlock with test and code mappings."""
-    
+
     # Existing fields
     id: str
     type: SpecType
@@ -133,7 +133,7 @@ class SpecBlock:
     tags: list[str]
     links: list[str]
     pinned: bool
-    
+
     # New fields
     test_mappings: list[TestMapping] = field(default_factory=list)
     code_refs: list[CodeRef] = field(default_factory=list)
@@ -147,7 +147,7 @@ Main engine for test mapping:
 ```python
 class TestMappingEngine:
     """Engine for mapping specs to tests and vice versa."""
-    
+
     FRAMEWORK_PATTERNS = {
         "pytest": ["test_*.py", "*_test.py", "tests/**/*.py"],
         "jest": ["*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts"],
@@ -155,26 +155,26 @@ class TestMappingEngine:
         "playwright": ["*.spec.ts", "e2e/**/*.ts"],
         "mocha": ["test/**/*.js", "*.test.js"],
     }
-    
+
     def __init__(self, workspace_path: Path) -> None:
         """Initialize with workspace path."""
-        
+
     def get_tests_for_files(
         self,
         changed_files: list[str],
         max_results: int = 50,
     ) -> list[TestMapping]:
         """Get tests related to changed files."""
-        
+
     def get_tests_for_spec(
         self,
         spec_id: str,
     ) -> list[TestMapping]:
         """Get tests mapped to a specific spec."""
-        
+
     def detect_frameworks(self) -> list[str]:
         """Detect test frameworks in workspace."""
-        
+
     def parse_test_file(
         self,
         path: Path,
@@ -190,20 +190,20 @@ Code analysis for spec inference:
 ```python
 class CodeAnalyzer:
     """Analyzes code to infer specifications."""
-    
+
     def __init__(self, workspace_path: Path) -> None:
         """Initialize with workspace path."""
-        
+
     def analyze_file(self, path: Path) -> CodeAnalysis:
         """Analyze a code file."""
-        
+
     def extract_symbols(
         self,
         content: str,
         language: str,
     ) -> list[Symbol]:
         """Extract function/class definitions."""
-        
+
     def infer_specs(
         self,
         path: Path,
@@ -220,7 +220,7 @@ Candidate spec inferred from code:
 @dataclass
 class SpecCandidate:
     """Candidate spec inferred from code."""
-    
+
     suggested_id: str
     title: str
     spec_type: SpecType
@@ -229,7 +229,7 @@ class SpecCandidate:
     code_refs: list[CodeRef] = field(default_factory=list)
     suggested_content: str = ""
     matched_spec_id: str | None = None  # If matches existing spec
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 ```
@@ -244,7 +244,7 @@ Extracted code symbol:
 @dataclass
 class Symbol:
     """Extracted code symbol (function, class, etc.)."""
-    
+
     name: str
     kind: str  # function, class, method
     docstring: str | None
@@ -261,7 +261,7 @@ Result of code analysis:
 @dataclass
 class CodeAnalysis:
     """Result of analyzing a code file."""
-    
+
     file_path: str
     language: str
     symbols: list[Symbol]
@@ -389,4 +389,3 @@ code_ref_strategy = st.builds(
 - Test end-to-end flow from code change to test suggestions
 - Test CLI commands with real workspace
 - Test API integration with SpecMemClient
-

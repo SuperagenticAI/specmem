@@ -59,10 +59,10 @@ from specmem import SpecMemClient
 def get_context_for_agent(files: list[str]) -> str:
     """Get context for AI agent."""
     sm = SpecMemClient()
-    
+
     # Get context bundle
     bundle = sm.get_context_for_change(files)
-    
+
     # Format for agent
     context = f"""
 ## Relevant Specifications
@@ -182,14 +182,14 @@ issues = response.json()
 class SpecMemAgent:
     def __init__(self, base_url: str = "http://localhost:8000/api"):
         self.base_url = base_url
-    
+
     def get_context(self, files: list[str]) -> dict:
         response = requests.post(
             f"{self.base_url}/context",
             json={"files": files},
         )
         return response.json()
-    
+
     def query(self, query: str, top_k: int = 5) -> list[dict]:
         response = requests.get(
             f"{self.base_url}/specs/search",

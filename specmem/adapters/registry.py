@@ -9,6 +9,7 @@ import logging
 import pkgutil
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from specmem.adapters.base import SpecAdapter
 
@@ -23,7 +24,7 @@ class AdapterRegistry:
     """
 
     def __init__(self) -> None:
-        self._adapters: dict[str, "SpecAdapter"] = {}
+        self._adapters: dict[str, SpecAdapter] = {}
         self._discovered = False
 
     def discover(self) -> None:

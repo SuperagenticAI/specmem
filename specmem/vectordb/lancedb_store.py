@@ -20,13 +20,14 @@ import pyarrow as pa
 from specmem.core.exceptions import LifecycleError, VectorStoreError
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.base import (
+    VALID_TRANSITIONS,
     AuditEntry,
     GovernanceRules,
     QueryResult,
-    VALID_TRANSITIONS,
-    validate_transition,
     VectorStore,
+    validate_transition,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -86,36 +87,40 @@ class LanceDBStore(VectorStore):
             self.initialize()
 
     def _get_schema(self, vector_dim: int) -> pa.Schema:
-        return pa.schema([
-            ("id", pa.string()),
-            ("type", pa.string()),
-            ("text", pa.string()),
-            ("source", pa.string()),
-            ("status", pa.string()),
-            ("tags", pa.string()),
-            ("links", pa.string()),
-            ("pinned", pa.bool_()),
-            ("vector", pa.list_(pa.float32(), vector_dim)),
-            ("created_at", pa.float64()),
-            ("updated_at", pa.float64()),
-        ])
+        return pa.schema(
+            [
+                ("id", pa.string()),
+                ("type", pa.string()),
+                ("text", pa.string()),
+                ("source", pa.string()),
+                ("status", pa.string()),
+                ("tags", pa.string()),
+                ("links", pa.string()),
+                ("pinned", pa.bool_()),
+                ("vector", pa.list_(pa.float32(), vector_dim)),
+                ("created_at", pa.float64()),
+                ("updated_at", pa.float64()),
+            ]
+        )
 
     def _get_audit_schema(self, vector_dim: int) -> pa.Schema:
-        return pa.schema([
-            ("id", pa.string()),
-            ("block_id", pa.string()),
-            ("type", pa.string()),
-            ("text", pa.string()),
-            ("source", pa.string()),
-            ("previous_status", pa.string()),
-            ("tags", pa.string()),
-            ("links", pa.string()),
-            ("pinned", pa.bool_()),
-            ("vector", pa.list_(pa.float32(), vector_dim)),
-            ("obsoleted_at", pa.float64()),
-            ("reason", pa.string()),
-            ("transition_history", pa.string()),
-        ])
+        return pa.schema(
+            [
+                ("id", pa.string()),
+                ("block_id", pa.string()),
+                ("type", pa.string()),
+                ("text", pa.string()),
+                ("source", pa.string()),
+                ("previous_status", pa.string()),
+                ("tags", pa.string()),
+                ("links", pa.string()),
+                ("pinned", pa.bool_()),
+                ("vector", pa.list_(pa.float32(), vector_dim)),
+                ("obsoleted_at", pa.float64()),
+                ("reason", pa.string()),
+                ("transition_history", pa.string()),
+            ]
+        )
 
     def store(self, blocks: list[SpecBlock], embeddings: list[list[float]]) -> None:
         self._ensure_initialized()
@@ -149,7 +154,7 @@ class LanceDBStore(VectorStore):
                     "created_at": now,
                     "updated_at": now,
                 }
-                for block, embedding in zip(blocks, embeddings)
+                for block, embedding in zip(blocks, embeddings, strict=False)
             ]
 
             schema = self._get_schema(vector_dim)
@@ -198,7 +203,9 @@ class LanceDBStore(VectorStore):
             # Apply governance rules
             if governance_rules:
                 if governance_rules.max_age_days is not None:
-                    cutoff = (datetime.now() - timedelta(days=governance_rules.max_age_days)).timestamp()
+                    cutoff = (
+                        datetime.now() - timedelta(days=governance_rules.max_age_days)
+                    ).timestamp()
                     filter_expr += f" AND created_at >= {cutoff}"
 
                 if governance_rules.exclude_types:
@@ -247,9 +254,12 @@ class LanceDBStore(VectorStore):
             return []
 
         try:
-            results = self.table.search().where(
-                "pinned = true AND status != 'obsolete'"
-            ).limit(1000).to_list()
+            results = (
+                self.table.search()
+                .where("pinned = true AND status != 'obsolete'")
+                .limit(1000)
+                .to_list()
+            )
             return [self._row_to_specblock(row) for row in results]
 
         except Exception as e:
@@ -316,21 +326,23 @@ class LanceDBStore(VectorStore):
             if vector_dim == 0:
                 vector_dim = 384  # Default
 
-            audit_data = [{
-                "id": f"audit_{row['id']}_{datetime.now().timestamp()}",
-                "block_id": row["id"],
-                "type": row["type"],
-                "text": row["text"],
-                "source": row["source"],
-                "previous_status": previous_status.value,
-                "tags": row.get("tags", ""),
-                "links": row.get("links", ""),
-                "pinned": row.get("pinned", False),
-                "vector": row.get("vector", [0.0] * vector_dim),
-                "obsoleted_at": datetime.now().timestamp(),
-                "reason": reason,
-                "transition_history": "[]",
-            }]
+            audit_data = [
+                {
+                    "id": f"audit_{row['id']}_{datetime.now().timestamp()}",
+                    "block_id": row["id"],
+                    "type": row["type"],
+                    "text": row["text"],
+                    "source": row["source"],
+                    "previous_status": previous_status.value,
+                    "tags": row.get("tags", ""),
+                    "links": row.get("links", ""),
+                    "pinned": row.get("pinned", False),
+                    "vector": row.get("vector", [0.0] * vector_dim),
+                    "obsoleted_at": datetime.now().timestamp(),
+                    "reason": reason,
+                    "transition_history": "[]",
+                }
+            ]
 
             if self.audit_table is None:
                 schema = self._get_audit_schema(vector_dim)
@@ -371,13 +383,15 @@ class LanceDBStore(VectorStore):
                     pinned=row.get("pinned", False),
                 )
 
-                entries.append(AuditEntry(
-                    block=block,
-                    obsoleted_at=datetime.fromtimestamp(row["obsoleted_at"]),
-                    reason=row.get("reason", ""),
-                    previous_status=SpecStatus(row["previous_status"]),
-                    transition_history=[],
-                ))
+                entries.append(
+                    AuditEntry(
+                        block=block,
+                        obsoleted_at=datetime.fromtimestamp(row["obsoleted_at"]),
+                        reason=row.get("reason", ""),
+                        previous_status=SpecStatus(row["previous_status"]),
+                        transition_history=[],
+                    )
+                )
 
             return entries
 

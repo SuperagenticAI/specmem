@@ -11,6 +11,7 @@ from specmem.impact.graph_models import (
     NodeType,
 )
 
+
 __all__ = [
     "EdgeType",
     "GraphBuilder",

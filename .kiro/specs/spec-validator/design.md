@@ -12,13 +12,13 @@ graph TB
         Specs[SpecBlocks]
         Config[ValidationConfig]
     end
-    
+
     subgraph SpecValidator
         Engine[ValidationEngine]
         Rules[ValidationRules]
         Analyzer[SemanticAnalyzer]
     end
-    
+
     subgraph Rules
         ContradictionRule[ContradictionRule]
         CriteriaRule[AcceptanceCriteriaRule]
@@ -27,13 +27,13 @@ graph TB
         TimelineRule[TimelineRule]
         StructureRule[StructureRule]
     end
-    
+
     subgraph Output
         Result[ValidationResult]
         Issues[ValidationIssues]
         Summary[ValidationSummary]
     end
-    
+
     Specs --> Engine
     Config --> Engine
     Engine --> Rules
@@ -72,12 +72,12 @@ class ValidationIssue:
 
 class ValidationRule(ABC):
     """Base class for validation rules."""
-    
+
     rule_id: str
     name: str
     description: str
     default_severity: IssueSeverity
-    
+
     @abstractmethod
     def validate(
         self,
@@ -86,7 +86,7 @@ class ValidationRule(ABC):
     ) -> list[ValidationIssue]:
         """Run validation and return issues found."""
         pass
-    
+
     def is_enabled(self, config: ValidationConfig) -> bool:
         """Check if this rule is enabled in config."""
         return config.is_rule_enabled(self.rule_id)
@@ -98,47 +98,47 @@ class ValidationRule(ABC):
 @dataclass
 class ValidationResult:
     """Result of running validation."""
-    
+
     issues: list[ValidationIssue]
     specs_validated: int
     rules_run: int
     duration_ms: float
-    
+
     @property
     def is_valid(self) -> bool:
         """True if no errors found."""
         return not any(i.severity == IssueSeverity.ERROR for i in self.issues)
-    
+
     @property
     def error_count(self) -> int:
         return sum(1 for i in self.issues if i.severity == IssueSeverity.ERROR)
-    
+
     @property
     def warning_count(self) -> int:
         return sum(1 for i in self.issues if i.severity == IssueSeverity.WARNING)
-    
+
     @property
     def info_count(self) -> int:
         return sum(1 for i in self.issues if i.severity == IssueSeverity.INFO)
-    
+
     def get_by_severity(self, severity: IssueSeverity) -> list[ValidationIssue]:
         return [i for i in self.issues if i.severity == severity]
-    
+
     def get_by_spec(self, spec_id: str) -> list[ValidationIssue]:
         return [i for i in self.issues if i.spec_id == spec_id]
 
 class ValidationEngine:
     """Main validation engine."""
-    
+
     def __init__(self, config: ValidationConfig | None = None):
         self.config = config or ValidationConfig()
         self.rules: list[ValidationRule] = []
         self._register_default_rules()
-    
+
     def register_rule(self, rule: ValidationRule) -> None:
         """Register a validation rule."""
         self.rules.append(rule)
-    
+
     def validate(
         self,
         specs: list[SpecBlock],
@@ -153,12 +153,12 @@ class ValidationEngine:
 ```python
 class ContradictionRule(ValidationRule):
     """Detect contradictory requirements."""
-    
+
     rule_id = "contradiction"
     name = "Contradiction Detection"
     description = "Finds requirements that contradict each other"
     default_severity = IssueSeverity.ERROR
-    
+
     NEGATION_PATTERNS = [
         ("shall", "shall not"),
         ("must", "must not"),
@@ -168,12 +168,12 @@ class ContradictionRule(ValidationRule):
 
 class AcceptanceCriteriaRule(ValidationRule):
     """Validate acceptance criteria completeness."""
-    
+
     rule_id = "acceptance_criteria"
     name = "Acceptance Criteria Validation"
     description = "Ensures requirements have proper acceptance criteria"
     default_severity = IssueSeverity.ERROR
-    
+
     EARS_PATTERNS = [
         r"WHEN .+ THEN .+ SHALL",
         r"WHILE .+ THE .+ SHALL",
@@ -184,7 +184,7 @@ class AcceptanceCriteriaRule(ValidationRule):
 
 class ConstraintRule(ValidationRule):
     """Detect invalid constraints."""
-    
+
     rule_id = "constraints"
     name = "Constraint Validation"
     description = "Finds impossible or invalid constraints"
@@ -192,17 +192,17 @@ class ConstraintRule(ValidationRule):
 
 class DuplicateRule(ValidationRule):
     """Detect duplicate or similar specs."""
-    
+
     rule_id = "duplicates"
     name = "Duplicate Detection"
     description = "Finds semantically similar specifications"
     default_severity = IssueSeverity.WARNING
-    
+
     DEFAULT_THRESHOLD = 0.85
 
 class TimelineRule(ValidationRule):
     """Validate timeline constraints."""
-    
+
     rule_id = "timelines"
     name = "Timeline Validation"
     description = "Finds impossible or conflicting timelines"
@@ -210,12 +210,12 @@ class TimelineRule(ValidationRule):
 
 class StructureRule(ValidationRule):
     """Validate spec structure and formatting."""
-    
+
     rule_id = "structure"
     name = "Structure Validation"
     description = "Ensures specs follow required structure"
     default_severity = IssueSeverity.WARNING
-    
+
     REQUIRED_SECTIONS = ["Introduction", "Glossary", "Requirements"]
 ```
 
@@ -231,17 +231,17 @@ class RuleConfig:
 @dataclass
 class ValidationConfig:
     """Configuration for validation."""
-    
+
     rules: dict[str, RuleConfig] = field(default_factory=dict)
     similarity_threshold: float = 0.85
     min_acceptance_criteria: int = 2
     max_spec_length: int = 5000
-    
+
     def is_rule_enabled(self, rule_id: str) -> bool:
         if rule_id not in self.rules:
             return True  # Enabled by default
         return self.rules[rule_id].enabled
-    
+
     def get_severity(
         self,
         rule_id: str,
@@ -250,7 +250,7 @@ class ValidationConfig:
         if rule_id in self.rules and self.rules[rule_id].severity:
             return self.rules[rule_id].severity
         return default
-    
+
     @classmethod
     def from_toml(cls, config: dict[str, Any]) -> ValidationConfig:
         """Load from .specmem.toml validation section."""
@@ -265,7 +265,7 @@ class ValidationConfig:
 @dataclass
 class Contradiction:
     """A detected contradiction between specs."""
-    
+
     spec_id_1: str
     spec_id_2: str
     text_1: str
@@ -276,7 +276,7 @@ class Contradiction:
 @dataclass
 class DuplicatePair:
     """A pair of potentially duplicate specs."""
-    
+
     spec_id_1: str
     spec_id_2: str
     similarity_score: float
@@ -285,7 +285,7 @@ class DuplicatePair:
 @dataclass
 class TimelineConflict:
     """A timeline conflict between specs."""
-    
+
     spec_id: str
     deadline: datetime | None
     dependency_spec_id: str | None

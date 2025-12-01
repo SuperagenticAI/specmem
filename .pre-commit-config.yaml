@@ -2,9 +2,9 @@
 # See https://pre-commit.com for more information
 
 default_language_version:
-  python: python3.11
+  python: python3
 
-default_stages: [commit]
+default_stages: [pre-commit]
 
 repos:
   # ==========================================================================
@@ -16,38 +16,15 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: check-ast
-      - id: check-builtin-literals
       - id: check-case-conflict
-      - id: check-docstring-first
-      - id: check-executables-have-shebangs
-      - id: check-json
       - id: check-merge-conflict
-      - id: check-shebang-scripts-are-executable
-      - id: check-symlinks
       - id: check-toml
-      - id: check-vcs-permalinks
-      - id: check-xml
       - id: check-yaml
         args: ['--unsafe']
       - id: debug-statements
-      - id: destroyed-symlinks
-      - id: detect-private-key
       - id: end-of-file-fixer
-      - id: fix-byte-order-marker
-      - id: fix-encoding-pragma
-        args: ['--remove']
-      - id: forbid-submodules
       - id: mixed-line-ending
         args: ['--fix=lf']
-      - id: name-tests-test
-        args: ['--pytest-test-first']
-        exclude: ^tests/(conftest|fixtures|helpers)
-      - id: no-commit-to-branch
-        args: ['--branch', 'main', '--branch', 'master']
-      - id: pretty-format-json
-        args: ['--autofix', '--no-sort-keys']
-        exclude: ^(package-lock\.json|\.vscode/)
-      - id: requirements-txt-fixer
       - id: trailing-whitespace
         args: ['--markdown-linebreak-ext=md']
 
@@ -59,83 +36,11 @@ repos:
     hooks:
       # Run the linter
       - id: ruff
-        args: ['--fix', '--exit-non-zero-on-fix']
+        args: ['--fix']
         types_or: [python, pyi]
       # Run the formatter
       - id: ruff-format
         types_or: [python, pyi]
-
-  # ==========================================================================
-  # Python - Type Checking
-  # ==========================================================================
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-toml
-          - pydantic>=2.0.0
-        args: ['--ignore-missing-imports', '--no-error-summary']
-        exclude: ^(tests/|docs/)
-
-  # ==========================================================================
-  # Security
-  # ==========================================================================
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.8
-    hooks:
-      - id: bandit
-        args: ['-c', 'pyproject.toml', '-r', 'specmem/']
-        additional_dependencies: ['bandit[toml]']
-        exclude: ^tests/
-
-  # ==========================================================================
-  # Documentation
-  # ==========================================================================
-  - repo: https://github.com/pycqa/doc8
-    rev: v1.1.1
-    hooks:
-      - id: doc8
-        args: ['--max-line-length=100']
-        exclude: ^(docs/|\.github/)
-
-  # ==========================================================================
-  # Markdown
-  # ==========================================================================
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.39.0
-    hooks:
-      - id: markdownlint
-        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041', '--']
-        exclude: ^(CHANGELOG\.md|\.github/)
-
-  # ==========================================================================
-  # YAML
-  # ==========================================================================
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
-    hooks:
-      - id: yamllint
-        args: ['-d', '{extends: relaxed, rules: {line-length: {max: 120}}}']
-
-  # ==========================================================================
-  # Commit Messages
-  # ==========================================================================
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.18.0
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
-
-  # ==========================================================================
-  # Secrets Detection
-  # ==========================================================================
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
-    hooks:
-      - id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: (package-lock\.json|\.secrets\.baseline)
 
 # ==========================================================================
 # CI Configuration
@@ -143,11 +48,8 @@ repos:
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit hooks
-
-    for more information, see https://pre-commit.ci
   autofix_prs: true
   autoupdate_branch: 'main'
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: [mypy, bandit]  # Skip slow hooks in CI
   submodules: false

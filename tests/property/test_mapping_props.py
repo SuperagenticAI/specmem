@@ -4,9 +4,10 @@ Tests correctness properties defined in the test-mapping-engine design document.
 """
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
-from specmem.core import CodeRef, SpecBlock, SpecType, SpecStatus, TestMapping
+from specmem.core import CodeRef, SpecBlock, SpecType, TestMapping
 
 
 # Strategies for generating test data
@@ -40,10 +41,10 @@ symbols_strategy = st.lists(
 
 class TestTestMappingCompleteness:
     """**Feature: test-mapping-engine, Property 1: TestMapping Completeness**
-    
+
     *For any* TestMapping object, it SHALL contain non-empty framework, path,
     and selector fields.
-    
+
     **Validates: Requirements 1.2**
     """
 
@@ -68,7 +69,7 @@ class TestTestMappingCompleteness:
             selector=selector,
             confidence=confidence,
         )
-        
+
         assert tm.framework and len(tm.framework) > 0
         assert tm.path and len(tm.path) > 0
         assert tm.selector and len(tm.selector) > 0
@@ -92,10 +93,10 @@ class TestTestMappingCompleteness:
 
 class TestSpecBlockTestMappingRoundTrip:
     """**Feature: test-mapping-engine, Property 3: SpecBlock Test Mapping Round-Trip**
-    
+
     *For any* SpecBlock with test_mappings, serializing then deserializing
     SHALL produce an equivalent SpecBlock with identical test_mappings.
-    
+
     **Validates: Requirements 2.3, 2.4**
     """
 
@@ -120,10 +121,10 @@ class TestSpecBlockTestMappingRoundTrip:
             selector=selector,
             confidence=confidence,
         )
-        
+
         # Round-trip through dict
         restored = TestMapping.from_dict(original.to_dict())
-        
+
         assert restored.framework == original.framework
         assert restored.path == original.path
         assert restored.selector == original.selector
@@ -150,7 +151,7 @@ class TestSpecBlockTestMappingRoundTrip:
             selector=selector,
             confidence=confidence,
         )
-        
+
         block = SpecBlock(
             id="test123",
             type=SpecType.REQUIREMENT,
@@ -158,11 +159,11 @@ class TestSpecBlockTestMappingRoundTrip:
             source="test.md",
         )
         block.add_test_mapping(tm)
-        
+
         # Round-trip through JSON
         json_str = block.to_json()
         restored = SpecBlock.from_json(json_str)
-        
+
         assert len(restored.test_mappings) == 1
         restored_tm = restored.get_test_mappings()[0]
         assert restored_tm.framework == tm.framework
@@ -173,10 +174,10 @@ class TestSpecBlockTestMappingRoundTrip:
 
 class TestSpecBlockCodeRefRoundTrip:
     """**Feature: test-mapping-engine, Property 4: SpecBlock CodeRef Round-Trip**
-    
+
     *For any* SpecBlock with code_refs, serializing then deserializing
     SHALL produce an equivalent SpecBlock with identical code_refs.
-    
+
     **Validates: Requirements 3.4, 3.5**
     """
 
@@ -201,10 +202,10 @@ class TestSpecBlockCodeRefRoundTrip:
             symbols=symbols,
             confidence=confidence,
         )
-        
+
         # Round-trip through dict
         restored = CodeRef.from_dict(original.to_dict())
-        
+
         assert restored.language == original.language
         assert restored.file_path == original.file_path
         assert restored.symbols == original.symbols
@@ -230,7 +231,7 @@ class TestSpecBlockCodeRefRoundTrip:
     ):
         """For any CodeRef with line_range, round-trip preserves line_range."""
         end_line = start_line + line_count
-        
+
         original = CodeRef(
             language=language,
             file_path=file_path,
@@ -238,10 +239,10 @@ class TestSpecBlockCodeRefRoundTrip:
             line_range=(start_line, end_line),
             confidence=confidence,
         )
-        
+
         # Round-trip through dict
         restored = CodeRef.from_dict(original.to_dict())
-        
+
         assert restored.line_range == original.line_range
 
     @given(
@@ -265,7 +266,7 @@ class TestSpecBlockCodeRefRoundTrip:
             symbols=symbols,
             confidence=confidence,
         )
-        
+
         block = SpecBlock(
             id="test123",
             type=SpecType.REQUIREMENT,
@@ -273,11 +274,11 @@ class TestSpecBlockCodeRefRoundTrip:
             source="test.md",
         )
         block.add_code_ref(cr)
-        
+
         # Round-trip through JSON
         json_str = block.to_json()
         restored = SpecBlock.from_json(json_str)
-        
+
         assert len(restored.code_refs) == 1
         restored_cr = restored.get_code_refs()[0]
         assert restored_cr.language == cr.language
@@ -288,10 +289,10 @@ class TestSpecBlockCodeRefRoundTrip:
 
 class TestConfidenceRangeValidation:
     """**Feature: test-mapping-engine, Property 5: Confidence Range Validation**
-    
+
     *For any* confidence value, the system SHALL reject values outside
     the range [0.0, 1.0].
-    
+
     **Validates: Requirements 4.2**
     """
 
@@ -352,7 +353,7 @@ class TestConfidenceRangeValidation:
             confidence=confidence,
         )
         assert tm.confidence == confidence
-        
+
         cr = CodeRef(
             language="python",
             file_path="test.py",

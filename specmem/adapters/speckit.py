@@ -12,10 +12,10 @@ for Spec-Driven Development (SDD). This adapter handles:
 import logging
 import re
 from pathlib import Path
-from typing import Any
 
 from specmem.adapters.base import SpecAdapter
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
+
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,9 @@ class SpecKitAdapter(SpecAdapter):
             return blocks
 
         # Extract articles/sections from constitution
-        article_pattern = r"(?:^|\n)##?\s+(Article\s+\w+[:\s]+.+?|Section\s+[\d.]+[:\s]+.+?)(?=\n##?\s+|\Z)"
+        article_pattern = (
+            r"(?:^|\n)##?\s+(Article\s+\w+[:\s]+.+?|Section\s+[\d.]+[:\s]+.+?)(?=\n##?\s+|\Z)"
+        )
         matches = re.findall(article_pattern, content, re.DOTALL | re.IGNORECASE)
 
         if matches:
@@ -189,14 +191,13 @@ class SpecKitAdapter(SpecAdapter):
                 tags.append(f"priority_{priority.lower()}")
 
             # Extract acceptance scenarios
-            acceptance_text = ""
             acceptance_match = re.search(
                 r"\*\*Acceptance Scenarios\*\*:(.*?)(?=\*\*|\Z|---)",
                 body,
                 re.DOTALL | re.IGNORECASE,
             )
             if acceptance_match:
-                acceptance_text = acceptance_match.group(1).strip()
+                acceptance_match.group(1).strip()
 
             text = f"User Story {story_num}: {title.strip()}\n\n{body.strip()[:400]}"
 
@@ -349,7 +350,7 @@ class SpecKitAdapter(SpecAdapter):
         phase_pattern = r"##\s+Phase\s+(\d+):\s*(.+?)\n(.*?)(?=##\s+Phase|\Z)"
         phase_matches = re.findall(phase_pattern, content, re.DOTALL | re.IGNORECASE)
 
-        for phase_num, phase_title, phase_body in phase_matches:
+        for phase_num, _phase_title, phase_body in phase_matches:
             # Extract individual tasks
             task_pattern = r"-\s+\[([ xX])\]\s+(T\d+)\s*(?:\[P\])?\s*(?:\[US\d+\])?\s*(.+?)(?=\n-\s+\[|\n\n|\Z)"
             task_matches = re.findall(task_pattern, phase_body, re.DOTALL)

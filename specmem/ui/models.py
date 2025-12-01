@@ -1,19 +1,17 @@
 """API response models for SpecMem Web UI."""
 
-from typing import Dict, List, Optional
-
 from pydantic import BaseModel, Field
 
-from specmem.core.specir import SpecBlock, SpecStatus, SpecType
+from specmem.core.specir import SpecBlock
 
 
 def truncate_text(text: str, max_length: int = 200) -> str:
     """Truncate text to max_length characters with ellipsis.
-    
+
     Args:
         text: The text to truncate
         max_length: Maximum length before truncation (default 200)
-        
+
     Returns:
         Truncated text with ellipsis if longer than max_length,
         otherwise the original text
@@ -25,14 +23,14 @@ def truncate_text(text: str, max_length: int = 200) -> str:
 
 class BlockSummary(BaseModel):
     """Summary view of a SpecBlock for list display."""
-    
+
     id: str
     type: str
     text_preview: str = Field(description="Truncated to 200 chars")
     source: str
     status: str
     pinned: bool
-    
+
     @classmethod
     def from_spec_block(cls, block: SpecBlock) -> "BlockSummary":
         """Create a BlockSummary from a SpecBlock."""
@@ -48,16 +46,16 @@ class BlockSummary(BaseModel):
 
 class BlockDetail(BaseModel):
     """Full detail view of a SpecBlock."""
-    
+
     id: str
     type: str
     text: str
     source: str
     status: str
     pinned: bool
-    tags: List[str]
-    links: List[str]
-    
+    tags: list[str]
+    links: list[str]
+
     @classmethod
     def from_spec_block(cls, block: SpecBlock) -> "BlockDetail":
         """Create a BlockDetail from a SpecBlock."""
@@ -75,8 +73,8 @@ class BlockDetail(BaseModel):
 
 class BlockListResponse(BaseModel):
     """Response for listing blocks."""
-    
-    blocks: List[BlockSummary]
+
+    blocks: list[BlockSummary]
     total: int
     active_count: int
     legacy_count: int
@@ -85,33 +83,33 @@ class BlockListResponse(BaseModel):
 
 class StatsResponse(BaseModel):
     """Response for memory statistics."""
-    
+
     total_blocks: int
     active_count: int
     legacy_count: int
     pinned_count: int
-    by_type: Dict[str, int]
-    by_source: Dict[str, int]
+    by_type: dict[str, int]
+    by_source: dict[str, int]
     memory_size_bytes: int
 
 
 class SearchResult(BaseModel):
     """A single search result with relevance score."""
-    
+
     block: BlockSummary
     score: float = Field(ge=0.0, description="Relevance score (higher is better)")
 
 
 class SearchResponse(BaseModel):
     """Response for semantic search."""
-    
-    results: List[SearchResult]
+
+    results: list[SearchResult]
     query: str
 
 
 class ExportResponse(BaseModel):
     """Response for export operation."""
-    
+
     success: bool
     output_path: str
     message: str
@@ -119,21 +117,21 @@ class ExportResponse(BaseModel):
 
 class PinnedBlockResponse(BaseModel):
     """Response for pinned blocks with reason."""
-    
+
     block: BlockSummary
     reason: str = Field(default="Contains critical specification keyword")
 
 
 class PinnedListResponse(BaseModel):
     """Response for listing pinned blocks."""
-    
-    blocks: List[PinnedBlockResponse]
+
+    blocks: list[PinnedBlockResponse]
     total: int
 
 
 class WebSocketMessage(BaseModel):
     """WebSocket message for live updates."""
-    
+
     type: str = Field(description="Message type: 'refresh', 'error', 'connected'")
-    data: Optional[Dict] = None
-    message: Optional[str] = None
+    data: dict | None = None
+    message: str | None = None

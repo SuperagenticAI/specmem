@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from specmem.validator.models import IssueSeverity, ValidationIssue
 from specmem.validator.rules.base import ValidationRule
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.validator.config import ValidationConfig
@@ -70,9 +71,7 @@ class StructureRule(ValidationRule):
         text_lower = spec.text.lower()
 
         # Check for at least one required section
-        has_any_section = any(
-            section in text_lower for section in self.REQUIRED_SECTIONS
-        )
+        has_any_section = any(section in text_lower for section in self.REQUIRED_SECTIONS)
 
         if not has_any_section:
             issues.append(

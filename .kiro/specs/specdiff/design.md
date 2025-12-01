@@ -18,7 +18,7 @@ classDiagram
         +get_deprecations() list[Deprecation]
         +track_version(spec) SpecVersion
     }
-    
+
     class SpecVersion {
         +spec_id: str
         +version_id: str
@@ -28,7 +28,7 @@ classDiagram
         +content: str
         +metadata: dict
     }
-    
+
     class SpecChange {
         +spec_id: str
         +from_version: str
@@ -39,14 +39,14 @@ classDiagram
         +change_type: ChangeType
         +inferred_reason: ChangeReason
     }
-    
+
     class ChangeReason {
         +reason: str
         +confidence: float
         +source: str
         +alternatives: list[ChangeReason]
     }
-    
+
     class StalenessWarning {
         +spec_id: str
         +cached_version: str
@@ -55,13 +55,13 @@ classDiagram
         +severity: Severity
         +acknowledged: bool
     }
-    
+
     class DriftReport {
         +drifted_code: list[DriftItem]
         +total_drift_score: float
         +generated_at: datetime
     }
-    
+
     class DriftItem {
         +code_path: str
         +spec_id: str
@@ -69,7 +69,7 @@ classDiagram
         +severity: float
         +suggested_action: str
     }
-    
+
     class Contradiction {
         +spec_id: str
         +old_text: str
@@ -77,7 +77,7 @@ classDiagram
         +conflict_type: str
         +resolution_hint: str
     }
-    
+
     class Deprecation {
         +spec_id: str
         +deprecated_at: datetime
@@ -86,7 +86,7 @@ classDiagram
         +affected_code: list[str]
         +urgency: float
     }
-    
+
     SpecDiff --> SpecVersion
     SpecDiff --> SpecChange
     SpecDiff --> StalenessWarning
@@ -107,7 +107,7 @@ Represents a snapshot of a specification at a point in time:
 @dataclass
 class SpecVersion:
     """A version of a specification."""
-    
+
     spec_id: str              # Spec identifier
     version_id: str           # Version identifier (commit hash or timestamp)
     timestamp: datetime       # When this version was created
@@ -115,10 +115,10 @@ class SpecVersion:
     content_hash: str         # Hash of content for quick comparison
     content: str              # Full spec content
     metadata: dict = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "SpecVersion":
         """Deserialize from dictionary."""
@@ -132,7 +132,7 @@ Represents changes between two spec versions:
 @dataclass
 class SpecChange:
     """Changes between two spec versions."""
-    
+
     spec_id: str
     from_version: str
     to_version: str
@@ -142,10 +142,10 @@ class SpecChange:
     modified: list[ModifiedSection]  # Modified sections
     change_type: ChangeType    # SEMANTIC, COSMETIC, BREAKING
     inferred_reason: ChangeReason | None
-    
+
     def is_breaking(self) -> bool:
         """Check if this is a breaking change."""
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 ```
@@ -158,12 +158,12 @@ Inferred reason for a spec change:
 @dataclass
 class ChangeReason:
     """Inferred reason for a spec change."""
-    
+
     reason: str               # Human-readable reason
     confidence: float         # Confidence score 0.0-1.0
     source: str               # Where reason was inferred from
     alternatives: list["ChangeReason"] = field(default_factory=list)
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 ```
@@ -177,7 +177,7 @@ Warning when an agent accesses stale spec data:
 @dataclass
 class StalenessWarning:
     """Warning about stale spec memory."""
-    
+
     spec_id: str
     cached_version: str       # Version the agent has
     current_version: str      # Latest version
@@ -185,7 +185,7 @@ class StalenessWarning:
     severity: Severity        # LOW, MEDIUM, HIGH, CRITICAL
     acknowledged: bool = False
     acknowledged_at: datetime | None = None
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 ```
@@ -198,27 +198,27 @@ Report on code that has drifted from specs:
 @dataclass
 class DriftItem:
     """A piece of code that has drifted from its spec."""
-    
+
     code_path: str            # Path to drifted code
     spec_id: str              # Spec it implements
     spec_change: SpecChange   # The change causing drift
     severity: float           # Drift severity 0.0-1.0
     suggested_action: str     # What to do about it
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 
 @dataclass
 class DriftReport:
     """Complete drift analysis report."""
-    
+
     drifted_code: list[DriftItem]
     total_drift_score: float  # Aggregate drift severity
     generated_at: datetime
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
-    
+
     def get_by_severity(self, min_severity: float) -> list[DriftItem]:
         """Get drift items above severity threshold."""
 ```
@@ -231,17 +231,17 @@ Tracks deprecated specifications:
 @dataclass
 class Deprecation:
     """A deprecated specification."""
-    
+
     spec_id: str
     deprecated_at: datetime
     deadline: datetime | None  # When it must be migrated
     replacement_spec_id: str | None  # What replaces it
     affected_code: list[str]  # Code that needs migration
     urgency: float            # Urgency score 0.0-1.0
-    
+
     def days_remaining(self) -> int | None:
         """Calculate days until deadline."""
-    
+
     def to_dict(self) -> dict:
         """Serialize to dictionary."""
 ```
@@ -251,21 +251,21 @@ class Deprecation:
 ```python
 class SpecDiff:
     """Temporal spec intelligence system."""
-    
+
     def __init__(
         self,
         storage_path: Path,
         impact_graph: SpecImpactGraph | None = None,
     ) -> None:
         """Initialize SpecDiff."""
-    
+
     def get_history(
         self,
         spec_id: str,
         limit: int | None = None,
     ) -> list[SpecVersion]:
         """Get version history for a spec, chronologically ordered."""
-    
+
     def get_diff(
         self,
         spec_id: str,
@@ -273,46 +273,46 @@ class SpecDiff:
         to_version: str | None = None,
     ) -> SpecChange:
         """Get diff between two versions."""
-    
+
     def check_staleness(
         self,
         spec_ids: list[str],
         cached_versions: dict[str, str] | None = None,
     ) -> list[StalenessWarning]:
         """Check if specs are stale."""
-    
+
     def get_drift_report(
         self,
         since: datetime | None = None,
     ) -> DriftReport:
         """Get report on code drift from specs."""
-    
+
     def get_contradictions(
         self,
         spec_id: str,
     ) -> list[Contradiction]:
         """Find contradictions in spec history."""
-    
+
     def get_deprecations(
         self,
         include_expired: bool = False,
     ) -> list[Deprecation]:
         """Get deprecated specs sorted by urgency."""
-    
+
     def track_version(
         self,
         spec: SpecBlock,
         commit_ref: str | None = None,
     ) -> SpecVersion:
         """Track a new version of a spec."""
-    
+
     def acknowledge_staleness(
         self,
         spec_id: str,
         version: str,
     ) -> bool:
         """Acknowledge a staleness warning."""
-    
+
     def prune_history(
         self,
         older_than: datetime,
@@ -328,7 +328,7 @@ class SpecDiff:
 ```python
 class ChangeType(str, Enum):
     """Type of spec change."""
-    
+
     SEMANTIC = "semantic"      # Meaning changed
     COSMETIC = "cosmetic"      # Formatting only
     BREAKING = "breaking"      # Breaking change
@@ -341,7 +341,7 @@ class ChangeType(str, Enum):
 ```python
 class Severity(str, Enum):
     """Severity level for warnings."""
-    
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"

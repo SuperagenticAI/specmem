@@ -5,16 +5,16 @@ playwright, mocha, and other test frameworks.
 """
 
 import logging
-import re
 from enum import Enum
 from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
 
 class TestFramework(str, Enum):
     """Supported test frameworks."""
-    
+
     PYTEST = "pytest"
     JEST = "jest"
     VITEST = "vitest"
@@ -74,15 +74,15 @@ FRAMEWORK_CONFIG_FILES: dict[TestFramework, list[str]] = {
 
 def detect_frameworks(workspace_path: Path) -> list[TestFramework]:
     """Detect test frameworks in a workspace.
-    
+
     Args:
         workspace_path: Path to the workspace root
-        
+
     Returns:
         List of detected TestFramework values
     """
     detected: set[TestFramework] = set()
-    
+
     # Check for config files
     for framework, config_files in FRAMEWORK_CONFIG_FILES.items():
         for config_file in config_files:
@@ -90,35 +90,36 @@ def detect_frameworks(workspace_path: Path) -> list[TestFramework]:
                 detected.add(framework)
                 logger.debug(f"Detected {framework.value} via config file: {config_file}")
                 break
-    
+
     # Check for test files matching patterns
     for framework, patterns in FRAMEWORK_PATTERNS.items():
         if framework in detected:
             continue
-            
+
         for pattern in patterns:
             # Convert glob pattern to check
             if "**" in pattern:
                 matches = list(workspace_path.glob(pattern))
             else:
                 matches = list(workspace_path.glob(pattern))
-            
+
             if matches:
                 detected.add(framework)
                 logger.debug(f"Detected {framework.value} via file pattern: {pattern}")
                 break
-    
+
     # Check package.json for JS frameworks
     package_json = workspace_path / "package.json"
     if package_json.exists():
         try:
             import json
+
             data = json.loads(package_json.read_text())
             deps = {
                 **data.get("dependencies", {}),
                 **data.get("devDependencies", {}),
             }
-            
+
             if "jest" in deps:
                 detected.add(TestFramework.JEST)
             if "vitest" in deps:
@@ -129,7 +130,7 @@ def detect_frameworks(workspace_path: Path) -> list[TestFramework]:
                 detected.add(TestFramework.MOCHA)
         except Exception as e:
             logger.warning(f"Failed to parse package.json: {e}")
-    
+
     # Check pyproject.toml for pytest
     pyproject = workspace_path / "pyproject.toml"
     if pyproject.exists() and TestFramework.PYTEST not in detected:
@@ -139,7 +140,7 @@ def detect_frameworks(workspace_path: Path) -> list[TestFramework]:
                 detected.add(TestFramework.PYTEST)
         except Exception as e:
             logger.warning(f"Failed to parse pyproject.toml: {e}")
-    
+
     result = sorted(detected, key=lambda f: f.value)
     logger.info(f"Detected frameworks: {[f.value for f in result]}")
     return result
@@ -147,10 +148,10 @@ def detect_frameworks(workspace_path: Path) -> list[TestFramework]:
 
 def get_test_file_pattern(framework: TestFramework) -> list[str]:
     """Get file patterns for a framework.
-    
+
     Args:
         framework: Test framework
-        
+
     Returns:
         List of glob patterns for test files
     """
@@ -159,16 +160,16 @@ def get_test_file_pattern(framework: TestFramework) -> list[str]:
 
 def is_test_file(path: Path, framework: TestFramework | None = None) -> bool:
     """Check if a file is a test file.
-    
+
     Args:
         path: File path to check
         framework: Optional framework to check against
-        
+
     Returns:
         True if the file matches test patterns
     """
     name = path.name
-    
+
     if framework:
         patterns = FRAMEWORK_PATTERNS.get(framework, [])
     else:
@@ -176,13 +177,13 @@ def is_test_file(path: Path, framework: TestFramework | None = None) -> bool:
         patterns = []
         for fw_patterns in FRAMEWORK_PATTERNS.values():
             patterns.extend(fw_patterns)
-    
+
     for pattern in patterns:
         # Simple pattern matching
         if "**" in pattern:
             # Skip recursive patterns for single file check
             pattern = pattern.split("**/")[-1]
-        
+
         if pattern.startswith("*"):
             suffix = pattern[1:]
             if name.endswith(suffix):
@@ -193,5 +194,5 @@ def is_test_file(path: Path, framework: TestFramework | None = None) -> bool:
                 return True
         elif name == pattern:
             return True
-    
+
     return False

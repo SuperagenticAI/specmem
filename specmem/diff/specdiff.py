@@ -28,6 +28,7 @@ from specmem.diff.models import (
 )
 from specmem.diff.storage import VersionStore
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.impact import SpecImpactGraph
@@ -144,7 +145,6 @@ class SpecDiff:
             return result.stdout.strip()[:12]
         except (subprocess.CalledProcessError, FileNotFoundError):
             return None
-
 
     def get_diff(
         self,
@@ -290,7 +290,6 @@ class SpecDiff:
             source="none",
         )
 
-
     def check_staleness(
         self,
         spec_ids: list[str],
@@ -328,14 +327,16 @@ class SpecDiff:
                 # Check if already acknowledged
                 acknowledged = self._store.is_acknowledged(spec_id, cached_version)
 
-                warnings.append(StalenessWarning(
-                    spec_id=spec_id,
-                    cached_version=cached_version,
-                    current_version=latest.version_id,
-                    changes_since=changes,
-                    severity=severity,
-                    acknowledged=acknowledged,
-                ))
+                warnings.append(
+                    StalenessWarning(
+                        spec_id=spec_id,
+                        cached_version=cached_version,
+                        current_version=latest.version_id,
+                        changes_since=changes,
+                        severity=severity,
+                        acknowledged=acknowledged,
+                    )
+                )
 
         return warnings
 
@@ -441,13 +442,15 @@ class SpecDiff:
 
             for code_node in code_nodes:
                 severity = self._calculate_drift_severity(change)
-                drifted_items.append(DriftItem(
-                    code_path=code_node.data.get("path", code_node.id),
-                    spec_id=spec_id,
-                    spec_change=change,
-                    severity=severity,
-                    suggested_action=self._suggest_action(change),
-                ))
+                drifted_items.append(
+                    DriftItem(
+                        code_path=code_node.data.get("path", code_node.id),
+                        spec_id=spec_id,
+                        spec_change=change,
+                        severity=severity,
+                        suggested_action=self._suggest_action(change),
+                    )
+                )
                 total_severity += severity
 
         return DriftReport(
@@ -459,9 +462,7 @@ class SpecDiff:
     def _get_tracked_spec_ids(self) -> list[str]:
         """Get all tracked spec IDs."""
         conn = self._store._get_connection()
-        rows = conn.execute(
-            "SELECT DISTINCT spec_id FROM spec_versions"
-        ).fetchall()
+        rows = conn.execute("SELECT DISTINCT spec_id FROM spec_versions").fetchall()
         return [row["spec_id"] for row in rows]
 
     def _calculate_drift_severity(self, change: SpecChange) -> float:
@@ -483,7 +484,6 @@ class SpecDiff:
         if change.change_type == ChangeType.SEMANTIC:
             return "Review code to ensure it aligns with updated spec"
         return "Minor update may be needed"
-
 
     def get_contradictions(
         self,
@@ -517,13 +517,15 @@ class SpecDiff:
             for old_line in old_lines:
                 for new_line in new_lines:
                     if self._is_contradictory(old_line, new_line):
-                        contradictions.append(Contradiction(
-                            spec_id=spec_id,
-                            old_text=old_line,
-                            new_text=new_line,
-                            conflict_type="semantic",
-                            resolution_hint="Review both statements and clarify intent",
-                        ))
+                        contradictions.append(
+                            Contradiction(
+                                spec_id=spec_id,
+                                old_text=old_line,
+                                new_text=new_line,
+                                conflict_type="semantic",
+                                resolution_hint="Review both statements and clarify intent",
+                            )
+                        )
 
         return contradictions
 

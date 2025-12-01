@@ -3,8 +3,8 @@
 Tests correctness properties defined in the pluggable-vectordb design document.
 """
 
-import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.core.exceptions import LifecycleError
 from specmem.core.specir import SpecStatus
@@ -20,13 +20,9 @@ VALID_TRANSITION_PAIRS = [
 
 # Generate all invalid transitions
 ALL_STATUS_PAIRS = [
-    (from_status, to_status)
-    for from_status in SpecStatus
-    for to_status in SpecStatus
+    (from_status, to_status) for from_status in SpecStatus for to_status in SpecStatus
 ]
-INVALID_TRANSITION_PAIRS = [
-    pair for pair in ALL_STATUS_PAIRS if pair not in VALID_TRANSITION_PAIRS
-]
+INVALID_TRANSITION_PAIRS = [pair for pair in ALL_STATUS_PAIRS if pair not in VALID_TRANSITION_PAIRS]
 
 
 class TestValidLifecycleTransitions:

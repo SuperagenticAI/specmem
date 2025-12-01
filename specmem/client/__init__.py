@@ -4,6 +4,12 @@ Provides a simple interface for coding agents to interact with SpecMem.
 """
 
 from specmem.client.client import SpecMemClient
+from specmem.client.exceptions import (
+    ConfigurationError,
+    MemoryStoreError,
+    ProposalError,
+    SpecMemError,
+)
 from specmem.client.models import (
     ContextBundle,
     Proposal,
@@ -11,22 +17,17 @@ from specmem.client.models import (
     SpecSummary,
     TestMapping,
 )
-from specmem.client.exceptions import (
-    SpecMemError,
-    ConfigurationError,
-    MemoryStoreError,
-    ProposalError,
-)
+
 
 __all__ = [
-    "SpecMemClient",
+    "ConfigurationError",
     "ContextBundle",
+    "MemoryStoreError",
     "Proposal",
+    "ProposalError",
     "ProposalStatus",
+    "SpecMemClient",
+    "SpecMemError",
     "SpecSummary",
     "TestMapping",
-    "SpecMemError",
-    "ConfigurationError",
-    "MemoryStoreError",
-    "ProposalError",
 ]

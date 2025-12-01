@@ -116,10 +116,10 @@ from specmem import AsyncSpecMemClient
 
 async def main():
     sm = AsyncSpecMemClient()
-    
+
     results = await sm.query("authentication")
     bundle = await sm.get_context_for_change(["auth/service.py"])
-    
+
 asyncio.run(main())
 ```
 

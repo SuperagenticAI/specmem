@@ -11,6 +11,7 @@ from pathlib import Path
 
 from specmem.core.specir import SpecBlock
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -114,9 +115,7 @@ class SpecImpactAnalyzer:
             logger.warning("Git not found")
             return []
 
-    def analyze(
-        self, blocks: list[SpecBlock], base_ref: str = "HEAD~1"
-    ) -> ImpactResult:
+    def analyze(self, blocks: list[SpecBlock], base_ref: str = "HEAD~1") -> ImpactResult:
         """Analyze impact of code changes on specifications.
 
         Args:

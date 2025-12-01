@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from specmem.validator.models import IssueSeverity, ValidationIssue
 from specmem.validator.rules.base import ValidationRule
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.validator.config import ValidationConfig
@@ -28,9 +29,9 @@ class AcceptanceCriteriaRule(ValidationRule):
     EARS_PATTERNS = [
         r"WHEN\s+.+\s+THEN\s+.+\s+SHALL",  # Event-driven
         r"WHILE\s+.+\s+THE\s+.+\s+SHALL",  # State-driven
-        r"IF\s+.+\s+THEN\s+.+\s+SHALL",    # Unwanted behavior
+        r"IF\s+.+\s+THEN\s+.+\s+SHALL",  # Unwanted behavior
         r"WHERE\s+.+\s+THE\s+.+\s+SHALL",  # Optional feature
-        r"THE\s+.+\s+SHALL",               # Ubiquitous
+        r"THE\s+.+\s+SHALL",  # Ubiquitous
     ]
 
     def validate(
@@ -53,7 +54,7 @@ class AcceptanceCriteriaRule(ValidationRule):
         for spec in specs:
             # Check for acceptance criteria section
             has_ac_section = self._has_acceptance_criteria_section(spec.text)
-            
+
             if not has_ac_section:
                 issues.append(
                     self.create_issue(
@@ -146,21 +147,24 @@ class AcceptanceCriteriaRule(ValidationRule):
             line_lower = line_stripped.lower()
 
             # Check if entering acceptance criteria section
-            if "acceptance criteria" in line_lower or "acceptance" in line_lower and "##" in line:
+            if "acceptance criteria" in line_lower or ("acceptance" in line_lower and "##" in line):
                 in_criteria_section = True
                 continue
 
             # Check if leaving section (new heading)
-            if in_criteria_section and line_stripped.startswith("#") and "acceptance" not in line_lower:
+            if (
+                in_criteria_section
+                and line_stripped.startswith("#")
+                and "acceptance" not in line_lower
+            ):
                 break
 
             # Count numbered items in criteria section
             if in_criteria_section:
                 # Match numbered lists: "1.", "1)", "- 1.", etc.
-                if re.match(r"^\d+[\.\)]\s+", line_stripped):
-                    count += 1
-                # Match EARS patterns directly
-                elif any(re.search(p, line_stripped, re.IGNORECASE) for p in self.EARS_PATTERNS):
+                if re.match(r"^\d+[\.\)]\s+", line_stripped) or any(
+                    re.search(p, line_stripped, re.IGNORECASE) for p in self.EARS_PATTERNS
+                ):
                     count += 1
 
         return count
@@ -191,20 +195,26 @@ class AcceptanceCriteriaRule(ValidationRule):
         # Find capitalized multi-word terms (potential domain terms)
         pattern = r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b"
         matches = re.findall(pattern, text)
-        
+
         # Filter out common phrases
         common_phrases = {
-            "Acceptance Criteria", "User Story", "As A", "So That",
-            "The System", "The User", "When The", "Then The",
+            "Acceptance Criteria",
+            "User Story",
+            "As A",
+            "So That",
+            "The System",
+            "The User",
+            "When The",
+            "Then The",
         }
-        
+
         undefined = []
         for match in matches:
             if match not in common_phrases and match not in undefined:
                 # Check if term is defined in glossary
                 if not self._is_term_defined(text, match):
                     undefined.append(match)
-        
+
         return undefined[:5]  # Limit to 5 terms
 
     def _is_term_defined(self, text: str, term: str) -> bool:
@@ -220,8 +230,8 @@ class AcceptanceCriteriaRule(ValidationRule):
         # Check for glossary definition patterns
         patterns = [
             rf"\*\*{re.escape(term)}\*\*\s*:",  # **Term**: definition
-            rf"- {re.escape(term)}:",           # - Term: definition
-            rf"{re.escape(term)}\s*-\s*",       # Term - definition
+            rf"- {re.escape(term)}:",  # - Term: definition
+            rf"{re.escape(term)}\s*-\s*",  # Term - definition
         ]
-        
+
         return any(re.search(p, text) for p in patterns)

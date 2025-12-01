@@ -16,6 +16,7 @@ from typing import Any
 from specmem.adapters.base import SpecAdapter
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,10 +50,7 @@ class ClaudeAdapter(SpecAdapter):
         if not path.exists():
             return False
 
-        for pattern in self.FILE_PATTERNS:
-            if list(path.glob(pattern)):
-                return True
-        return False
+        return any(list(path.glob(pattern)) for pattern in self.FILE_PATTERNS)
 
     def load(self, repo_path: str) -> list[SpecBlock]:
         """Load and parse all Claude project files."""

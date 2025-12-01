@@ -15,13 +15,14 @@ from uuid import uuid4
 from specmem.core.exceptions import LifecycleError, VectorStoreError
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.base import (
+    VALID_TRANSITIONS,
     AuditEntry,
     GovernanceRules,
     QueryResult,
-    VALID_TRANSITIONS,
-    validate_transition,
     VectorStore,
+    validate_transition,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class QdrantStore(VectorStore):
                 )
 
             self._initialized = True
-            logger.info(f"Qdrant initialized")
+            logger.info("Qdrant initialized")
 
         except ImportError as e:
             raise VectorStoreError(
@@ -87,7 +88,9 @@ class QdrantStore(VectorStore):
                 code="MISSING_DEPENDENCY",
             ) from e
         except Exception as e:
-            raise VectorStoreError(f"Failed to initialize Qdrant: {e}", code="QDRANT_INIT_ERROR") from e
+            raise VectorStoreError(
+                f"Failed to initialize Qdrant: {e}", code="QDRANT_INIT_ERROR"
+            ) from e
 
     def _ensure_initialized(self) -> None:
         if not self._initialized:
@@ -123,7 +126,7 @@ class QdrantStore(VectorStore):
                         "created_at": now,
                     },
                 )
-                for block, embedding in zip(blocks, embeddings)
+                for block, embedding in zip(blocks, embeddings, strict=False)
             ]
 
             self._client.upsert(collection_name=self.COLLECTION_NAME, points=points)
@@ -143,7 +146,7 @@ class QdrantStore(VectorStore):
         self._ensure_initialized()
 
         try:
-            from qdrant_client.models import Filter, FieldCondition, MatchValue
+            from qdrant_client.models import FieldCondition, Filter, MatchValue
 
             # Build filter conditions
             must_not = [FieldCondition(key="status", match=MatchValue(value="obsolete"))]
@@ -171,7 +174,9 @@ class QdrantStore(VectorStore):
                     block=self._payload_to_specblock(str(r.id), r.payload),
                     score=r.score,
                     distance=1.0 - r.score,
-                    deprecation_warning=f"Block {r.id} is deprecated" if r.payload.get("status") == "deprecated" else None,
+                    deprecation_warning=f"Block {r.id} is deprecated"
+                    if r.payload.get("status") == "deprecated"
+                    else None,
                 )
                 for r in results
             ]
@@ -183,7 +188,7 @@ class QdrantStore(VectorStore):
         self._ensure_initialized()
 
         try:
-            from qdrant_client.models import Filter, FieldCondition, MatchValue
+            from qdrant_client.models import FieldCondition, Filter, MatchValue
 
             results = self._client.scroll(
                 collection_name=self.COLLECTION_NAME,
@@ -213,7 +218,7 @@ class QdrantStore(VectorStore):
             if not validate_transition(current_status, status):
                 valid = [s.value for s in VALID_TRANSITIONS.get(current_status, set())]
                 raise LifecycleError(
-                    f"Invalid transition",
+                    "Invalid transition",
                     from_status=current_status.value,
                     to_status=status.value,
                     block_id=block_id,
@@ -222,7 +227,9 @@ class QdrantStore(VectorStore):
 
             if status == SpecStatus.OBSOLETE:
                 self._move_to_audit(block_id, results[0], current_status, reason)
-                self._client.delete(collection_name=self.COLLECTION_NAME, points_selector=[block_id])
+                self._client.delete(
+                    collection_name=self.COLLECTION_NAME, points_selector=[block_id]
+                )
             else:
                 self._client.set_payload(
                     collection_name=self.COLLECTION_NAME,
@@ -238,7 +245,9 @@ class QdrantStore(VectorStore):
             logger.warning(f"Failed to update status: {e}")
             return False
 
-    def _move_to_audit(self, block_id: str, point: Any, previous_status: SpecStatus, reason: str) -> None:
+    def _move_to_audit(
+        self, block_id: str, point: Any, previous_status: SpecStatus, reason: str
+    ) -> None:
         try:
             from qdrant_client.models import PointStruct
 
@@ -261,11 +270,15 @@ class QdrantStore(VectorStore):
         self._ensure_initialized()
 
         try:
-            results = self._client.scroll(collection_name=self.AUDIT_COLLECTION_NAME, limit=limit)[0]
+            results = self._client.scroll(collection_name=self.AUDIT_COLLECTION_NAME, limit=limit)[
+                0
+            ]
 
             return [
                 AuditEntry(
-                    block=self._payload_to_specblock(r.payload.get("block_id", str(r.id)), r.payload),
+                    block=self._payload_to_specblock(
+                        r.payload.get("block_id", str(r.id)), r.payload
+                    ),
                     obsoleted_at=datetime.fromtimestamp(r.payload.get("obsoleted_at", 0)),
                     reason=r.payload.get("reason", ""),
                     previous_status=SpecStatus(r.payload.get("previous_status", "legacy")),
@@ -274,7 +287,9 @@ class QdrantStore(VectorStore):
             ]
 
         except Exception as e:
-            raise VectorStoreError(f"Failed to get audit log: {e}", code="QDRANT_AUDIT_ERROR") from e
+            raise VectorStoreError(
+                f"Failed to get audit log: {e}", code="QDRANT_AUDIT_ERROR"
+            ) from e
 
     def get_by_id(self, block_id: str) -> SpecBlock | None:
         self._ensure_initialized()
@@ -308,6 +323,7 @@ class QdrantStore(VectorStore):
         try:
             self._client.delete_collection(self.COLLECTION_NAME)
             from qdrant_client.models import Distance, VectorParams
+
             self._client.create_collection(
                 collection_name=self.COLLECTION_NAME,
                 vectors_config=VectorParams(size=self._vector_dim, distance=Distance.COSINE),

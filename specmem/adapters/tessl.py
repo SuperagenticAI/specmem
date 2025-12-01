@@ -19,6 +19,7 @@ import yaml
 from specmem.adapters.base import SpecAdapter
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,10 +56,7 @@ class TesslAdapter(SpecAdapter):
         if not path.exists():
             return False
 
-        for pattern in self.FILE_PATTERNS:
-            if list(path.glob(pattern)):
-                return True
-        return False
+        return any(list(path.glob(pattern)) for pattern in self.FILE_PATTERNS)
 
     def load(self, repo_path: str) -> list[SpecBlock]:
         """Load and parse all Tessl spec files."""
@@ -237,10 +235,7 @@ class TesslAdapter(SpecAdapter):
             content = file_path.read_text(encoding="utf-8")
             suffix = file_path.suffix.lower()
 
-            if suffix == ".json":
-                manifest_data = json.loads(content)
-            else:
-                manifest_data = yaml.safe_load(content)
+            manifest_data = json.loads(content) if suffix == ".json" else yaml.safe_load(content)
 
             # Extract dependencies from manifest
             dependencies = manifest_data.get("dependencies", [])

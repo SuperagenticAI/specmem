@@ -3,11 +3,11 @@
 Tests correctness properties defined in the pluggable-vectordb design document.
 """
 
-import tempfile
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.base import GovernanceRules
@@ -16,7 +16,9 @@ from specmem.vectordb.lancedb_store import LanceDBStore
 
 # Strategies for generating test data
 spec_type_strategy = st.sampled_from(list(SpecType))
-spec_status_strategy = st.sampled_from([SpecStatus.ACTIVE, SpecStatus.DEPRECATED, SpecStatus.LEGACY])
+spec_status_strategy = st.sampled_from(
+    [SpecStatus.ACTIVE, SpecStatus.DEPRECATED, SpecStatus.LEGACY]
+)
 
 
 def create_test_block(
@@ -283,8 +285,20 @@ class TestGovernanceRules:
         store.initialize()
 
         blocks = [
-            SpecBlock(id="b1", type=SpecType.REQUIREMENT, text="Block 1", source="keep.md", status=SpecStatus.ACTIVE),
-            SpecBlock(id="b2", type=SpecType.REQUIREMENT, text="Block 2", source="exclude.md", status=SpecStatus.ACTIVE),
+            SpecBlock(
+                id="b1",
+                type=SpecType.REQUIREMENT,
+                text="Block 1",
+                source="keep.md",
+                status=SpecStatus.ACTIVE,
+            ),
+            SpecBlock(
+                id="b2",
+                type=SpecType.REQUIREMENT,
+                text="Block 2",
+                source="exclude.md",
+                status=SpecStatus.ACTIVE,
+            ),
         ]
         embeddings = [create_test_embedding() for _ in blocks]
 
@@ -340,17 +354,20 @@ class TestVectorStoreFactory:
 class TestUnknownBackendError:
     """**Feature: pluggable-vectordb, Property 2: Unknown backend raises error**"""
 
-    @given(backend_name=st.text(min_size=1, max_size=20).filter(
-        lambda x: x not in {"lancedb", "chroma", "qdrant", "weaviate", "milvus", "agentvectordb"}
-    ))
+    @given(
+        backend_name=st.text(min_size=1, max_size=20).filter(
+            lambda x: x
+            not in {"lancedb", "chroma", "qdrant", "weaviate", "milvus", "agentvectordb"}
+        )
+    )
     @settings(max_examples=50)
     def test_unknown_backend_raises_error(self, backend_name: str):
         """Unknown backend names raise VectorStoreError.
 
         **Validates: Requirements 2.3**
         """
-        from specmem.vectordb import get_vector_store
         from specmem.core.exceptions import VectorStoreError
+        from specmem.vectordb import get_vector_store
 
         with pytest.raises(VectorStoreError) as exc_info:
             get_vector_store(backend=backend_name)

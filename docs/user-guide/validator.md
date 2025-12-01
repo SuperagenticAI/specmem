@@ -195,10 +195,10 @@ from specmem.validator import ValidationRule, Issue, Severity
 
 class NoTodoRule(ValidationRule):
     """Flag TODO comments in specs."""
-    
+
     name = "no_todos"
     description = "Specs should not contain TODO comments"
-    
+
     def validate(self, spec: SpecBlock) -> list[Issue]:
         issues = []
         for i, line in enumerate(spec.content.split("\n")):
@@ -232,18 +232,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install SpecMem
         run: pip install specmem
-      
+
       - name: Validate Specifications
         run: specmem validate --strict --format json > validation.json
-      
+
       - name: Upload Results
         uses: actions/upload-artifact@v4
         with:

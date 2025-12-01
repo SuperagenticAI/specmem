@@ -8,7 +8,7 @@ from typing import Any
 
 class ProposalStatus(str, Enum):
     """Status of a spec edit proposal."""
-    
+
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -17,7 +17,7 @@ class ProposalStatus(str, Enum):
 @dataclass
 class SpecSummary:
     """Condensed spec for context bundles."""
-    
+
     id: str
     type: str
     title: str
@@ -25,7 +25,7 @@ class SpecSummary:
     source: str
     relevance: float = 0.0
     pinned: bool = False
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -42,12 +42,12 @@ class SpecSummary:
 @dataclass
 class TestMapping:
     """Framework-agnostic test reference."""
-    
+
     spec_id: str
     framework: str  # pytest, jest, playwright, etc.
-    path: str       # tests/test_auth.py::test_login
+    path: str  # tests/test_auth.py::test_login
     tags: list[str] = field(default_factory=list)
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -61,7 +61,7 @@ class TestMapping:
 @dataclass
 class ContextBundle:
     """Optimized context bundle for agent consumption."""
-    
+
     specs: list[SpecSummary] = field(default_factory=list)
     designs: list[SpecSummary] = field(default_factory=list)
     tests: list[TestMapping] = field(default_factory=list)
@@ -70,7 +70,7 @@ class ContextBundle:
     token_budget: int = 4000
     changed_files: list[str] = field(default_factory=list)
     message: str = ""
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -83,14 +83,14 @@ class ContextBundle:
             "changed_files": self.changed_files,
             "message": self.message,
         }
-    
+
     def to_markdown(self) -> str:
         """Format as markdown for agent context."""
         lines = ["# Context Bundle", ""]
-        
+
         if self.tldr:
             lines.extend(["## TL;DR", "", self.tldr, ""])
-        
+
         if self.specs:
             lines.append("## Specifications")
             lines.append("")
@@ -101,7 +101,7 @@ class ContextBundle:
                 lines.append("")
                 lines.append(spec.summary)
                 lines.append("")
-        
+
         if self.designs:
             lines.append("## Designs")
             lines.append("")
@@ -111,30 +111,30 @@ class ContextBundle:
                 lines.append("")
                 lines.append(design.summary)
                 lines.append("")
-        
+
         if self.tests:
             lines.append("## Related Tests")
             lines.append("")
             for test in self.tests:
                 lines.append(f"- `{test.path}` ({test.framework})")
             lines.append("")
-        
+
         if self.changed_files:
             lines.append("## Changed Files")
             lines.append("")
             for f in self.changed_files:
                 lines.append(f"- `{f}`")
             lines.append("")
-        
+
         lines.append(f"*Tokens: {self.total_tokens}/{self.token_budget}*")
-        
+
         return "\n".join(lines)
 
 
 @dataclass
 class Proposal:
     """Agent-proposed spec edit."""
-    
+
     id: str
     spec_id: str
     edits: dict[str, Any]
@@ -142,7 +142,7 @@ class Proposal:
     status: ProposalStatus = ProposalStatus.PENDING
     created_at: datetime = field(default_factory=datetime.now)
     resolved_at: datetime | None = None
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -154,7 +154,7 @@ class Proposal:
             "created_at": self.created_at.isoformat(),
             "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "Proposal":
         """Create from dictionary."""
@@ -165,5 +165,7 @@ class Proposal:
             rationale=data["rationale"],
             status=ProposalStatus(data["status"]),
             created_at=datetime.fromisoformat(data["created_at"]),
-            resolved_at=datetime.fromisoformat(data["resolved_at"]) if data.get("resolved_at") else None,
+            resolved_at=datetime.fromisoformat(data["resolved_at"])
+            if data.get("resolved_at")
+            else None,
         )

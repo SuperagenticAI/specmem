@@ -3,10 +3,10 @@
 import tempfile
 from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from specmem.cli.main import app
+
 
 runner = CliRunner()
 
@@ -97,9 +97,7 @@ class TestQueryCommand:
             vectordb_path = Path(tmpdir) / ".specmem" / "vectordb"
             vectordb_path.mkdir(parents=True)
 
-            result = runner.invoke(
-                app, ["query", "test query", "--path", tmpdir]
-            )
+            result = runner.invoke(app, ["query", "test query", "--path", tmpdir])
             assert result.exit_code == 1
             assert "No data in memory" in result.stdout
 
@@ -149,7 +147,6 @@ class TestServeCommand:
         result = runner.invoke(app, ["serve", "--help"])
         assert result.exit_code == 0
         assert "Web UI" in result.stdout or "web server" in result.stdout.lower()
-
 
 
 class TestGraphCommands:
@@ -249,10 +246,11 @@ class TestGraphCommands:
             graph_path = specmem_dir / "impact_graph.json"
             graph_path.write_text('{"nodes": [], "edges": []}')
 
-            result = runner.invoke(app, ["graph", "export", "--format", "mermaid", "--path", tmpdir])
+            result = runner.invoke(
+                app, ["graph", "export", "--format", "mermaid", "--path", tmpdir]
+            )
             assert result.exit_code == 0
             assert "graph" in result.stdout
-
 
 
 class TestSpecDiffCommands:
@@ -268,8 +266,8 @@ class TestSpecDiffCommands:
     def test_diff_with_history(self) -> None:
         """Diff should show changes when history exists."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             # Create specdiff database with history
             specmem_dir = Path(tmpdir) / ".specmem"
@@ -301,8 +299,8 @@ class TestSpecDiffCommands:
     def test_diff_no_changes(self) -> None:
         """Diff should report when no changes found."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)
@@ -332,8 +330,8 @@ class TestSpecDiffCommands:
     def test_history_with_versions(self) -> None:
         """History should show version timeline."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)
@@ -361,8 +359,8 @@ class TestSpecDiffCommands:
     def test_history_limit_option(self) -> None:
         """History should respect --limit option."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)
@@ -393,8 +391,8 @@ class TestSpecDiffCommands:
     def test_drift_no_drift_detected(self) -> None:
         """Drift should report when no drift detected."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)
@@ -439,8 +437,8 @@ class TestSpecDiffCommands:
     def test_stale_acknowledge_option(self) -> None:
         """Stale should accept --acknowledge option."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from specmem.diff import SpecDiff
             from specmem.core.specir import SpecBlock, SpecType
+            from specmem.diff import SpecDiff
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)
@@ -456,7 +454,9 @@ class TestSpecDiffCommands:
             diff.track_version(spec, commit_ref="v1")
             diff.close()
 
-            result = runner.invoke(app, ["stale", "--acknowledge", "test.spec:v1", "--path", tmpdir])
+            result = runner.invoke(
+                app, ["stale", "--acknowledge", "test.spec:v1", "--path", tmpdir]
+            )
             assert result.exit_code == 0
             assert "Acknowledged staleness" in result.stdout
 
@@ -502,9 +502,7 @@ class TestSpecDiffCommands:
     def test_deprecations_with_data(self) -> None:
         """Deprecations should list deprecated specs."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            from datetime import datetime
             from specmem.diff import SpecDiff
-            from specmem.diff.models import Deprecation
 
             specmem_dir = Path(tmpdir) / ".specmem"
             specmem_dir.mkdir(parents=True)

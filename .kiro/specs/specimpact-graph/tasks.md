@@ -174,4 +174,3 @@
 
 - [x] 13. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
-

@@ -37,14 +37,14 @@ graph TB
         A3[Claude.md]
         A4[Custom]
     end
-    
+
     subgraph Adapters
         B1[KiroAdapter]
         B2[CursorAdapter]
         B3[ClaudeAdapter]
         B4[CustomAdapter]
     end
-    
+
     subgraph Core
         C1[SpecIR]
         C2[Memory Bank]
@@ -52,39 +52,39 @@ graph TB
         C4[SpecDiff]
         C5[Validator]
     end
-    
+
     subgraph Storage
         D1[LanceDB]
         D2[ChromaDB]
         D3[Qdrant]
     end
-    
+
     subgraph Output
         E1[CLI]
         E2[Python API]
         E3[Web UI]
         E4[Agent Pack]
     end
-    
+
     A1 --> B1
     A2 --> B2
     A3 --> B3
     A4 --> B4
-    
+
     B1 --> C1
     B2 --> C1
     B3 --> C1
     B4 --> C1
-    
+
     C1 --> C2
     C1 --> C3
     C1 --> C4
     C1 --> C5
-    
+
     C2 --> D1
     C2 --> D2
     C2 --> D3
-    
+
     C2 --> E1
     C2 --> E2
     C2 --> E3
@@ -130,7 +130,7 @@ from specmem.validator import ValidationRule, register_rule
 @register_rule
 class MyRule(ValidationRule):
     name = "my_rule"
-    
+
     def validate(self, spec):
         # Custom validation logic
         pass

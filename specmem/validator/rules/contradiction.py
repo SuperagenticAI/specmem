@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from specmem.validator.models import IssueSeverity, ValidationIssue
 from specmem.validator.rules.base import ValidationRule
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.validator.config import ValidationConfig
@@ -57,7 +58,7 @@ class ContradictionRule(ValidationRule):
 
         # Check for negation pattern contradictions between specs
         for i, spec1 in enumerate(specs):
-            for spec2 in specs[i + 1:]:
+            for spec2 in specs[i + 1 :]:
                 contradiction = self._check_negation_contradiction(spec1, spec2)
                 if contradiction:
                     issues.append(
@@ -80,9 +81,7 @@ class ContradictionRule(ValidationRule):
 
         return issues
 
-    def _check_negation_contradiction(
-        self, spec1: SpecBlock, spec2: SpecBlock
-    ) -> dict | None:
+    def _check_negation_contradiction(self, spec1: SpecBlock, spec2: SpecBlock) -> dict | None:
         """Check if two specs have negation pattern contradictions.
 
         Args:
@@ -149,11 +148,33 @@ class ContradictionRule(ValidationRule):
         """
         # Remove common stop words and context words
         stop_words = {
-            "the", "a", "an", "be", "to", "of", "and", "or", "in", "on", "at",
-            "when", "under", "any", "all", "circumstances", "requested", "if",
-            "then", "while", "during", "after", "before", "with", "without",
+            "the",
+            "a",
+            "an",
+            "be",
+            "to",
+            "of",
+            "and",
+            "or",
+            "in",
+            "on",
+            "at",
+            "when",
+            "under",
+            "any",
+            "all",
+            "circumstances",
+            "requested",
+            "if",
+            "then",
+            "while",
+            "during",
+            "after",
+            "before",
+            "with",
+            "without",
         }
-        
+
         words1 = set(subject1.lower().split()) - stop_words
         words2 = set(subject2.lower().split()) - stop_words
 
@@ -161,10 +182,7 @@ class ContradictionRule(ValidationRule):
             return False
 
         intersection = words1 & words2
-        
+
         # If there's any meaningful word overlap, consider it a match
         # This catches cases like "AAA" appearing in both subjects
-        if intersection:
-            return True
-        
-        return False
+        return bool(intersection)

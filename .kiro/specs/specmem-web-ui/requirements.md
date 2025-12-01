@@ -128,4 +128,3 @@ SpecMem Web UI provides a lightweight, developer-friendly web dashboard for visu
 2. WHEN the UI renders THEN the System SHALL be responsive and work on different screen sizes
 3. WHEN the UI renders THEN the System SHALL use clear typography and adequate spacing
 4. WHEN the UI loads THEN the System SHALL display within 2 seconds on localhost
-

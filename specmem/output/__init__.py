@@ -2,4 +2,5 @@
 
 from specmem.output.living_docs import LivingDocsGenerator
 
+
 __all__ = ["LivingDocsGenerator"]

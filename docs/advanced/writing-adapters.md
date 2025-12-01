@@ -16,9 +16,9 @@ from datetime import datetime
 
 class MyFrameworkAdapter(SpecAdapter):
     """Adapter for MyFramework specifications."""
-    
+
     name = "myframework"
-    
+
     def can_parse(self, path: Path) -> bool:
         """Check if this adapter can parse the given path."""
         # Check file extension
@@ -28,16 +28,16 @@ class MyFrameworkAdapter(SpecAdapter):
         if path.is_dir() and (path / "specs").exists():
             return True
         return False
-    
+
     def parse(self, path: Path) -> list[SpecBlock]:
         """Parse a single specification file."""
         content = path.read_text()
-        
+
         # Parse your format here
         title = self._extract_title(content)
         summary = self._extract_summary(content)
         spec_type = self._determine_type(path)
-        
+
         return [SpecBlock(
             id=self._generate_id(path),
             path=str(path),
@@ -53,7 +53,7 @@ class MyFrameworkAdapter(SpecAdapter):
             updated_at=datetime.now(),
             metadata={},
         )]
-    
+
     def parse_directory(self, directory: Path) -> list[SpecBlock]:
         """Parse all specifications in a directory."""
         specs = []
@@ -63,11 +63,11 @@ class MyFrameworkAdapter(SpecAdapter):
             except Exception as e:
                 print(f"Error parsing {path}: {e}")
         return specs
-    
+
     # Helper methods
     def _generate_id(self, path: Path) -> str:
         return f"{self.name}-{path.stem}"
-    
+
     def _extract_title(self, content: str) -> str:
         # Extract title from content
         lines = content.split("\n")
@@ -75,11 +75,11 @@ class MyFrameworkAdapter(SpecAdapter):
             if line.startswith("# "):
                 return line[2:].strip()
         return "Untitled"
-    
+
     def _extract_summary(self, content: str) -> str:
         # First 200 chars as summary
         return content[:200].replace("\n", " ").strip()
-    
+
     def _extract_tags(self, content: str) -> list[str]:
         # Extract tags from content
         tags = []
@@ -88,7 +88,7 @@ class MyFrameworkAdapter(SpecAdapter):
         if "security" in content.lower():
             tags.append("security")
         return tags
-    
+
     def _determine_type(self, path: Path) -> SpecType:
         if "requirements" in path.stem:
             return SpecType.REQUIREMENT
@@ -97,7 +97,7 @@ class MyFrameworkAdapter(SpecAdapter):
         elif "task" in path.stem:
             return SpecType.TASK
         return SpecType.REQUIREMENT
-    
+
     def _determine_priority(self, content: str) -> Priority:
         if "critical" in content.lower():
             return Priority.CRITICAL
@@ -232,7 +232,7 @@ def test_can_parse(adapter, sample_spec):
 
 def test_parse(adapter, sample_spec):
     specs = adapter.parse(sample_spec)
-    
+
     assert len(specs) == 1
     assert specs[0].framework == "myframework"
     assert specs[0].title == "Test Specification"
@@ -242,7 +242,7 @@ def test_parse_directory(adapter, tmp_path):
     # Create multiple specs
     (tmp_path / "spec1.myspec").write_text("# Spec 1")
     (tmp_path / "spec2.myspec").write_text("# Spec 2")
-    
+
     specs = adapter.parse_directory(tmp_path)
     assert len(specs) == 2
 ```

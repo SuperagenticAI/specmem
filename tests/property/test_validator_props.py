@@ -5,10 +5,11 @@ Tests correctness properties defined in the design document.
 
 from __future__ import annotations
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
+from specmem.validator.config import RuleConfig, ValidationConfig
 from specmem.validator.models import IssueSeverity, ValidationIssue, ValidationResult
-from specmem.validator.config import ValidationConfig, RuleConfig
 
 
 # =============================================================================
@@ -274,7 +275,6 @@ def test_result_serialization_roundtrip(result: ValidationResult) -> None:
     assert restored.info_count == result.info_count
 
 
-
 # =============================================================================
 # Property 9: Valid Specs Pass
 # For any well-formed spec with no issues, the validator SHALL return a result
@@ -349,7 +349,6 @@ def test_specs_with_errors_fail_validation(
     assert result.error_count > 0
 
 
-
 # =============================================================================
 # Property 1: Contradiction Detection Completeness
 # For any pair of specs where one contains "SHALL" and another contains
@@ -365,9 +364,31 @@ from specmem.validator.rules.contradiction import ContradictionRule
 
 # Stop words that should be filtered from subjects
 _STOP_WORDS = {
-    "the", "a", "an", "be", "to", "of", "and", "or", "in", "on", "at",
-    "when", "under", "any", "all", "circumstances", "requested", "if",
-    "then", "while", "during", "after", "before", "with", "without",
+    "the",
+    "a",
+    "an",
+    "be",
+    "to",
+    "of",
+    "and",
+    "or",
+    "in",
+    "on",
+    "at",
+    "when",
+    "under",
+    "any",
+    "all",
+    "circumstances",
+    "requested",
+    "if",
+    "then",
+    "while",
+    "during",
+    "after",
+    "before",
+    "with",
+    "without",
 }
 
 
@@ -383,12 +404,14 @@ def _is_valid_subject(s: str) -> bool:
         min_size=3,
         max_size=20,
     ).filter(_is_valid_subject),
-    modal_pair=st.sampled_from([
-        ("shall", "shall not"),
-        ("must", "must not"),
-        ("will", "will not"),
-        ("can", "cannot"),
-    ]),
+    modal_pair=st.sampled_from(
+        [
+            ("shall", "shall not"),
+            ("must", "must not"),
+            ("will", "will not"),
+            ("can", "cannot"),
+        ]
+    ),
 )
 @settings(max_examples=100)
 def test_contradiction_detected_for_negation_patterns(
@@ -400,7 +423,7 @@ def test_contradiction_detected_for_negation_patterns(
     **Validates: Requirements 1.1, 1.2, 1.4**
     """
     positive, negative = modal_pair
-    
+
     # Create two specs with contradictory statements
     spec1 = SpecBlock(
         id="spec1",
@@ -420,7 +443,9 @@ def test_contradiction_detected_for_negation_patterns(
     issues = rule.validate([spec1, spec2], config)
 
     # Should detect the contradiction
-    assert len(issues) >= 1, f"Expected contradiction for '{positive}' vs '{negative}' on '{subject}'"
+    assert (
+        len(issues) >= 1
+    ), f"Expected contradiction for '{positive}' vs '{negative}' on '{subject}'"
     assert any("contradiction" in issue.message.lower() for issue in issues)
 
 
@@ -470,7 +495,6 @@ def test_no_false_positive_for_different_subjects(subject1: str, subject2: str) 
     assert len(issues) == 0, f"False positive: '{subject1}' vs '{subject2}' are different subjects"
 
 
-
 # =============================================================================
 # Property 2: Acceptance Criteria Completeness
 # For any spec missing acceptance criteria or with fewer than the configured
@@ -495,17 +519,16 @@ def test_insufficient_criteria_detected(min_criteria: int, actual_criteria: int)
     """
     # Build spec text with the specified number of criteria
     criteria_lines = "\n".join(
-        f"{i+1}. WHEN user requests THEN system SHALL respond"
-        for i in range(actual_criteria)
+        f"{i + 1}. WHEN user requests THEN system SHALL respond" for i in range(actual_criteria)
     )
-    
+
     spec_text = f"""# Requirement
-    
+
 ## Acceptance Criteria
 
 {criteria_lines}
 """
-    
+
     spec = SpecBlock(
         id="test-spec",
         type=SpecType.REQUIREMENT,
@@ -520,21 +543,19 @@ def test_insufficient_criteria_detected(min_criteria: int, actual_criteria: int)
     if actual_criteria < min_criteria:
         # Should have an issue about insufficient criteria
         insufficient_issues = [
-            i for i in issues 
+            i
+            for i in issues
             if "insufficient" in i.message.lower() or "minimum" in i.message.lower()
         ]
-        assert len(insufficient_issues) >= 1, (
-            f"Expected issue for {actual_criteria} criteria when minimum is {min_criteria}"
-        )
+        assert (
+            len(insufficient_issues) >= 1
+        ), f"Expected issue for {actual_criteria} criteria when minimum is {min_criteria}"
     else:
         # Should NOT have an issue about insufficient criteria
-        insufficient_issues = [
-            i for i in issues 
-            if "insufficient" in i.message.lower()
-        ]
-        assert len(insufficient_issues) == 0, (
-            f"Unexpected issue for {actual_criteria} criteria when minimum is {min_criteria}"
-        )
+        insufficient_issues = [i for i in issues if "insufficient" in i.message.lower()]
+        assert (
+            len(insufficient_issues) == 0
+        ), f"Unexpected issue for {actual_criteria} criteria when minimum is {min_criteria}"
 
 
 @given(has_section=st.booleans())
@@ -578,7 +599,6 @@ The system should do something useful.
         # Should NOT report missing section
         missing_issues = [i for i in issues if "missing" in i.message.lower()]
         assert len(missing_issues) == 0, "Unexpected missing section issue"
-
 
 
 # =============================================================================
@@ -688,7 +708,6 @@ def test_negative_time_detected(time_value: float) -> None:
     assert any("time" in i.message.lower() or "negative" in i.message.lower() for i in issues)
 
 
-
 # =============================================================================
 # Property 4: Duplicate Detection with Similarity
 # For any pair of specs with similarity >= threshold, the validator SHALL
@@ -709,7 +728,7 @@ def test_identical_specs_detected_as_duplicates(threshold: float) -> None:
     **Validates: Requirements 4.1, 4.2, 4.3**
     """
     text = "The system shall process user requests within 100ms response time"
-    
+
     spec1 = SpecBlock(
         id="spec1",
         type=SpecType.REQUIREMENT,
@@ -728,7 +747,9 @@ def test_identical_specs_detected_as_duplicates(threshold: float) -> None:
     issues = rule.validate([spec1, spec2], config)
 
     # Should detect as duplicates (100% similarity)
-    duplicate_issues = [i for i in issues if "duplicate" in i.message.lower() or "similarity" in i.message.lower()]
+    duplicate_issues = [
+        i for i in issues if "duplicate" in i.message.lower() or "similarity" in i.message.lower()
+    ]
     assert len(duplicate_issues) >= 1, "Expected duplicate detection for identical specs"
 
 
@@ -766,9 +787,13 @@ def test_duplicate_ids_detected(spec_id: str) -> None:
     issues = rule.validate([spec1, spec2], config)
 
     # Should detect duplicate ID
-    id_issues = [i for i in issues if "duplicate" in i.message.lower() and "id" in i.message.lower()]
+    id_issues = [
+        i for i in issues if "duplicate" in i.message.lower() and "id" in i.message.lower()
+    ]
     assert len(id_issues) >= 1, f"Expected duplicate ID detection for '{spec_id}'"
-    assert any(i.severity == IssueSeverity.ERROR for i in id_issues), "Duplicate IDs should be errors"
+    assert any(
+        i.severity == IssueSeverity.ERROR for i in id_issues
+    ), "Duplicate IDs should be errors"
 
 
 # =============================================================================
@@ -794,14 +819,14 @@ def test_past_deadline_detected(year: int, month: int, day: int) -> None:
     **Validates: Requirements 5.1, 5.2, 5.3**
     """
     from datetime import date
-    
+
     deadline = date(year, month, day)
     today = date.today()
-    
+
     # Only test if deadline is actually in the past
     if deadline >= today:
         return
-    
+
     date_str = deadline.strftime("%Y-%m-%d")
     spec = SpecBlock(
         id="test-spec",
@@ -815,7 +840,9 @@ def test_past_deadline_detected(year: int, month: int, day: int) -> None:
     issues = rule.validate([spec], config)
 
     # Should detect past deadline
-    deadline_issues = [i for i in issues if "past" in i.message.lower() or "deadline" in i.message.lower()]
+    deadline_issues = [
+        i for i in issues if "past" in i.message.lower() or "deadline" in i.message.lower()
+    ]
     assert len(deadline_issues) >= 1, f"Expected past deadline detection for {date_str}"
 
 
@@ -842,7 +869,7 @@ def test_spec_length_exceeded_detected(max_length: int, extra_length: int) -> No
     """
     # Create text that exceeds max_length
     text = "x" * (max_length + extra_length)
-    
+
     spec = SpecBlock(
         id="test-spec",
         type=SpecType.REQUIREMENT,
@@ -855,9 +882,12 @@ def test_spec_length_exceeded_detected(max_length: int, extra_length: int) -> No
     issues = rule.validate([spec], config)
 
     # Should detect length exceeded
-    length_issues = [i for i in issues if "length" in i.message.lower() or "exceeds" in i.message.lower()]
-    assert len(length_issues) >= 1, f"Expected length exceeded detection for {len(text)} > {max_length}"
-
+    length_issues = [
+        i for i in issues if "length" in i.message.lower() or "exceeds" in i.message.lower()
+    ]
+    assert (
+        len(length_issues) >= 1
+    ), f"Expected length exceeded detection for {len(text)} > {max_length}"
 
 
 # =============================================================================
@@ -881,37 +911,40 @@ def test_validation_result_exit_code_logic(has_errors: bool, warning_count: int)
     """
     # Build issues list
     issues: list[ValidationIssue] = []
-    
+
     if has_errors:
-        issues.append(ValidationIssue(
-            rule_id="test",
-            severity=IssueSeverity.ERROR,
-            message="Test error",
-            spec_id="test-spec",
-        ))
-    
+        issues.append(
+            ValidationIssue(
+                rule_id="test",
+                severity=IssueSeverity.ERROR,
+                message="Test error",
+                spec_id="test-spec",
+            )
+        )
+
     for _ in range(warning_count):
-        issues.append(ValidationIssue(
-            rule_id="test",
-            severity=IssueSeverity.WARNING,
-            message="Test warning",
-            spec_id="test-spec",
-        ))
-    
+        issues.append(
+            ValidationIssue(
+                rule_id="test",
+                severity=IssueSeverity.WARNING,
+                message="Test warning",
+                spec_id="test-spec",
+            )
+        )
+
     result = ValidationResult(
         issues=issues,
         specs_validated=1,
         rules_run=1,
         duration_ms=100.0,
     )
-    
+
     # is_valid should be False only if there are errors
     # Warnings alone should not cause validation to fail
     if has_errors:
         assert result.is_valid is False, "Should fail with errors"
     else:
         assert result.is_valid is True, "Should pass without errors (warnings are OK)"
-
 
 
 # =============================================================================
@@ -936,44 +969,48 @@ def test_client_api_filtering_methods(error_count: int, warning_count: int) -> N
     """
     # Build issues list
     issues: list[ValidationIssue] = []
-    
+
     for i in range(error_count):
-        issues.append(ValidationIssue(
-            rule_id="test",
-            severity=IssueSeverity.ERROR,
-            message=f"Test error {i}",
-            spec_id="test-spec",
-        ))
-    
+        issues.append(
+            ValidationIssue(
+                rule_id="test",
+                severity=IssueSeverity.ERROR,
+                message=f"Test error {i}",
+                spec_id="test-spec",
+            )
+        )
+
     for i in range(warning_count):
-        issues.append(ValidationIssue(
-            rule_id="test",
-            severity=IssueSeverity.WARNING,
-            message=f"Test warning {i}",
-            spec_id="test-spec",
-        ))
-    
+        issues.append(
+            ValidationIssue(
+                rule_id="test",
+                severity=IssueSeverity.WARNING,
+                message=f"Test warning {i}",
+                spec_id="test-spec",
+            )
+        )
+
     result = ValidationResult(
         issues=issues,
         specs_validated=1,
         rules_run=1,
         duration_ms=100.0,
     )
-    
+
     # Test filtering methods
     errors = result.get_errors()
     warnings = result.get_warnings()
-    
+
     assert len(errors) == error_count
     assert len(warnings) == warning_count
-    
+
     # All errors should have ERROR severity
     for error in errors:
         assert error.severity == IssueSeverity.ERROR
-    
+
     # All warnings should have WARNING severity
     for warning in warnings:
         assert warning.severity == IssueSeverity.WARNING
-    
+
     # is_valid should reflect error presence
     assert result.is_valid == (error_count == 0)

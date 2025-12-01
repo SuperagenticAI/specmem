@@ -9,18 +9,18 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from specmem.core.exceptions import LifecycleError, VectorStoreError
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.base import (
+    VALID_TRANSITIONS,
     AuditEntry,
     GovernanceRules,
     QueryResult,
-    VALID_TRANSITIONS,
-    validate_transition,
     VectorStore,
+    validate_transition,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,9 @@ class AgentVectorDBStore(VectorStore):
             )
 
             self._initialized = True
-            logger.info(f"AgentVectorDB initialized at {self._db_path} (namespace: {self._namespace})")
+            logger.info(
+                f"AgentVectorDB initialized at {self._db_path} (namespace: {self._namespace})"
+            )
 
         except ImportError as e:
             raise VectorStoreError(
@@ -148,23 +150,25 @@ class AgentVectorDBStore(VectorStore):
             self._vector_dim = len(embeddings[0])
 
             entries = []
-            for block, embedding in zip(blocks, embeddings):
+            for block, embedding in zip(blocks, embeddings, strict=False):
                 importance = self._calculate_importance(block)
 
-                entries.append({
-                    "id": block.id,
-                    "content": block.text,
-                    "vector": embedding,
-                    "type": block.type.value,
-                    "importance_score": importance,
-                    "source": block.source,
-                    "tags": block.tags,
-                    "extra": {
-                        "status": block.status.value,
-                        "links": ",".join(block.links),
-                        "pinned": block.pinned,
-                    },
-                })
+                entries.append(
+                    {
+                        "id": block.id,
+                        "content": block.text,
+                        "vector": embedding,
+                        "type": block.type.value,
+                        "importance_score": importance,
+                        "source": block.source,
+                        "tags": block.tags,
+                        "extra": {
+                            "status": block.status.value,
+                            "links": ",".join(block.links),
+                            "pinned": block.pinned,
+                        },
+                    }
+                )
 
             self._collection.add_batch(entries)
             logger.info(f"Stored {len(blocks)} blocks in AgentVectorDB")
@@ -188,7 +192,6 @@ class AgentVectorDBStore(VectorStore):
 
         try:
             # Build filter SQL for AgentVectorDB
-            filter_parts = []
 
             # Never include obsolete (stored in extra.status)
             # Note: AgentVectorDB uses SQL-like filtering
@@ -204,6 +207,7 @@ class AgentVectorDBStore(VectorStore):
                 extra = row.get("metadata", {}).get("extra", "{}")
                 if isinstance(extra, str):
                     import json
+
                     try:
                         extra = json.loads(extra)
                     except Exception:
@@ -223,15 +227,24 @@ class AgentVectorDBStore(VectorStore):
                 # Apply governance rules
                 if governance_rules:
                     block_type = SpecType(row.get("type", "requirement"))
-                    if governance_rules.exclude_types and block_type in governance_rules.exclude_types:
+                    if (
+                        governance_rules.exclude_types
+                        and block_type in governance_rules.exclude_types
+                    ):
                         continue
 
                     source = row.get("metadata", {}).get("source", "")
-                    if governance_rules.exclude_sources and source in governance_rules.exclude_sources:
+                    if (
+                        governance_rules.exclude_sources
+                        and source in governance_rules.exclude_sources
+                    ):
                         continue
 
                     importance = row.get("importance_score", 0.5)
-                    if governance_rules.min_importance and importance < governance_rules.min_importance:
+                    if (
+                        governance_rules.min_importance
+                        and importance < governance_rules.min_importance
+                    ):
                         continue
 
                 block = self._row_to_specblock(row)
@@ -284,7 +297,9 @@ class AgentVectorDBStore(VectorStore):
             return blocks
 
         except Exception as e:
-            raise VectorStoreError(f"Failed to get pinned: {e}", code="AGENTVECTORDB_PINNED_ERROR") from e
+            raise VectorStoreError(
+                f"Failed to get pinned: {e}", code="AGENTVECTORDB_PINNED_ERROR"
+            ) from e
 
     def update_status(self, block_id: str, status: SpecStatus, reason: str = "") -> bool:
         self._ensure_initialized()
@@ -297,6 +312,7 @@ class AgentVectorDBStore(VectorStore):
             extra = result.get("metadata", {}).get("extra", "{}")
             if isinstance(extra, str):
                 import json
+
                 try:
                     extra = json.loads(extra)
                 except Exception:
@@ -307,7 +323,7 @@ class AgentVectorDBStore(VectorStore):
             if not validate_transition(current_status, status):
                 valid = [s.value for s in VALID_TRANSITIONS.get(current_status, set())]
                 raise LifecycleError(
-                    f"Invalid transition",
+                    "Invalid transition",
                     from_status=current_status.value,
                     to_status=status.value,
                     block_id=block_id,
@@ -333,7 +349,9 @@ class AgentVectorDBStore(VectorStore):
             logger.warning(f"Failed to update status: {e}")
             return False
 
-    def _move_to_audit(self, block_id: str, row: dict, previous_status: SpecStatus, reason: str) -> None:
+    def _move_to_audit(
+        self, block_id: str, row: dict, previous_status: SpecStatus, reason: str
+    ) -> None:
         try:
             self._audit_collection.add(
                 id=f"audit_{block_id}_{datetime.now().timestamp()}",
@@ -364,6 +382,7 @@ class AgentVectorDBStore(VectorStore):
                 extra = row.get("metadata", {}).get("extra", {})
                 if isinstance(extra, str):
                     import json
+
                     try:
                         extra = json.loads(extra)
                     except Exception:
@@ -380,17 +399,21 @@ class AgentVectorDBStore(VectorStore):
                     pinned=False,
                 )
 
-                entries.append(AuditEntry(
-                    block=block,
-                    obsoleted_at=datetime.fromtimestamp(extra.get("obsoleted_at", 0)),
-                    reason=extra.get("reason", ""),
-                    previous_status=SpecStatus(extra.get("previous_status", "legacy")),
-                ))
+                entries.append(
+                    AuditEntry(
+                        block=block,
+                        obsoleted_at=datetime.fromtimestamp(extra.get("obsoleted_at", 0)),
+                        reason=extra.get("reason", ""),
+                        previous_status=SpecStatus(extra.get("previous_status", "legacy")),
+                    )
+                )
 
             return entries
 
         except Exception as e:
-            raise VectorStoreError(f"Failed to get audit log: {e}", code="AGENTVECTORDB_AUDIT_ERROR") from e
+            raise VectorStoreError(
+                f"Failed to get audit log: {e}", code="AGENTVECTORDB_AUDIT_ERROR"
+            ) from e
 
     def prune_memories(
         self,
@@ -461,6 +484,7 @@ class AgentVectorDBStore(VectorStore):
 
         if isinstance(extra, str):
             import json
+
             try:
                 extra = json.loads(extra)
             except Exception:

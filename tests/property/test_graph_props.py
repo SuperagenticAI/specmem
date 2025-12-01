@@ -3,7 +3,8 @@
 Tests correctness properties defined in the design document.
 """
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.impact import (
     EdgeType,
@@ -73,9 +74,9 @@ def test_node_confidence_in_valid_range(node: GraphNode) -> None:
     **Feature: specimpact-graph, Property 3: Confidence Inclusion**
     **Validates: Requirements 1.2, 2.2, 3.2**
     """
-    assert 0.0 <= node.confidence <= 1.0, (
-        f"Node confidence {node.confidence} is not in range [0.0, 1.0]"
-    )
+    assert (
+        0.0 <= node.confidence <= 1.0
+    ), f"Node confidence {node.confidence} is not in range [0.0, 1.0]"
 
 
 @given(edge=edge_strategy)
@@ -86,9 +87,9 @@ def test_edge_confidence_in_valid_range(edge: GraphEdge) -> None:
     **Feature: specimpact-graph, Property 3: Confidence Inclusion**
     **Validates: Requirements 1.2, 2.2, 3.2**
     """
-    assert 0.0 <= edge.confidence <= 1.0, (
-        f"Edge confidence {edge.confidence} is not in range [0.0, 1.0]"
-    )
+    assert (
+        0.0 <= edge.confidence <= 1.0
+    ), f"Edge confidence {edge.confidence} is not in range [0.0, 1.0]"
 
 
 @given(nodes=st.lists(node_strategy, min_size=0, max_size=10))
@@ -108,10 +109,9 @@ def test_impact_set_all_nodes_have_valid_confidence(nodes: list[GraphNode]) -> N
 
     # Verify all nodes in impact set have valid confidence
     for node in impact_set.specs + impact_set.code + impact_set.tests:
-        assert 0.0 <= node.confidence <= 1.0, (
-            f"Node {node.id} has invalid confidence {node.confidence}"
-        )
-
+        assert (
+            0.0 <= node.confidence <= 1.0
+        ), f"Node {node.id} has invalid confidence {node.confidence}"
 
 
 # =============================================================================
@@ -176,7 +176,6 @@ def test_impact_set_serialization_roundtrip(nodes: list[GraphNode]) -> None:
     assert restored.message == impact_set.message
 
 
-
 # =============================================================================
 # Property 1: Spec Query Completeness
 # For any code file with linked specs, querying specs for that file SHALL
@@ -209,11 +208,13 @@ def test_spec_query_returns_all_linked_specs(code_id: str, spec_ids: list[str]) 
     for spec_id in spec_ids:
         spec_node = GraphNode(id=f"spec:{spec_id}", type=NodeType.SPEC)
         graph.add_node(spec_node)
-        graph.add_edge(GraphEdge(
-            source_id=code_node.id,
-            target_id=spec_node.id,
-            relationship=EdgeType.IMPLEMENTS,
-        ))
+        graph.add_edge(
+            GraphEdge(
+                source_id=code_node.id,
+                target_id=spec_node.id,
+                relationship=EdgeType.IMPLEMENTS,
+            )
+        )
 
     # Query specs for code
     result = graph.query_specs_for_code(code_node.id)
@@ -221,9 +222,7 @@ def test_spec_query_returns_all_linked_specs(code_id: str, spec_ids: list[str]) 
 
     # All linked specs should be returned
     expected_ids = {f"spec:{sid}" for sid in spec_ids}
-    assert expected_ids == result_ids, (
-        f"Expected specs {expected_ids}, got {result_ids}"
-    )
+    assert expected_ids == result_ids, f"Expected specs {expected_ids}, got {result_ids}"
 
 
 # =============================================================================
@@ -258,16 +257,20 @@ def test_transitive_closure_with_depth(node_a: str, node_b: str, node_c: str) ->
     graph.add_node(GraphNode(id=f"spec:{node_b}", type=NodeType.SPEC))
     graph.add_node(GraphNode(id=f"test:{node_c}", type=NodeType.TEST))
 
-    graph.add_edge(GraphEdge(
-        source_id=f"code:{node_a}",
-        target_id=f"spec:{node_b}",
-        relationship=EdgeType.IMPLEMENTS,
-    ))
-    graph.add_edge(GraphEdge(
-        source_id=f"test:{node_c}",
-        target_id=f"spec:{node_b}",
-        relationship=EdgeType.TESTS,
-    ))
+    graph.add_edge(
+        GraphEdge(
+            source_id=f"code:{node_a}",
+            target_id=f"spec:{node_b}",
+            relationship=EdgeType.IMPLEMENTS,
+        )
+    )
+    graph.add_edge(
+        GraphEdge(
+            source_id=f"test:{node_c}",
+            target_id=f"spec:{node_b}",
+            relationship=EdgeType.TESTS,
+        )
+    )
 
     # Query with depth=2 should find all nodes
     impact = graph.query_impact([f"code:{node_a}"], depth=2)
@@ -305,11 +308,13 @@ def test_tests_ordered_by_confidence_descending(confidences: list[float]) -> Non
     # Add a code node and spec
     graph.add_node(GraphNode(id="code:main.py", type=NodeType.CODE))
     graph.add_node(GraphNode(id="spec:main", type=NodeType.SPEC))
-    graph.add_edge(GraphEdge(
-        source_id="code:main.py",
-        target_id="spec:main",
-        relationship=EdgeType.IMPLEMENTS,
-    ))
+    graph.add_edge(
+        GraphEdge(
+            source_id="code:main.py",
+            target_id="spec:main",
+            relationship=EdgeType.IMPLEMENTS,
+        )
+    )
 
     # Add test nodes with varying confidence
     for i, conf in enumerate(confidences):
@@ -320,20 +325,22 @@ def test_tests_ordered_by_confidence_descending(confidences: list[float]) -> Non
             data={"framework": "pytest", "path": f"test_{i}.py"},
         )
         graph.add_node(test_node)
-        graph.add_edge(GraphEdge(
-            source_id=test_node.id,
-            target_id="spec:main",
-            relationship=EdgeType.TESTS,
-        ))
+        graph.add_edge(
+            GraphEdge(
+                source_id=test_node.id,
+                target_id="spec:main",
+                relationship=EdgeType.TESTS,
+            )
+        )
 
     # Query tests
     tests = graph.query_tests_for_change(["code:main.py"])
 
     # Verify ordering
     for i in range(len(tests) - 1):
-        assert tests[i].confidence >= tests[i + 1].confidence, (
-            f"Tests not ordered by confidence: {tests[i].confidence} < {tests[i + 1].confidence}"
-        )
+        assert (
+            tests[i].confidence >= tests[i + 1].confidence
+        ), f"Tests not ordered by confidence: {tests[i].confidence} < {tests[i + 1].confidence}"
 
 
 # =============================================================================
@@ -368,24 +375,25 @@ def test_bidirectional_query(code_id: str, spec_id: str) -> None:
     graph.add_node(spec_node)
 
     # Add edge: code → spec
-    graph.add_edge(GraphEdge(
-        source_id=code_node.id,
-        target_id=spec_node.id,
-        relationship=EdgeType.IMPLEMENTS,
-    ))
+    graph.add_edge(
+        GraphEdge(
+            source_id=code_node.id,
+            target_id=spec_node.id,
+            relationship=EdgeType.IMPLEMENTS,
+        )
+    )
 
     # Query from code should find spec
     specs = graph.query_specs_for_code(code_node.id)
-    assert any(s.id == spec_node.id for s in specs), (
-        f"Spec {spec_node.id} not found when querying from code"
-    )
+    assert any(
+        s.id == spec_node.id for s in specs
+    ), f"Spec {spec_node.id} not found when querying from code"
 
     # Query from spec should find code
     code_nodes = graph.query_code_for_spec(spec_node.id)
-    assert any(c.id == code_node.id for c in code_nodes), (
-        f"Code {code_node.id} not found when querying from spec"
-    )
-
+    assert any(
+        c.id == code_node.id for c in code_nodes
+    ), f"Code {code_node.id} not found when querying from spec"
 
 
 # =============================================================================
@@ -454,16 +462,20 @@ def test_depth_limiting(depth: int) -> None:
         graph.add_node(GraphNode(id=spec_id, type=NodeType.SPEC))
         graph.add_node(GraphNode(id=test_id, type=NodeType.TEST))
 
-        graph.add_edge(GraphEdge(
-            source_id=prev_id,
-            target_id=spec_id,
-            relationship=EdgeType.IMPLEMENTS if i == 0 else EdgeType.REFERENCES,
-        ))
-        graph.add_edge(GraphEdge(
-            source_id=test_id,
-            target_id=spec_id,
-            relationship=EdgeType.TESTS,
-        ))
+        graph.add_edge(
+            GraphEdge(
+                source_id=prev_id,
+                target_id=spec_id,
+                relationship=EdgeType.IMPLEMENTS if i == 0 else EdgeType.REFERENCES,
+            )
+        )
+        graph.add_edge(
+            GraphEdge(
+                source_id=test_id,
+                target_id=spec_id,
+                relationship=EdgeType.TESTS,
+            )
+        )
 
         prev_id = test_id
 
@@ -531,7 +543,6 @@ def test_incremental_update_preserves_unconnected_nodes(node_a: str, node_b: str
     assert updated_node_b.confidence == original_node_b.confidence
 
 
-
 # =============================================================================
 # Property 9: Export Format Validity
 # For any graph export in JSON format, the output SHALL be valid JSON
@@ -561,11 +572,13 @@ def test_json_export_is_valid_and_roundtrips(nodes: list[GraphNode]) -> None:
 
     # Add some edges between nodes
     for i in range(len(nodes) - 1):
-        graph.add_edge(GraphEdge(
-            source_id=nodes[i].id,
-            target_id=nodes[i + 1].id,
-            relationship=EdgeType.IMPLEMENTS,
-        ))
+        graph.add_edge(
+            GraphEdge(
+                source_id=nodes[i].id,
+                target_id=nodes[i + 1].id,
+                relationship=EdgeType.IMPLEMENTS,
+            )
+        )
 
     # Export to JSON
     json_output = graph.export("json")

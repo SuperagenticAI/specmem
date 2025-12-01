@@ -9,22 +9,22 @@ ChromaDB is a popular open-source embedding database that provides:
 
 from __future__ import annotations
 
-import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from specmem.core.exceptions import LifecycleError, VectorStoreError
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.base import (
+    VALID_TRANSITIONS,
     AuditEntry,
     GovernanceRules,
     QueryResult,
-    VALID_TRANSITIONS,
-    validate_transition,
     VectorStore,
+    validate_transition,
 )
+
 
 if TYPE_CHECKING:
     import chromadb
@@ -184,7 +184,9 @@ class ChromaDBStore(VectorStore):
                     for s in governance_rules.exclude_sources:
                         where_conditions.append({"source": {"$ne": s}})
 
-            where_filter = {"$and": where_conditions} if len(where_conditions) > 1 else where_conditions[0]
+            where_filter = (
+                {"$and": where_conditions} if len(where_conditions) > 1 else where_conditions[0]
+            )
 
             results = self._collection.query(
                 query_embeddings=[embedding],
@@ -297,7 +299,9 @@ class ChromaDBStore(VectorStore):
             logger.warning(f"Failed to update status: {e}")
             return False
 
-    def _move_to_audit(self, block_id: str, results: dict, previous_status: SpecStatus, reason: str) -> None:
+    def _move_to_audit(
+        self, block_id: str, results: dict, previous_status: SpecStatus, reason: str
+    ) -> None:
         """Move block to audit collection."""
         try:
             metadata = results["metadatas"][0]
@@ -352,12 +356,14 @@ class ChromaDBStore(VectorStore):
                         pinned=metadata.get("pinned", False),
                     )
 
-                    entries.append(AuditEntry(
-                        block=block,
-                        obsoleted_at=datetime.fromtimestamp(metadata["obsoleted_at"]),
-                        reason=metadata.get("reason", ""),
-                        previous_status=SpecStatus(metadata["previous_status"]),
-                    ))
+                    entries.append(
+                        AuditEntry(
+                            block=block,
+                            obsoleted_at=datetime.fromtimestamp(metadata["obsoleted_at"]),
+                            reason=metadata.get("reason", ""),
+                            previous_status=SpecStatus(metadata["previous_status"]),
+                        )
+                    )
 
             return entries
 

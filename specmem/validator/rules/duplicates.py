@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from specmem.validator.models import IssueSeverity, ValidationIssue
 from specmem.validator.rules.base import ValidationRule
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.validator.config import ValidationConfig
@@ -63,10 +64,10 @@ class DuplicateRule(ValidationRule):
 
         # Check for semantic similarity
         for i, spec1 in enumerate(specs):
-            for spec2 in specs[i + 1:]:
+            for spec2 in specs[i + 1 :]:
                 if spec1.id == spec2.id:
                     continue  # Already reported as duplicate ID
-                    
+
                 similarity = self._calculate_similarity(spec1.text, spec2.text)
                 if similarity >= threshold:
                     issues.append(
@@ -120,19 +121,86 @@ class DuplicateRule(ValidationRule):
         """
         # Simple word tokenization
         words = text.lower().split()
-        
+
         # Remove common stop words
         stop_words = {
-            "the", "a", "an", "is", "are", "was", "were", "be", "been",
-            "being", "have", "has", "had", "do", "does", "did", "will",
-            "would", "could", "should", "may", "might", "must", "shall",
-            "can", "to", "of", "in", "for", "on", "with", "at", "by",
-            "from", "as", "into", "through", "during", "before", "after",
-            "above", "below", "between", "under", "again", "further",
-            "then", "once", "here", "there", "when", "where", "why",
-            "how", "all", "each", "few", "more", "most", "other", "some",
-            "such", "no", "nor", "not", "only", "own", "same", "so",
-            "than", "too", "very", "just", "and", "but", "if", "or",
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "must",
+            "shall",
+            "can",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "into",
+            "through",
+            "during",
+            "before",
+            "after",
+            "above",
+            "below",
+            "between",
+            "under",
+            "again",
+            "further",
+            "then",
+            "once",
+            "here",
+            "there",
+            "when",
+            "where",
+            "why",
+            "how",
+            "all",
+            "each",
+            "few",
+            "more",
+            "most",
+            "other",
+            "some",
+            "such",
+            "no",
+            "nor",
+            "not",
+            "only",
+            "own",
+            "same",
+            "so",
+            "than",
+            "too",
+            "very",
+            "just",
+            "and",
+            "but",
+            "if",
+            "or",
         }
-        
+
         return [w for w in words if w not in stop_words and len(w) > 2]

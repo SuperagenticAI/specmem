@@ -7,10 +7,8 @@ Tests correctness properties for experimental adapter support.
 
 import warnings
 from pathlib import Path
-from typing import Any
 
 import pytest
-from hypothesis import given, settings, strategies as st
 
 from specmem.adapters.base import ExperimentalAdapterWarning, SpecAdapter
 from specmem.core.specir import SpecBlock
@@ -94,9 +92,7 @@ class TestExperimentalAdapterMarking:
 
             # Filter for ExperimentalAdapterWarning only
             experimental_warnings = [
-                warning
-                for warning in w
-                if issubclass(warning.category, ExperimentalAdapterWarning)
+                warning for warning in w if issubclass(warning.category, ExperimentalAdapterWarning)
             ]
             assert len(experimental_warnings) == 0
 
@@ -109,9 +105,7 @@ class TestExperimentalAdapterMarking:
             adapter.load("/tmp/test")
 
             experimental_warnings = [
-                warning
-                for warning in w
-                if issubclass(warning.category, ExperimentalAdapterWarning)
+                warning for warning in w if issubclass(warning.category, ExperimentalAdapterWarning)
             ]
             assert len(experimental_warnings) == 1
 
@@ -370,7 +364,6 @@ dependencies:
         assert len(blocks) >= 1
 
 
-
 # ============================================================================
 # GitHub SpecKit Adapter Property Tests
 # ============================================================================
@@ -625,7 +618,6 @@ src/
         assert len(task_blocks) >= 1
 
 
-
 # ============================================================================
 # Cursor Adapter Property Tests
 # ============================================================================
@@ -728,7 +720,6 @@ Write clean code.
         assert len(blocks) >= 1
         assert "cursor" in blocks[0].tags
         assert "rules" in blocks[0].tags
-
 
 
 # ============================================================================
@@ -855,7 +846,6 @@ The project follows a modular architecture.
         assert "claude" in blocks[0].tags
 
 
-
 # ============================================================================
 # Graceful Error Handling Property Tests
 # ============================================================================
@@ -901,7 +891,9 @@ class TestGracefulErrorHandling:
         feature_dir.mkdir()
 
         # Valid spec
-        (feature_dir / "spec.md").write_text("# Valid Spec\n\n## Requirements\n\n- **FR-001**: Test")
+        (feature_dir / "spec.md").write_text(
+            "# Valid Spec\n\n## Requirements\n\n- **FR-001**: Test"
+        )
         # Malformed plan (will be parsed but may have issues)
         (feature_dir / "plan.md").write_text("Not a valid plan format")
 
@@ -946,7 +938,6 @@ class TestGracefulErrorHandling:
 
         # Should return empty list or minimal block
         assert isinstance(blocks, list)
-
 
 
 # ============================================================================

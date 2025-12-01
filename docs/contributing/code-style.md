@@ -47,21 +47,21 @@ if TYPE_CHECKING:
 @dataclass
 class MyClass:
     """Class docstring.
-    
+
     Attributes:
         name: The name of the thing.
         value: The value of the thing.
     """
-    
+
     name: str
     value: int
-    
+
     def my_method(self, arg: str) -> str:
         """Method docstring.
-        
+
         Args:
             arg: The argument.
-            
+
         Returns:
             The result string.
         """
@@ -75,21 +75,21 @@ def my_function(
     optional: bool = False,
 ) -> dict[str, int]:
     """Function docstring.
-    
+
     Args:
         param1: First parameter.
         param2: Second parameter.
         optional: Optional flag.
-        
+
     Returns:
         A dictionary mapping strings to integers.
-        
+
     Raises:
         ValueError: If param2 is negative.
     """
     if param2 < 0:
         raise ValueError("param2 must be non-negative")
-    
+
     return {param1: param2}
 ```
 
@@ -162,14 +162,14 @@ Example:
 ```python
 class SpecParser:
     """Parser for specification files.
-    
+
     This class handles parsing of various specification
     formats into the canonical SpecIR format.
-    
+
     Attributes:
         adapters: List of enabled adapters.
         config: Parser configuration.
-        
+
     Example:
         >>> parser = SpecParser()
         >>> specs = parser.parse("path/to/specs")
@@ -185,18 +185,18 @@ def parse_spec(
     strict: bool = False,
 ) -> SpecBlock:
     """Parse a specification file.
-    
+
     Args:
         path: Path to the specification file.
         strict: If True, raise on warnings.
-        
+
     Returns:
         The parsed specification block.
-        
+
     Raises:
         FileNotFoundError: If the file doesn't exist.
         ParseError: If the file is malformed.
-        
+
     Example:
         >>> spec = parse_spec("auth/requirements.md")
         >>> print(spec.title)

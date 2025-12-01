@@ -4,13 +4,16 @@ These tests use Hypothesis to verify universal properties that should hold
 across all valid configuration inputs.
 """
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.core.config import EmbeddingConfig, SpecMemConfig, VectorDBConfig
 
 
 # Strategies for generating valid config data
-embedding_provider_strategy = st.sampled_from(["local", "openai", "anthropic", "gemini", "together"])
+embedding_provider_strategy = st.sampled_from(
+    ["local", "openai", "anthropic", "gemini", "together"]
+)
 vectordb_backend_strategy = st.sampled_from(
     ["lancedb", "agentvectordb", "chroma", "qdrant", "sqlite-vec"]
 )

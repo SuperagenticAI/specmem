@@ -59,12 +59,12 @@ from specmem.core import MemoryBank, SpecBlock, SpecType
 
 class TestMemoryBank:
     """Tests for MemoryBank class."""
-    
+
     @pytest.fixture
     def memory(self, tmp_path):
         """Create a test memory bank."""
         return MemoryBank(path=tmp_path / "test.db")
-    
+
     @pytest.fixture
     def sample_spec(self):
         """Create a sample spec."""
@@ -77,35 +77,35 @@ class TestMemoryBank:
             content="Test content",
             summary="Test summary",
         )
-    
+
     def test_add_spec(self, memory, sample_spec):
         """Test adding a spec to memory."""
         spec_id = memory.add(sample_spec)
-        
+
         assert spec_id == "test-001"
         assert memory.count() == 1
-    
+
     def test_get_spec(self, memory, sample_spec):
         """Test retrieving a spec."""
         memory.add(sample_spec)
-        
+
         result = memory.get("test-001")
-        
+
         assert result is not None
         assert result.title == "Test Spec"
-    
+
     def test_get_nonexistent(self, memory):
         """Test getting a spec that doesn't exist."""
         result = memory.get("nonexistent")
-        
+
         assert result is None
-    
+
     def test_search(self, memory, sample_spec):
         """Test searching specs."""
         memory.add(sample_spec)
-        
+
         results = memory.search("test", top_k=5)
-        
+
         assert len(results) >= 1
         assert results[0].spec.id == "test-001"
 ```
@@ -121,7 +121,7 @@ import pytest
 
 class TestCLI:
     """Integration tests for CLI."""
-    
+
     def test_init(self, tmp_path):
         """Test specmem init command."""
         result = subprocess.run(
@@ -130,10 +130,10 @@ class TestCLI:
             capture_output=True,
             text=True,
         )
-        
+
         assert result.returncode == 0
         assert (tmp_path / ".specmem.toml").exists()
-    
+
     def test_scan(self, project_with_specs):
         """Test specmem scan command."""
         result = subprocess.run(
@@ -142,7 +142,7 @@ class TestCLI:
             capture_output=True,
             text=True,
         )
-        
+
         assert result.returncode == 0
         assert "specifications indexed" in result.stdout
 ```
@@ -159,7 +159,7 @@ from specmem.core import MemoryBank, SpecBlock, SpecType
 
 class TestMemoryProperties:
     """Property-based tests for MemoryBank."""
-    
+
     @given(st.text(min_size=1, max_size=100))
     def test_add_then_get_roundtrip(self, memory, title):
         """Property: Adding then getting returns same spec."""
@@ -172,13 +172,13 @@ class TestMemoryProperties:
             content="content",
             summary="summary",
         )
-        
+
         memory.add(spec)
         result = memory.get(spec.id)
-        
+
         assert result is not None
         assert result.title == title
-    
+
     @given(st.lists(st.text(min_size=1), min_size=1, max_size=10))
     def test_count_equals_added(self, memory, titles):
         """Property: Count equals number of specs added."""
@@ -193,9 +193,9 @@ class TestMemoryProperties:
                 summary="summary",
             )
             memory.add(spec)
-        
+
         assert memory.count() == len(titles)
-    
+
     @given(st.text(min_size=1))
     def test_delete_removes_spec(self, memory, title):
         """Property: Delete removes the spec."""
@@ -208,10 +208,10 @@ class TestMemoryProperties:
             content="content",
             summary="summary",
         )
-        
+
         memory.add(spec)
         memory.delete(spec.id)
-        
+
         assert memory.get(spec.id) is None
 ```
 
@@ -253,14 +253,14 @@ def project_with_specs(tmp_path):
     # Create .kiro/specs structure
     specs_dir = tmp_path / ".kiro" / "specs" / "auth"
     specs_dir.mkdir(parents=True)
-    
+
     (specs_dir / "requirements.md").write_text("""
 # Requirements
 
 ## Requirement 1
 **User Story:** As a user, I want to log in.
 """)
-    
+
     return tmp_path
 ```
 

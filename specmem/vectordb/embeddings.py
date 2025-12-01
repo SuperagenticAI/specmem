@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 
 from specmem.core.exceptions import EmbeddingError
 
+
 logger = logging.getLogger(__name__)
 
 # Provider registry for factory

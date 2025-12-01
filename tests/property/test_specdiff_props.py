@@ -5,7 +5,8 @@ Tests correctness properties defined in the design document.
 
 from datetime import datetime, timedelta
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.diff import (
     ChangeReason,
@@ -74,9 +75,7 @@ def test_change_reason_confidence_in_valid_range(
     **Validates: Requirements 2.4**
     """
     cr = ChangeReason(reason=reason, confidence=confidence, source=source)
-    assert 0.0 <= cr.confidence <= 1.0, (
-        f"Confidence {cr.confidence} is not in range [0.0, 1.0]"
-    )
+    assert 0.0 <= cr.confidence <= 1.0, f"Confidence {cr.confidence} is not in range [0.0, 1.0]"
 
 
 # =============================================================================
@@ -93,9 +92,7 @@ def test_change_reason_confidence_in_valid_range(
     severity=confidence_strategy,
 )
 @settings(max_examples=100)
-def test_drift_item_severity_in_valid_range(
-    code_path: str, spec_id: str, severity: float
-) -> None:
+def test_drift_item_severity_in_valid_range(code_path: str, spec_id: str, severity: float) -> None:
     """Property 7: DriftItem severity is between 0.0 and 1.0.
 
     **Feature: specdiff, Property 7: Drift Severity Range**
@@ -116,10 +113,9 @@ def test_drift_item_severity_in_valid_range(
         severity=severity,
     )
 
-    assert 0.0 <= drift_item.severity <= 1.0, (
-        f"Severity {drift_item.severity} is not in range [0.0, 1.0]"
-    )
-
+    assert (
+        0.0 <= drift_item.severity <= 1.0
+    ), f"Severity {drift_item.severity} is not in range [0.0, 1.0]"
 
 
 # =============================================================================
@@ -160,9 +156,7 @@ def test_spec_version_serialization_roundtrip(
     source=st.text(min_size=1, max_size=50),
 )
 @settings(max_examples=100)
-def test_change_reason_serialization_roundtrip(
-    reason: str, confidence: float, source: str
-) -> None:
+def test_change_reason_serialization_roundtrip(reason: str, confidence: float, source: str) -> None:
     """ChangeReason can be serialized and deserialized without data loss."""
     cr = ChangeReason(reason=reason, confidence=confidence, source=source)
 
@@ -239,7 +233,9 @@ def test_change_reasons_ordered_by_confidence(confidences: list[float]) -> None:
 
     # Verify ordering
     for i in range(len(main_reason.alternatives) - 1):
-        assert main_reason.alternatives[i].confidence >= main_reason.alternatives[i + 1].confidence, (
+        assert (
+            main_reason.alternatives[i].confidence >= main_reason.alternatives[i + 1].confidence
+        ), (
             f"Alternatives not ordered by confidence: "
             f"{main_reason.alternatives[i].confidence} < {main_reason.alternatives[i + 1].confidence}"
         )
@@ -356,7 +352,6 @@ def test_deprecations_ordered_by_urgency(urgencies: list[float]) -> None:
         )
 
 
-
 # =============================================================================
 # Property 1: Version History Chronological Order
 # For any spec with multiple versions, get_history() SHALL return versions
@@ -451,10 +446,9 @@ def test_pruning_preserves_minimum_versions(num_versions: int, keep_min: int) ->
 
         # Check remaining versions
         history = store.get_history("test.spec")
-        assert len(history) >= min(keep_min, num_versions), (
-            f"Expected at least {min(keep_min, num_versions)} versions, "
-            f"got {len(history)}"
-        )
+        assert len(history) >= min(
+            keep_min, num_versions
+        ), f"Expected at least {min(keep_min, num_versions)} versions, got {len(history)}"
 
         store.close()
 
@@ -488,7 +482,6 @@ def test_contradiction_includes_both_texts(old_text: str, new_text: str) -> None
     assert contradiction.new_text == new_text
     assert contradiction.old_text is not None
     assert contradiction.new_text is not None
-
 
 
 # =============================================================================
@@ -656,7 +649,6 @@ def test_version_id_generated_when_no_commit(spec_id: str, content: str) -> None
         specdiff.close()
 
 
-
 # =============================================================================
 # Property 2: Diff Completeness
 # For any two spec versions, get_diff() SHALL identify all added, removed,
@@ -711,11 +703,7 @@ def test_diff_identifies_changes(spec_id: str, old_content: str, new_content: st
             # Some changes should be detected
             assert diff is not None
             # At least one type of change should be present
-            has_changes = (
-                len(diff.added) > 0 or
-                len(diff.removed) > 0 or
-                len(diff.modified) > 0
-            )
+            has_changes = len(diff.added) > 0 or len(diff.removed) > 0 or len(diff.modified) > 0
             assert has_changes, "Diff should detect changes between different content"
 
         specdiff.close()
@@ -761,9 +749,9 @@ def test_diff_detects_additions(
 
         assert diff is not None
         # Added lines should be detected
-        assert len(diff.added) >= len(added_lines), (
-            f"Expected at least {len(added_lines)} additions, got {len(diff.added)}"
-        )
+        assert len(diff.added) >= len(
+            added_lines
+        ), f"Expected at least {len(added_lines)} additions, got {len(diff.added)}"
 
         specdiff.close()
 
@@ -774,9 +762,7 @@ def test_diff_detects_additions(
     remove_count=st.integers(min_value=1, max_value=3),
 )
 @settings(max_examples=30)
-def test_diff_detects_removals(
-    spec_id: str, base_lines: list[str], remove_count: int
-) -> None:
+def test_diff_detects_removals(spec_id: str, base_lines: list[str], remove_count: int) -> None:
     """Property 2: Diff correctly identifies removed lines.
 
     **Feature: specdiff, Property 2: Diff Completeness**
@@ -811,9 +797,9 @@ def test_diff_detects_removals(
 
         assert diff is not None
         # Removed lines should be detected
-        assert len(diff.removed) >= remove_count, (
-            f"Expected at least {remove_count} removals, got {len(diff.removed)}"
-        )
+        assert (
+            len(diff.removed) >= remove_count
+        ), f"Expected at least {remove_count} removals, got {len(diff.removed)}"
 
         specdiff.close()
 
@@ -873,7 +859,6 @@ def test_spec_change_has_complete_metadata(
             assert isinstance(diff.change_type, ChangeType)
 
         specdiff.close()
-
 
 
 # =============================================================================
@@ -1049,9 +1034,7 @@ def test_staleness_warning_includes_changes(
     new_content=st.text(min_size=10, max_size=100),
 )
 @settings(max_examples=50)
-def test_acknowledgment_persists(
-    spec_id: str, old_content: str, new_content: str
-) -> None:
+def test_acknowledgment_persists(spec_id: str, old_content: str, new_content: str) -> None:
     """Property 12: Staleness acknowledgment persists.
 
     **Feature: specdiff, Property 12: Acknowledgment Persistence**
@@ -1092,7 +1075,6 @@ def test_acknowledgment_persists(
         specdiff.close()
 
 
-
 # =============================================================================
 # Property 6: Drift Detection Completeness
 # For any spec change, all code linked to that spec SHALL be included in
@@ -1116,9 +1098,7 @@ def test_acknowledgment_persists(
     ),
 )
 @settings(max_examples=30)
-def test_drift_report_includes_all_linked_code(
-    spec_id: str, code_paths: list[str]
-) -> None:
+def test_drift_report_includes_all_linked_code(spec_id: str, code_paths: list[str]) -> None:
     """Property 6: Drift report includes all code linked to changed spec.
 
     **Feature: specdiff, Property 6: Drift Detection Completeness**
@@ -1126,7 +1106,7 @@ def test_drift_report_includes_all_linked_code(
     """
     # This test verifies the DriftReport structure
     # In a full integration test, we'd use a real SpecImpactGraph
-    
+
     # Create a mock drift report with all linked code
     spec_change = SpecChange(
         spec_id=spec_id,

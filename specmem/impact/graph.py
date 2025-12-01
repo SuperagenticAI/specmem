@@ -20,6 +20,7 @@ from specmem.impact.graph_models import (
     NodeType,
 )
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -86,15 +87,11 @@ class SpecImpactGraph:
         del self._nodes[node_id]
 
         # Remove edges involving this node
-        self._edges = [
-            e for e in self._edges
-            if e.source_id != node_id and e.target_id != node_id
-        ]
+        self._edges = [e for e in self._edges if node_id not in (e.source_id, e.target_id)]
 
         # Update indexes
         self._rebuild_indexes()
         return True
-
 
     def add_edge(self, edge: GraphEdge) -> None:
         """Add an edge to the graph.
@@ -104,9 +101,11 @@ class SpecImpactGraph:
         """
         # Check if edge already exists
         for i, existing in enumerate(self._edges):
-            if (existing.source_id == edge.source_id and
-                existing.target_id == edge.target_id and
-                existing.relationship == edge.relationship):
+            if (
+                existing.source_id == edge.source_id
+                and existing.target_id == edge.target_id
+                and existing.relationship == edge.relationship
+            ):
                 # Replace existing edge
                 self._edges[i] = edge
                 self._rebuild_indexes()
@@ -135,9 +134,11 @@ class SpecImpactGraph:
         removed = False
         new_edges = []
         for edge in self._edges:
-            if (edge.source_id == source_id and
-                edge.target_id == target_id and
-                (relationship is None or edge.relationship == relationship)):
+            if (
+                edge.source_id == source_id
+                and edge.target_id == target_id
+                and (relationship is None or edge.relationship == relationship)
+            ):
                 removed = True
             else:
                 new_edges.append(edge)
@@ -199,14 +200,8 @@ class SpecImpactGraph:
         with open(self.storage_path) as f:
             data = json.load(f)
 
-        self._nodes = {
-            n["id"]: GraphNode.from_dict(n)
-            for n in data.get("nodes", [])
-        }
-        self._edges = [
-            GraphEdge.from_dict(e)
-            for e in data.get("edges", [])
-        ]
+        self._nodes = {n["id"]: GraphNode.from_dict(n) for n in data.get("nodes", [])}
+        self._edges = [GraphEdge.from_dict(e) for e in data.get("edges", [])]
         self._rebuild_indexes()
 
         logger.debug(f"Loaded graph from {self.storage_path}")
@@ -231,7 +226,6 @@ class SpecImpactGraph:
             "nodes_by_type": dict(node_counts),
             "edges_by_type": dict(edge_counts),
         }
-
 
     def query_specs_for_code(
         self,
@@ -365,7 +359,6 @@ class SpecImpactGraph:
         result.sort(key=lambda n: n.confidence, reverse=True)
         return result
 
-
     def query_impact(
         self,
         changed_files: list[str],
@@ -453,7 +446,9 @@ class SpecImpactGraph:
         if not spec_list and not code_list and not test_list:
             message = "No tracked impact found for the changed files"
         else:
-            message = f"Found {len(spec_list)} specs, {len(code_list)} code files, {len(test_list)} tests"
+            message = (
+                f"Found {len(spec_list)} specs, {len(code_list)} code files, {len(test_list)} tests"
+            )
 
         return ImpactSet(
             specs=spec_list,
@@ -463,7 +458,6 @@ class SpecImpactGraph:
             depth=depth,
             message=message,
         )
-
 
     def update_incremental(
         self,
@@ -501,10 +495,7 @@ class SpecImpactGraph:
 
         # Remove edges from updated nodes (they'll be re-added by builder)
         if nodes_to_update:
-            self._edges = [
-                e for e in self._edges
-                if e.source_id not in nodes_to_update
-            ]
+            self._edges = [e for e in self._edges if e.source_id not in nodes_to_update]
             self._rebuild_indexes()
             logger.info(f"Incremental update: cleared edges for {len(nodes_to_update)} nodes")
 
@@ -537,10 +528,7 @@ class SpecImpactGraph:
         if filter_type:
             nodes = [n for n in nodes if n.type == filter_type]
             node_ids = {n.id for n in nodes}
-            edges = [
-                e for e in edges
-                if e.source_id in node_ids and e.target_id in node_ids
-            ]
+            edges = [e for e in edges if e.source_id in node_ids and e.target_id in node_ids]
 
         if format == "json":
             return self._export_json(nodes, edges)

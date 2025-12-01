@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from specmem.validator.models import IssueSeverity, ValidationIssue
 from specmem.validator.rules.base import ValidationRule
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.validator.config import ValidationConfig

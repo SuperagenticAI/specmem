@@ -5,7 +5,8 @@ across all valid inputs.
 """
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from pydantic import ValidationError
 
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
@@ -23,7 +24,9 @@ source_strategy = st.text(min_size=1, max_size=200).filter(lambda x: x.strip())
 
 # Tags and links
 tags_strategy = st.lists(st.text(min_size=1, max_size=50).filter(lambda x: x.strip()), max_size=10)
-links_strategy = st.lists(st.text(min_size=16, max_size=16, alphabet="0123456789abcdef"), max_size=5)
+links_strategy = st.lists(
+    st.text(min_size=16, max_size=16, alphabet="0123456789abcdef"), max_size=5
+)
 
 
 @st.composite
@@ -118,9 +121,7 @@ def test_empty_text_rejection(whitespace: str) -> None:
     text2=valid_text_strategy,
 )
 @settings(max_examples=100)
-def test_different_inputs_different_ids(
-    source1: str, text1: str, source2: str, text2: str
-) -> None:
+def test_different_inputs_different_ids(source1: str, text1: str, source2: str, text2: str) -> None:
     """Different source/text combinations should produce different IDs
     (with very high probability due to hash collision resistance).
     """

@@ -8,6 +8,7 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
 

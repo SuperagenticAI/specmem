@@ -13,6 +13,7 @@ from pathlib import Path
 from specmem.adapters.base import SpecAdapter
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,10 +44,7 @@ class CursorAdapter(SpecAdapter):
         if not path.exists():
             return False
 
-        for pattern in self.FILE_PATTERNS:
-            if list(path.glob(pattern)):
-                return True
-        return False
+        return any(list(path.glob(pattern)) for pattern in self.FILE_PATTERNS)
 
     def load(self, repo_path: str) -> list[SpecBlock]:
         """Load and parse all Cursor rules files."""
@@ -189,10 +187,8 @@ class CursorAdapter(SpecAdapter):
             first_line = lines[0].strip()
 
             # Check if first line looks like a title (ends with colon, is short, etc.)
-            if (
-                first_line.endswith(":")
-                or len(first_line) < 50
-                and not first_line.startswith("-")
+            if first_line.endswith(":") or (
+                len(first_line) < 50 and not first_line.startswith("-")
             ):
                 title = first_line.rstrip(":")
                 content_text = lines[1].strip() if len(lines) > 1 else ""

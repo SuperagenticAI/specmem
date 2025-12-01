@@ -7,13 +7,12 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.core.exceptions import EmbeddingError
 from specmem.vectordb.embeddings import (
-    DEFAULT_MODELS,
     SUPPORTED_PROVIDERS,
-    LocalEmbeddingProvider,
     OpenAIEmbeddingProvider,
     get_embedding_provider,
 )
@@ -101,9 +100,7 @@ class TestEmbeddingDimensionConsistency:
 
             # Mock the OpenAI client
             mock_response = MagicMock()
-            mock_response.data = [
-                MagicMock(embedding=[0.1] * expected_dim) for _ in texts
-            ]
+            mock_response.data = [MagicMock(embedding=[0.1] * expected_dim) for _ in texts]
 
             with patch.object(provider, "_get_client") as mock_client:
                 mock_client.return_value.embeddings.create.return_value = mock_response
@@ -141,9 +138,7 @@ class TestBatchResultCount:
 
             # Mock the OpenAI client
             mock_response = MagicMock()
-            mock_response.data = [
-                MagicMock(embedding=[0.1] * expected_dim) for _ in texts
-            ]
+            mock_response.data = [MagicMock(embedding=[0.1] * expected_dim) for _ in texts]
 
             with patch.object(provider, "_get_client") as mock_client:
                 mock_client.return_value.embeddings.create.return_value = mock_response
@@ -252,9 +247,7 @@ class TestConfigurationRoundTrip:
         from specmem.core.config import EmbeddingConfig, SpecMemConfig
 
         # Create config with embedding settings
-        config = SpecMemConfig(
-            embedding=EmbeddingConfig(provider=provider, model=model)
-        )
+        config = SpecMemConfig(embedding=EmbeddingConfig(provider=provider, model=model))
 
         # Round-trip through JSON
         json_str = config.to_json()

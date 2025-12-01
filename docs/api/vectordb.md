@@ -205,7 +205,7 @@ class MyVectorStore(VectorStore):
     def add(self, id: str, embedding: list[float], metadata: dict) -> None:
         # Store the embedding
         pass
-    
+
     def search(
         self,
         embedding: list[float],
@@ -214,19 +214,19 @@ class MyVectorStore(VectorStore):
     ) -> list[SearchResult]:
         # Search for similar embeddings
         return []
-    
+
     def get(self, id: str) -> dict | None:
         # Get by ID
         return None
-    
+
     def delete(self, id: str) -> bool:
         # Delete by ID
         return False
-    
+
     def count(self) -> int:
         # Return count
         return 0
-    
+
     def clear(self) -> None:
         # Clear all data
         pass

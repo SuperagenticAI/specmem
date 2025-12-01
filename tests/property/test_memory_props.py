@@ -8,7 +8,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.vectordb.lancedb_store import LanceDBStore
@@ -83,7 +84,9 @@ def temp_store():
 
 # Feature: specmem-mvp, Property 5: Vector Query Relevance Ordering
 # Validates: Requirements 3.3, 6.3
-@given(blocks=st.lists(valid_specblock_strategy(), min_size=2, max_size=10, unique_by=lambda b: b.id))
+@given(
+    blocks=st.lists(valid_specblock_strategy(), min_size=2, max_size=10, unique_by=lambda b: b.id)
+)
 @settings(max_examples=50)
 def test_vector_query_relevance_ordering(blocks: list[SpecBlock]) -> None:
     """For any query embedding and result set, the returned SpecBlocks
@@ -113,7 +116,9 @@ def test_vector_query_relevance_ordering(blocks: list[SpecBlock]) -> None:
 # Feature: specmem-mvp, Property 6: Pinned Block Inclusion
 # Validates: Requirements 4.1, 4.2
 @given(
-    pinned_blocks=st.lists(valid_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id),
+    pinned_blocks=st.lists(
+        valid_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id
+    ),
 )
 @settings(max_examples=30)
 def test_pinned_block_inclusion(pinned_blocks: list[SpecBlock]) -> None:
@@ -140,16 +145,20 @@ def test_pinned_block_inclusion(pinned_blocks: list[SpecBlock]) -> None:
 
         # All pinned blocks should be retrievable
         expected_pinned_ids = {b.id for b in pinned_blocks}
-        assert expected_pinned_ids == retrieved_pinned_ids, (
-            f"Expected {expected_pinned_ids}, got {retrieved_pinned_ids}"
-        )
+        assert (
+            expected_pinned_ids == retrieved_pinned_ids
+        ), f"Expected {expected_pinned_ids}, got {retrieved_pinned_ids}"
 
 
 # Feature: specmem-mvp, Property 7: Legacy Block Exclusion
 # Validates: Requirements 5.3, 5.5
 @given(
-    active_blocks=st.lists(valid_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id),
-    legacy_blocks=st.lists(legacy_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id),
+    active_blocks=st.lists(
+        valid_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id
+    ),
+    legacy_blocks=st.lists(
+        legacy_specblock_strategy(), min_size=1, max_size=3, unique_by=lambda b: b.id
+    ),
 )
 @settings(max_examples=30)
 def test_legacy_block_exclusion(
@@ -179,9 +188,9 @@ def test_legacy_block_exclusion(
         # No legacy/obsolete blocks should appear
         legacy_statuses = {SpecStatus.LEGACY, SpecStatus.OBSOLETE}
         for result in results:
-            assert result.block.status not in legacy_statuses, (
-                f"Legacy block {result.block.id} appeared in results"
-            )
+            assert (
+                result.block.status not in legacy_statuses
+            ), f"Legacy block {result.block.id} appeared in results"
 
 
 # Feature: specmem-mvp, Property 8: Status Transition Persistence
@@ -207,9 +216,9 @@ def test_status_transition_persistence(block: SpecBlock, new_status: SpecStatus)
         # Retrieve and verify
         retrieved = store.get_by_id(block.id)
         assert retrieved is not None, "Block should be retrievable"
-        assert retrieved.status == new_status, (
-            f"Status should be {new_status}, got {retrieved.status}"
-        )
+        assert (
+            retrieved.status == new_status
+        ), f"Status should be {new_status}, got {retrieved.status}"
 
 
 def test_store_and_retrieve_basic() -> None:

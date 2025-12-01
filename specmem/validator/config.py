@@ -48,7 +48,7 @@ class ValidationConfig:
     def from_toml(cls, config: dict[str, Any]) -> ValidationConfig:
         """Load from .specmem.toml validation section."""
         validation = config.get("validation", {})
-        
+
         rules = {}
         for rule_id, rule_config in validation.get("rules", {}).items():
             severity = None
@@ -59,7 +59,7 @@ class ValidationConfig:
                 severity=severity,
                 options=rule_config.get("options", {}),
             )
-        
+
         return cls(
             rules=rules,
             similarity_threshold=validation.get("similarity_threshold", 0.85),

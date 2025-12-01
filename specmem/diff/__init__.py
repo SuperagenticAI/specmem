@@ -20,6 +20,7 @@ from specmem.diff.models import (
 from specmem.diff.specdiff import SpecDiff
 from specmem.diff.storage import VersionStore
 
+
 __all__ = [
     "ChangeReason",
     "ChangeType",

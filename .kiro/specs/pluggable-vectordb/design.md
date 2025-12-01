@@ -17,37 +17,37 @@ classDiagram
         +update_status(id, status)
         +get_audit_log()
     }
-    
+
     class LanceDBStore {
         +initialize()
         +store()
         +query()
     }
-    
+
     class ChromaDBStore {
         +initialize()
         +store()
         +query()
     }
-    
+
     class QdrantStore {
         +initialize()
         +store()
         +query()
     }
-    
+
     class WeaviateStore {
         +initialize()
         +store()
         +query()
     }
-    
+
     class MilvusStore {
         +initialize()
         +store()
         +query()
     }
-    
+
     class AgentVectorDBStore {
         +initialize()
         +store()
@@ -55,18 +55,18 @@ classDiagram
         +prune_memories()
         +get_importance_scores()
     }
-    
+
     class VectorStoreFactory {
         +get_store(config) VectorStore
         +list_backends() list
     }
-    
+
     class MemoryLifecycle {
         +transition(block, new_status)
         +validate_transition(from, to)
         +get_audit_log()
     }
-    
+
     VectorStore <|-- LanceDBStore
     VectorStore <|-- ChromaDBStore
     VectorStore <|-- QdrantStore
@@ -89,12 +89,12 @@ class VectorStore(ABC):
     def initialize(self) -> None:
         """Initialize the vector store connection."""
         pass
-    
+
     @abstractmethod
     def store(self, blocks: list[SpecBlock], embeddings: list[list[float]]) -> None:
         """Store blocks with their embeddings."""
         pass
-    
+
     @abstractmethod
     def query(
         self,
@@ -106,12 +106,12 @@ class VectorStore(ABC):
     ) -> list[QueryResult]:
         """Query for similar blocks with lifecycle filtering."""
         pass
-    
+
     @abstractmethod
     def update_status(self, block_id: str, status: SpecStatus, reason: str = "") -> bool:
         """Update block lifecycle status with transition validation."""
         pass
-    
+
     @abstractmethod
     def get_audit_log(self, limit: int = 100) -> list[AuditEntry]:
         """Get obsolete blocks from audit log."""
@@ -124,7 +124,7 @@ class VectorStore(ABC):
 ```python
 class ChromaDBStore(VectorStore):
     """ChromaDB backend using chromadb>=1.3.5"""
-    
+
     def __init__(self, path: str = ".specmem/chroma", collection: str = "specmem"):
         self._client = None
         self._collection = None
@@ -136,7 +136,7 @@ class ChromaDBStore(VectorStore):
 ```python
 class QdrantStore(VectorStore):
     """Qdrant backend using qdrant-client>=1.16.1"""
-    
+
     def __init__(
         self,
         path: str = ".specmem/qdrant",
@@ -152,7 +152,7 @@ class QdrantStore(VectorStore):
 ```python
 class WeaviateStore(VectorStore):
     """Weaviate backend using weaviate-client>=4.0.0"""
-    
+
     def __init__(
         self,
         url: str = "http://localhost:8080",
@@ -166,7 +166,7 @@ class WeaviateStore(VectorStore):
 ```python
 class MilvusStore(VectorStore):
     """Milvus backend using pymilvus>=2.6.6"""
-    
+
     def __init__(
         self,
         uri: str = ".specmem/milvus.db",
@@ -180,10 +180,10 @@ class MilvusStore(VectorStore):
 ```python
 class AgentVectorDBStore(VectorStore):
     """AgentVectorDB backend with advanced memory features.
-    
+
     Uses agentvectordb>=0.0.3 for agent-optimized storage.
     """
-    
+
     def __init__(
         self,
         db_path: str = ".specmem/agentvectordb",
@@ -197,7 +197,7 @@ class AgentVectorDBStore(VectorStore):
         self._importance_scoring = enable_importance_scoring
         self._memory_decay = enable_memory_decay
         self._decay_rate = decay_rate
-    
+
     def prune_memories(
         self,
         max_age_seconds: int | None = None,
@@ -205,7 +205,7 @@ class AgentVectorDBStore(VectorStore):
     ) -> int:
         """Prune old/unimportant memories."""
         pass
-    
+
     def consolidate_memories(self) -> int:
         """Consolidate similar memories."""
         pass

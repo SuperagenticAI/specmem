@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Self
 
 from pydantic import BaseModel, Field, field_validator
 
+
 if TYPE_CHECKING:
     from specmem.core.mappings import CodeRef, TestMapping
 
@@ -73,8 +74,12 @@ class SpecBlock(BaseModel):
     tags: list[str] = Field(default_factory=list)
     links: list[str] = Field(default_factory=list, description="Related SpecBlock IDs")
     pinned: bool = Field(default=False, description="Deterministic memory flag")
-    test_mappings: list[dict[str, Any]] = Field(default_factory=list, description="Tests validating this spec")
-    code_refs: list[dict[str, Any]] = Field(default_factory=list, description="Code implementing this spec")
+    test_mappings: list[dict[str, Any]] = Field(
+        default_factory=list, description="Tests validating this spec"
+    )
+    code_refs: list[dict[str, Any]] = Field(
+        default_factory=list, description="Code implementing this spec"
+    )
     confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Confidence score")
 
     @field_validator("text")
@@ -134,54 +139,54 @@ class SpecBlock(BaseModel):
             f"SpecBlock(id={self.id!r}, type={self.type.value!r}, "
             f"source={self.source!r}, status={self.status.value!r})"
         )
-    
-    def get_test_mappings(self) -> list["TestMapping"]:
+
+    def get_test_mappings(self) -> list[TestMapping]:
         """Get test mappings as TestMapping objects.
-        
+
         Returns:
             List of TestMapping objects
         """
         from specmem.core.mappings import TestMapping
-        
+
         return [TestMapping.from_dict(m) for m in self.test_mappings]
-    
-    def set_test_mappings(self, mappings: list["TestMapping"]) -> None:
+
+    def set_test_mappings(self, mappings: list[TestMapping]) -> None:
         """Set test mappings from TestMapping objects.
-        
+
         Args:
             mappings: List of TestMapping objects
         """
         self.test_mappings = [m.to_dict() for m in mappings]
-    
-    def add_test_mapping(self, mapping: "TestMapping") -> None:
+
+    def add_test_mapping(self, mapping: TestMapping) -> None:
         """Add a test mapping.
-        
+
         Args:
             mapping: TestMapping to add
         """
         self.test_mappings.append(mapping.to_dict())
-    
-    def get_code_refs(self) -> list["CodeRef"]:
+
+    def get_code_refs(self) -> list[CodeRef]:
         """Get code references as CodeRef objects.
-        
+
         Returns:
             List of CodeRef objects
         """
         from specmem.core.mappings import CodeRef
-        
+
         return [CodeRef.from_dict(r) for r in self.code_refs]
-    
-    def set_code_refs(self, refs: list["CodeRef"]) -> None:
+
+    def set_code_refs(self, refs: list[CodeRef]) -> None:
         """Set code references from CodeRef objects.
-        
+
         Args:
             refs: List of CodeRef objects
         """
         self.code_refs = [r.to_dict() for r in refs]
-    
-    def add_code_ref(self, ref: "CodeRef") -> None:
+
+    def add_code_ref(self, ref: CodeRef) -> None:
         """Add a code reference.
-        
+
         Args:
             ref: CodeRef to add
         """

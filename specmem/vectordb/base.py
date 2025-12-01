@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from specmem.core.specir import SpecStatus, SpecType
 
+
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from specmem.core.specir import SpecBlock
 
 
@@ -62,7 +64,7 @@ class AuditEntry:
         transition_history: List of all status transitions
     """
 
-    block: "SpecBlock"
+    block: SpecBlock
     obsoleted_at: datetime
     reason: str = ""
     previous_status: SpecStatus = SpecStatus.LEGACY
@@ -81,7 +83,7 @@ class QueryResult:
         importance_score: Importance score from AgentVectorDB
     """
 
-    block: "SpecBlock"
+    block: SpecBlock
     score: float
     distance: float = 0.0
     deprecation_warning: str | None = None
@@ -123,9 +125,7 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def store(
-        self, blocks: list["SpecBlock"], embeddings: list[list[float]]
-    ) -> None:
+    def store(self, blocks: list[SpecBlock], embeddings: list[list[float]]) -> None:
         """Store SpecBlocks with their embeddings.
 
         Args:
@@ -162,7 +162,7 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def get_pinned(self) -> list["SpecBlock"]:
+    def get_pinned(self) -> list[SpecBlock]:
         """Retrieve all pinned (deterministic) SpecBlocks.
 
         Pinned blocks are always included in query results regardless
@@ -211,7 +211,7 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def get_by_id(self, block_id: str) -> "SpecBlock | None":
+    def get_by_id(self, block_id: str) -> SpecBlock | None:
         """Retrieve a SpecBlock by its ID.
 
         Args:

@@ -11,7 +11,7 @@ from specmem.adapters.base import SpecAdapter
 
 class SpecAdapter(Protocol):
     name: str
-    
+
     def can_parse(self, path: Path) -> bool: ...
     def parse(self, path: Path) -> list[SpecBlock]: ...
     def parse_directory(self, directory: Path) -> list[SpecBlock]: ...
@@ -106,15 +106,15 @@ from specmem.core import SpecBlock, SpecType, Lifecycle, Priority
 
 class MyAdapter(SpecAdapter):
     name = "myadapter"
-    
+
     def can_parse(self, path: Path) -> bool:
         """Check if this adapter can parse the given path."""
         return path.suffix == ".myspec"
-    
+
     def parse(self, path: Path) -> list[SpecBlock]:
         """Parse a single file."""
         content = path.read_text()
-        
+
         return [SpecBlock(
             id=f"my-{path.stem}",
             path=str(path),
@@ -127,7 +127,7 @@ class MyAdapter(SpecAdapter):
             lifecycle=Lifecycle.ACTIVE,
             priority=Priority.MEDIUM,
         )]
-    
+
     def parse_directory(self, directory: Path) -> list[SpecBlock]:
         """Parse all files in a directory."""
         specs = []
@@ -227,7 +227,7 @@ def test_can_parse():
 def test_parse():
     adapter = MyAdapter()
     specs = adapter.parse(Path("fixtures/test.myspec"))
-    
+
     assert len(specs) == 1
     assert specs[0].framework == "myadapter"
 ```

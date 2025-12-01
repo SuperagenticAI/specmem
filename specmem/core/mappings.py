@@ -11,9 +11,9 @@ from typing import Any
 @dataclass
 class TestMapping:
     """Framework-agnostic test reference.
-    
+
     Maps a specification to a test that validates it.
-    
+
     Attributes:
         framework: Test framework (pytest, jest, vitest, playwright, mocha)
         path: Test file path
@@ -21,13 +21,13 @@ class TestMapping:
         confidence: Confidence score 0.0-1.0 for this mapping
         spec_ids: List of spec IDs this test validates
     """
-    
+
     framework: str
     path: str
     selector: str
     confidence: float = 1.0
     spec_ids: list[str] = field(default_factory=list)
-    
+
     def __post_init__(self) -> None:
         """Validate fields after initialization."""
         if not self.framework:
@@ -38,10 +38,10 @@ class TestMapping:
             raise ValueError("selector cannot be empty")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"confidence must be between 0.0 and 1.0, got {self.confidence}")
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary.
-        
+
         Returns:
             Dictionary representation of the TestMapping
         """
@@ -52,14 +52,14 @@ class TestMapping:
             "confidence": self.confidence,
             "spec_ids": self.spec_ids,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "TestMapping":
         """Deserialize from dictionary.
-        
+
         Args:
             data: Dictionary with TestMapping fields
-            
+
         Returns:
             TestMapping instance
         """
@@ -75,7 +75,7 @@ class TestMapping:
 @dataclass
 class CodeRef:
     """Reference linking a specification to implementation code.
-    
+
     Attributes:
         language: Programming language (python, javascript, typescript)
         file_path: Source file path
@@ -83,13 +83,13 @@ class CodeRef:
         line_range: Optional tuple of (start_line, end_line)
         confidence: Confidence score 0.0-1.0 for this reference
     """
-    
+
     language: str
     file_path: str
     symbols: list[str] = field(default_factory=list)
     line_range: tuple[int, int] | None = None
     confidence: float = 1.0
-    
+
     def __post_init__(self) -> None:
         """Validate fields after initialization."""
         if not self.language:
@@ -108,10 +108,10 @@ class CodeRef:
                 raise ValueError("line_range values must be non-negative")
             if start > end:
                 raise ValueError("line_range start must be <= end")
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary.
-        
+
         Returns:
             Dictionary representation of the CodeRef
         """
@@ -124,21 +124,21 @@ class CodeRef:
         if self.line_range is not None:
             result["line_range"] = list(self.line_range)
         return result
-    
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "CodeRef":
         """Deserialize from dictionary.
-        
+
         Args:
             data: Dictionary with CodeRef fields
-            
+
         Returns:
             CodeRef instance
         """
         line_range = data.get("line_range")
         if line_range is not None:
             line_range = tuple(line_range)
-        
+
         return cls(
             language=data["language"],
             file_path=data["file_path"],

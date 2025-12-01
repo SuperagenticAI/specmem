@@ -91,4 +91,3 @@ This feature provides a Python client API (`SpecMemClient`) that enables coding 
 2. WHEN using the client THEN the system SHALL provide type hints for IDE support
 3. WHEN errors occur THEN the system SHALL raise typed exceptions (SpecMemError subclasses)
 4. WHEN the client is used THEN the system SHALL log operations at DEBUG level
-

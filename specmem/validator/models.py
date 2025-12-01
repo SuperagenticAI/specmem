@@ -60,7 +60,6 @@ class ValidationIssue:
         )
 
 
-
 @dataclass
 class ValidationResult:
     """Result of running validation."""
@@ -139,5 +138,7 @@ class ValidationResult:
             specs_validated=data.get("specs_validated", 0),
             rules_run=data.get("rules_run", 0),
             duration_ms=data.get("duration_ms", 0.0),
-            validated_at=datetime.fromisoformat(data["validated_at"]) if data.get("validated_at") else datetime.now(),
+            validated_at=datetime.fromisoformat(data["validated_at"])
+            if data.get("validated_at")
+            else datetime.now(),
         )

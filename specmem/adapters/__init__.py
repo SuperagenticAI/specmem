@@ -9,12 +9,13 @@ from specmem.adapters.registry import (
     get_registry,
 )
 
+
 __all__ = [
-    "SpecAdapter",
     "ExperimentalAdapterWarning",
-    "get_registry",
+    "SpecAdapter",
+    "detect_adapters",
     "get_adapter",
     "get_all_adapters",
     "get_experimental_adapters",
-    "detect_adapters",
+    "get_registry",
 ]

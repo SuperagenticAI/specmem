@@ -6,7 +6,6 @@ Generates the .specmem/ output directory containing:
 - knowledge_index.json: Searchable keyword index
 """
 
-import json
 import logging
 import re
 from collections import defaultdict
@@ -16,6 +15,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from specmem.core.specir import SpecBlock, SpecStatus
+
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +128,7 @@ class PackBuilder:
         output_path.write_text(index.model_dump_json(indent=2))
         logger.debug(f"Generated {output_path}")
 
-    def _generate_agent_context(
-        self, blocks: list[SpecBlock], preserve_context: bool
-    ) -> None:
+    def _generate_agent_context(self, blocks: list[SpecBlock], preserve_context: bool) -> None:
         """Generate agent_context.md."""
         output_path = self.output_dir / "agent_context.md"
 
@@ -203,13 +201,15 @@ class PackBuilder:
             lines.append("")
 
         # Add placeholder for user content
-        lines.extend([
-            "## Custom Notes",
-            "",
-            "<!-- USER -->",
-            "Add your custom notes here. This section will be preserved on regeneration.",
-            "<!-- /USER -->",
-        ])
+        lines.extend(
+            [
+                "## Custom Notes",
+                "",
+                "<!-- USER -->",
+                "Add your custom notes here. This section will be preserved on regeneration.",
+                "<!-- /USER -->",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -220,10 +220,34 @@ class PackBuilder:
 
         # Filter common words
         stopwords = {
-            "that", "this", "with", "from", "have", "will", "when", "then",
-            "shall", "should", "would", "could", "must", "been", "being",
-            "were", "what", "which", "where", "there", "their", "they",
-            "about", "after", "before", "between", "through", "during",
+            "that",
+            "this",
+            "with",
+            "from",
+            "have",
+            "will",
+            "when",
+            "then",
+            "shall",
+            "should",
+            "would",
+            "could",
+            "must",
+            "been",
+            "being",
+            "were",
+            "what",
+            "which",
+            "where",
+            "there",
+            "their",
+            "they",
+            "about",
+            "after",
+            "before",
+            "between",
+            "through",
+            "during",
         }
 
         keywords = [w for w in words if w not in stopwords]

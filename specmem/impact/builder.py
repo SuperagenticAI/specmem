@@ -19,6 +19,7 @@ from specmem.impact.graph_models import (
     NodeType,
 )
 
+
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
     from specmem.testing.engine import TestMappingEngine
@@ -89,7 +90,6 @@ class GraphBuilder:
         logger.info(f"Built graph with {len(graph.nodes)} nodes, {len(graph.edges)} edges")
         return graph
 
-
     def _analyze_code_files(
         self,
         graph: SpecImpactGraph,
@@ -124,10 +124,18 @@ class GraphBuilder:
                 rel_path = code_file.relative_to(self.workspace_path)
                 path_str = str(rel_path)
 
-                if any(skip in path_str for skip in [
-                    "node_modules", ".venv", "venv", "__pycache__",
-                    ".git", "dist", "build",
-                ]):
+                if any(
+                    skip in path_str
+                    for skip in [
+                        "node_modules",
+                        ".venv",
+                        "venv",
+                        "__pycache__",
+                        ".git",
+                        "dist",
+                        "build",
+                    ]
+                ):
                     continue
 
                 # Analyze file for spec references
@@ -186,14 +194,16 @@ class GraphBuilder:
         spec_refs = self._find_spec_references(content)
         for spec_id, confidence in spec_refs:
             full_spec_id = f"spec:{spec_id}"
-            edges.append(GraphEdge(
-                source_id=code_id,
-                target_id=full_spec_id,
-                relationship=EdgeType.IMPLEMENTS,
-                confidence=confidence,
-                metadata={"method": "explicit_reference"},
-                manual=False,
-            ))
+            edges.append(
+                GraphEdge(
+                    source_id=code_id,
+                    target_id=full_spec_id,
+                    relationship=EdgeType.IMPLEMENTS,
+                    confidence=confidence,
+                    metadata={"method": "explicit_reference"},
+                    manual=False,
+                )
+            )
 
         # Check for naming convention matches
         file_name = code_file.stem.lower()
@@ -204,15 +214,16 @@ class GraphBuilder:
                     full_spec_id = f"spec:{spec_id}"
                     # Don't duplicate if already found
                     if not any(e.target_id == full_spec_id for e in edges):
-                        suggested = confidence < self.confidence_threshold
-                        edges.append(GraphEdge(
-                            source_id=code_id,
-                            target_id=full_spec_id,
-                            relationship=EdgeType.IMPLEMENTS,
-                            confidence=confidence,
-                            metadata={"method": "naming_convention"},
-                            manual=False,
-                        ))
+                        edges.append(
+                            GraphEdge(
+                                source_id=code_id,
+                                target_id=full_spec_id,
+                                relationship=EdgeType.IMPLEMENTS,
+                                confidence=confidence,
+                                metadata={"method": "naming_convention"},
+                                manual=False,
+                            )
+                        )
 
         return edges
 
@@ -298,10 +309,12 @@ class GraphBuilder:
                         graph.add_node(test_node)
 
                     # Add edge
-                    graph.add_edge(GraphEdge(
-                        source_id=test_id,
-                        target_id=spec_id,
-                        relationship=EdgeType.TESTS,
-                        confidence=mapping.confidence,
-                        metadata={"selector": mapping.selector},
-                    ))
+                    graph.add_edge(
+                        GraphEdge(
+                            source_id=test_id,
+                            target_id=spec_id,
+                            relationship=EdgeType.TESTS,
+                            confidence=mapping.confidence,
+                            metadata={"selector": mapping.selector},
+                        )
+                    )

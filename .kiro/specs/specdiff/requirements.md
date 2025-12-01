@@ -126,4 +126,3 @@ SpecDiff is a temporal intelligence system that tracks specification evolution o
 3. WHEN git is unavailable THEN the system SHALL use timestamps as fallback
 4. WHEN tracking changes THEN the system SHALL store minimal diffs to save space
 5. WHEN the history grows large THEN the system SHALL support pruning old versions
-

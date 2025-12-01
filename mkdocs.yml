@@ -18,7 +18,7 @@ theme:
   custom_dir: docs/overrides
   logo: assets/logo.png
   favicon: assets/favicon.png
-  
+
   # Color palette for light/dark mode
   palette:
     # Light mode
@@ -29,7 +29,7 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    
+
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
@@ -38,7 +38,7 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-  
+
   # Features
   features:
     - navigation.instant
@@ -61,12 +61,12 @@ theme:
     - content.action.view
     - toc.follow
     - announce.dismiss
-  
+
   # Font
   font:
     text: Inter
     code: JetBrains Mono
-  
+
   # Icons
   icon:
     repo: fontawesome/brands/github

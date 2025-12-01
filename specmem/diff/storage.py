@@ -11,9 +11,9 @@ import logging
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from specmem.diff.models import Deprecation, SpecVersion
+
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,6 @@ class VersionStore:
         if self._conn:
             self._conn.close()
             self._conn = None
-
 
     # =========================================================================
     # Version CRUD Operations
@@ -280,7 +279,6 @@ class VersionStore:
             content=row["content"],
             metadata=json.loads(row["metadata"]) if row["metadata"] else {},
         )
-
 
     # =========================================================================
     # Staleness Acknowledgment Operations

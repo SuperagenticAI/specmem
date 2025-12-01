@@ -3,18 +3,17 @@
 Provides HTTP endpoints for context queries, streaming, and profile management.
 """
 
-import asyncio
 import json
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from specmem.context.api import StreamingContextAPI, ContextResponse, StreamCompletion
+from specmem.context.api import StreamingContextAPI
 from specmem.context.optimizer import ContextChunk
 from specmem.context.profiles import AgentProfile, ProfileManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,20 +58,21 @@ def get_profile_manager() -> ProfileManager:
 
 # Request/Response Models
 
+
 class ContextQueryRequest(BaseModel):
     """Request body for context query."""
-    
+
     query: str = Field(..., description="Natural language query")
-    token_budget: Optional[int] = Field(None, ge=100, le=100000, description="Token budget")
+    token_budget: int | None = Field(None, ge=100, le=100000, description="Token budget")
     format: str = Field("json", description="Output format: json, markdown, text")
-    type_filters: Optional[list[str]] = Field(None, description="Filter by spec types")
-    profile: Optional[str] = Field(None, description="Agent profile name")
+    type_filters: list[str] | None = Field(None, description="Filter by spec types")
+    profile: str | None = Field(None, description="Agent profile name")
     top_k: int = Field(20, ge=1, le=100, description="Maximum results")
 
 
 class ContextChunkResponse(BaseModel):
     """Response model for a context chunk."""
-    
+
     id: str
     type: str
     source: str
@@ -85,7 +85,7 @@ class ContextChunkResponse(BaseModel):
 
 class ContextQueryResponse(BaseModel):
     """Response model for context query."""
-    
+
     chunks: list[ContextChunkResponse]
     total_tokens: int
     token_budget: int
@@ -97,7 +97,7 @@ class ContextQueryResponse(BaseModel):
 
 class ProfileResponse(BaseModel):
     """Response model for agent profile."""
-    
+
     name: str
     context_window: int
     token_budget: int
@@ -107,7 +107,7 @@ class ProfileResponse(BaseModel):
 
 class ProfileCreateRequest(BaseModel):
     """Request body for creating a profile."""
-    
+
     name: str = Field(..., min_length=1, max_length=50)
     context_window: int = Field(8000, ge=1000, le=1000000)
     token_budget: int = Field(4000, ge=100, le=100000)
@@ -117,14 +117,15 @@ class ProfileCreateRequest(BaseModel):
 
 # Endpoints
 
+
 @router.post("/query", response_model=ContextQueryResponse)
 async def query_context(request: ContextQueryRequest) -> ContextQueryResponse:
     """Query context with token budget optimization.
-    
+
     Returns relevant specifications optimized to fit within the token budget.
     """
     api = get_context_api()
-    
+
     response = api.get_context(
         query=request.query,
         token_budget=request.token_budget,
@@ -133,7 +134,7 @@ async def query_context(request: ContextQueryRequest) -> ContextQueryResponse:
         profile=request.profile,
         top_k=request.top_k,
     )
-    
+
     return ContextQueryResponse(
         chunks=[
             ContextChunkResponse(
@@ -160,21 +161,21 @@ async def query_context(request: ContextQueryRequest) -> ContextQueryResponse:
 @router.get("/stream")
 async def stream_context(
     query: str = Query(..., description="Natural language query"),
-    token_budget: Optional[int] = Query(None, ge=100, le=100000),
+    token_budget: int | None = Query(None, ge=100, le=100000),
     format: str = Query("json", description="Output format"),
-    type_filters: Optional[str] = Query(None, description="Comma-separated type filters"),
-    profile: Optional[str] = Query(None, description="Agent profile name"),
+    type_filters: str | None = Query(None, description="Comma-separated type filters"),
+    profile: str | None = Query(None, description="Agent profile name"),
     top_k: int = Query(20, ge=1, le=100),
 ) -> StreamingResponse:
     """Stream context as Server-Sent Events.
-    
+
     Streams chunks one at a time, followed by a completion event.
     """
     api = get_context_api()
-    
+
     # Parse type filters
     filters = type_filters.split(",") if type_filters else None
-    
+
     async def generate_events():
         async for item in api.stream_query(
             query=query,
@@ -185,15 +186,17 @@ async def stream_context(
             top_k=top_k,
         ):
             if isinstance(item, ContextChunk):
-                data = json.dumps({
-                    "type": "chunk",
-                    "data": item.to_dict(),
-                })
+                data = json.dumps(
+                    {
+                        "type": "chunk",
+                        "data": item.to_dict(),
+                    }
+                )
             else:  # StreamCompletion
                 data = json.dumps(item.to_dict())
-            
+
             yield f"data: {data}\n\n"
-    
+
     return StreamingResponse(
         generate_events(),
         media_type="text/event-stream",
@@ -206,12 +209,13 @@ async def stream_context(
 
 # Profile Management Endpoints
 
+
 @router.get("/profiles", response_model=list[ProfileResponse])
 async def list_profiles() -> list[ProfileResponse]:
     """List all agent profiles."""
     manager = get_profile_manager()
     profiles = manager.list_all()
-    
+
     return [
         ProfileResponse(
             name=p.name,
@@ -228,7 +232,7 @@ async def list_profiles() -> list[ProfileResponse]:
 async def create_profile(request: ProfileCreateRequest) -> ProfileResponse:
     """Create or update an agent profile."""
     manager = get_profile_manager()
-    
+
     profile = AgentProfile(
         name=request.name,
         context_window=request.context_window,
@@ -236,9 +240,9 @@ async def create_profile(request: ProfileCreateRequest) -> ProfileResponse:
         preferred_format=request.preferred_format,
         type_filters=request.type_filters,
     )
-    
+
     manager.set(profile)
-    
+
     return ProfileResponse(
         name=profile.name,
         context_window=profile.context_window,
@@ -253,7 +257,7 @@ async def get_profile(name: str) -> ProfileResponse:
     """Get a specific agent profile."""
     manager = get_profile_manager()
     profile = manager.get(name)
-    
+
     return ProfileResponse(
         name=profile.name,
         context_window=profile.context_window,
@@ -267,7 +271,7 @@ async def get_profile(name: str) -> ProfileResponse:
 async def delete_profile(name: str) -> dict:
     """Delete a custom agent profile."""
     manager = get_profile_manager()
-    
+
     if manager.delete(name):
         return {"message": f"Profile '{name}' deleted"}
     else:

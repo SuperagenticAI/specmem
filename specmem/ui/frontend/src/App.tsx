@@ -122,7 +122,7 @@ function App() {
           <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-8">
             <div className="relative">
               <Icons.Search />
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search specifications..." 
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search specifications..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Icons.Search /></div>
             </div>
@@ -273,7 +273,7 @@ function App() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Search Results</h2>
               <p className="text-slate-500 dark:text-slate-400 mb-6">{activeSearch ? `Results for "${activeSearch}"` : 'Enter a query to search specifications'}</p>
-              
+
               {searchLoading ? (
                 <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div></div>
               ) : !activeSearch ? (
@@ -305,7 +305,7 @@ function App() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">📌 Pinned Specifications</h2>
               <p className="text-slate-500 dark:text-slate-400 mb-6">Critical specs that are always included in agent context</p>
-              
+
               {pinnedData?.blocks.length === 0 ? (
                 <div className="text-center py-20 text-slate-500"><p>No pinned specifications</p></div>
               ) : (
@@ -333,7 +333,7 @@ function App() {
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">📊 Analytics</h2>
               <p className="text-slate-500 dark:text-slate-400 mb-6">Insights into your specification memory</p>
-              
+
               <div className="grid grid-cols-2 gap-6">
                 {/* Type Distribution */}
                 <div className="rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 p-6">

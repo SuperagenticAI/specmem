@@ -18,40 +18,40 @@ All specifications from different frameworks are normalized to SpecIR format, en
 class SpecBlock:
     # Unique identifier
     id: str
-    
+
     # Source file path
     path: str
-    
+
     # Source framework (kiro, cursor, claude, etc.)
     framework: str
-    
+
     # Specification type
     spec_type: SpecType
-    
+
     # Human-readable title
     title: str
-    
+
     # Full content
     content: str
-    
+
     # Brief summary (for context)
     summary: str
-    
+
     # Categorization tags
     tags: list[str]
-    
+
     # Lifecycle stage
     lifecycle: Lifecycle
-    
+
     # Priority level
     priority: Priority
-    
+
     # Creation timestamp
     created_at: datetime
-    
+
     # Last update timestamp
     updated_at: datetime
-    
+
     # Additional metadata
     metadata: dict
 ```

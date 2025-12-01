@@ -72,7 +72,6 @@ class GraphNode:
         )
 
 
-
 @dataclass
 class GraphEdge:
     """Edge connecting two nodes in the SpecImpact graph.

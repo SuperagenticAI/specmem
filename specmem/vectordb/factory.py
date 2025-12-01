@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from specmem.core.exceptions import VectorStoreError
 
+
 if TYPE_CHECKING:
     from specmem.vectordb.base import VectorStore
 
@@ -29,7 +30,7 @@ def get_vector_store(
     backend: str = "lancedb",
     path: str | None = None,
     **kwargs,
-) -> "VectorStore":
+) -> VectorStore:
     """Factory function to create a vector store instance.
 
     Args:

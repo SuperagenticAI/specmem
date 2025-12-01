@@ -11,18 +11,19 @@ from specmem.core.exceptions import (
 from specmem.core.mappings import CodeRef, TestMapping
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 
+
 __all__ = [
-    "SpecMemError",
     "AdapterError",
-    "VectorStoreError",
+    "CodeRef",
     "ConfigurationError",
+    "EmbeddingConfig",
     "EmbeddingError",
     "SpecBlock",
-    "SpecType",
-    "SpecStatus",
     "SpecMemConfig",
-    "EmbeddingConfig",
-    "VectorDBConfig",
+    "SpecMemError",
+    "SpecStatus",
+    "SpecType",
     "TestMapping",
-    "CodeRef",
+    "VectorDBConfig",
+    "VectorStoreError",
 ]

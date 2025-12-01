@@ -10,12 +10,13 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from specmem.core.specir import SpecBlock, SpecStatus, SpecType
+from specmem.core.specir import SpecBlock, SpecStatus
 from specmem.vectordb.base import QueryResult, VectorStore
-from specmem.vectordb.embeddings import EmbeddingProvider
+
 
 if TYPE_CHECKING:
     from specmem.core.config import SpecMemConfig
+    from specmem.vectordb.embeddings import EmbeddingProvider
 
 logger = logging.getLogger(__name__)
 
@@ -69,9 +70,9 @@ class MemoryBank:
     @classmethod
     def from_config(
         cls,
-        config: "SpecMemConfig",
+        config: SpecMemConfig,
         chunk_size: int = 1000,
-    ) -> "MemoryBank":
+    ) -> MemoryBank:
         """Create a MemoryBank from configuration.
 
         Args:
@@ -174,7 +175,7 @@ class MemoryBank:
                         text=chunk_text,
                         source=block.source,
                         status=block.status,
-                        tags=block.tags + [f"chunk_{chunk_num}"],
+                        tags=[*block.tags, f"chunk_{chunk_num}"],
                         links=[block.id],  # Link to parent
                         pinned=block.pinned,
                     )
@@ -219,9 +220,7 @@ class MemoryBank:
             for block in pinned:
                 if block.id not in pinned_ids:
                     # Add pinned blocks with high score
-                    results.append(
-                        QueryResult(block=block, score=1.0, distance=0.0)
-                    )
+                    results.append(QueryResult(block=block, score=1.0, distance=0.0))
 
         # Sort by score descending
         results.sort(key=lambda r: r.score, reverse=True)

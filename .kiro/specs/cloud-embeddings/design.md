@@ -14,7 +14,7 @@ classDiagram
         +dimension: int
         +model_name: str
     }
-    
+
     class LocalEmbeddingProvider {
         -_model: SentenceTransformer
         -_model_name: str
@@ -22,7 +22,7 @@ classDiagram
         +dimension: int
         +model_name: str
     }
-    
+
     class OpenAIEmbeddingProvider {
         -_client: OpenAI
         -_model: str
@@ -31,12 +31,12 @@ classDiagram
         +dimension: int
         +model_name: str
     }
-    
+
     class EmbeddingFactory {
         +get_provider(config: EmbeddingConfig) EmbeddingProvider
         +list_providers() list[str]
     }
-    
+
     EmbeddingProvider <|-- LocalEmbeddingProvider
     EmbeddingProvider <|-- OpenAIEmbeddingProvider
     EmbeddingFactory --> EmbeddingProvider
@@ -54,13 +54,13 @@ class EmbeddingProvider(ABC):
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings for texts."""
         pass
-    
+
     @property
     @abstractmethod
     def dimension(self) -> int:
         """Return embedding dimension."""
         pass
-    
+
     @property
     @abstractmethod
     def model_name(self) -> str:
@@ -76,7 +76,7 @@ New provider implementation for OpenAI embeddings:
 class OpenAIEmbeddingProvider(EmbeddingProvider):
     DEFAULT_MODEL = "text-embedding-3-small"
     MAX_BATCH_SIZE = 2048  # OpenAI limit
-    
+
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
@@ -84,7 +84,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
     ) -> None:
         """Initialize with API key from param or OPENAI_API_KEY env var."""
         pass
-    
+
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings via OpenAI API with automatic batching."""
         pass

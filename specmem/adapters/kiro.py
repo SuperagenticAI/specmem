@@ -9,8 +9,8 @@ import re
 from pathlib import Path
 
 from specmem.adapters.base import SpecAdapter
-from specmem.core.exceptions import AdapterError
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class KiroAdapter(SpecAdapter):
         req_pattern = r"###\s+Requirement\s+(\d+)(?::\s*(.+?))?\n(.*?)(?=###\s+Requirement|\Z)"
         matches = re.findall(req_pattern, content, re.DOTALL | re.IGNORECASE)
 
-        for req_num, title, body in matches:
+        for req_num, _title, body in matches:
             # Extract user story
             user_story_match = re.search(
                 r"\*\*User Story:\*\*\s*(.+?)(?=####|\*\*|\Z)", body, re.DOTALL
@@ -120,9 +120,7 @@ class KiroAdapter(SpecAdapter):
                 if full_ac:
                     block_id = SpecBlock.generate_id(source, f"req_{req_num}_ac_{ac_num}")
                     # Check if this should be pinned (contains MUST, SHALL, constraint)
-                    pinned = any(
-                        kw in full_ac.upper() for kw in ["MUST", "SHALL", "CONSTRAINT"]
-                    )
+                    pinned = any(kw in full_ac.upper() for kw in ["MUST", "SHALL", "CONSTRAINT"])
                     blocks.append(
                         SpecBlock(
                             id=block_id,

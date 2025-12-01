@@ -20,7 +20,7 @@ classDiagram
         +get_tldr(budget) str
         +list_specs() list[SpecIR]
     }
-    
+
     class ContextBundle {
         +specs: list[SpecSummary]
         +designs: list[SpecSummary]
@@ -29,7 +29,7 @@ classDiagram
         +total_tokens: int
         +changed_files: list[str]
     }
-    
+
     class Proposal {
         +id: str
         +spec_id: str
@@ -38,7 +38,7 @@ classDiagram
         +status: ProposalStatus
         +created_at: datetime
     }
-    
+
     class ProposalStore {
         +create(spec_id, edits, rationale) Proposal
         +get(proposal_id) Proposal
@@ -46,7 +46,7 @@ classDiagram
         +accept(proposal_id) bool
         +reject(proposal_id) bool
     }
-    
+
     SpecMemClient --> ContextBundle
     SpecMemClient --> Proposal
     SpecMemClient --> ProposalStore
@@ -61,28 +61,28 @@ The main client class for agent interaction:
 ```python
 class SpecMemClient:
     """Python client for SpecMem agent integration.
-    
+
     Provides a simple API for coding agents to:
     - Get context bundles for code changes
     - Query impacted specifications
     - Propose and manage spec edits
     - Access TL;DR summaries
-    
+
     Example:
         from specmem import SpecMemClient
-        
+
         sm = SpecMemClient()
         bundle = sm.get_context_for_change(["auth/service.py"])
         print(bundle.tldr)
     """
-    
+
     def __init__(
         self,
         path: str | Path = ".",
         config_path: str | Path | None = None,
     ) -> None:
         """Initialize the client."""
-        
+
     def get_context_for_change(
         self,
         changed_files: list[str],
@@ -90,14 +90,14 @@ class SpecMemClient:
         format: str = "json",
     ) -> ContextBundle:
         """Get optimized context bundle for changed files."""
-        
+
     def get_impacted_specs(
         self,
         changed_files: list[str] | None = None,
         git_diff: str | None = None,
     ) -> list[SpecBlock]:
         """Get specs impacted by code changes."""
-        
+
     def query(
         self,
         text: str,
@@ -105,7 +105,7 @@ class SpecMemClient:
         include_legacy: bool = False,
     ) -> list[SpecBlock]:
         """Query specs by natural language."""
-        
+
     def propose_edit(
         self,
         spec_id: str,
@@ -113,16 +113,16 @@ class SpecMemClient:
         rationale: str,
     ) -> Proposal:
         """Propose an edit to a specification."""
-        
+
     def accept_proposal(self, proposal_id: str) -> bool:
         """Accept a pending proposal."""
-        
+
     def reject_proposal(self, proposal_id: str) -> bool:
         """Reject a pending proposal."""
-        
+
     def get_tldr(self, token_budget: int = 500) -> str:
         """Get TL;DR summary of key specs."""
-        
+
     def list_specs(
         self,
         status: str | None = None,
@@ -139,7 +139,7 @@ Response model for context requests:
 @dataclass
 class ContextBundle:
     """Optimized context bundle for agent consumption."""
-    
+
     specs: list[SpecSummary]
     designs: list[SpecSummary]
     tests: list[TestMapping]
@@ -147,10 +147,10 @@ class ContextBundle:
     total_tokens: int
     token_budget: int
     changed_files: list[str]
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
-        
+
     def to_markdown(self) -> str:
         """Format as markdown for agent context."""
 ```
@@ -166,7 +166,7 @@ class ProposalStatus(str, Enum):
 @dataclass
 class Proposal:
     """Agent-proposed spec edit."""
-    
+
     id: str
     spec_id: str
     edits: dict
@@ -184,7 +184,7 @@ class Proposal:
 @dataclass
 class SpecSummary:
     """Condensed spec for context bundles."""
-    
+
     id: str
     type: str
     title: str
@@ -200,7 +200,7 @@ class SpecSummary:
 @dataclass
 class TestMapping:
     """Framework-agnostic test reference."""
-    
+
     spec_id: str
     framework: str  # pytest, jest, playwright, etc.
     path: str       # tests/test_auth.py::test_login

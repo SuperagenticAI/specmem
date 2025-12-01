@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import Generator
+from typing import TYPE_CHECKING
 
 import pytest
+
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @pytest.fixture
@@ -85,7 +89,7 @@ def sample_spec_block():
 @pytest.fixture
 def sample_spec_blocks():
     """Create multiple sample SpecBlocks for testing."""
-    from specmem.core.specir import SpecBlock, SpecType, SpecStatus
+    from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 
     return [
         SpecBlock(

@@ -9,11 +9,12 @@ import time
 from typing import TYPE_CHECKING
 
 from specmem.validator.config import ValidationConfig
-from specmem.validator.models import ValidationResult, ValidationIssue
-from specmem.validator.rules.base import ValidationRule
+from specmem.validator.models import ValidationIssue, ValidationResult
+
 
 if TYPE_CHECKING:
     from specmem.core.specir import SpecBlock
+    from specmem.validator.rules.base import ValidationRule
 
 
 class ValidationEngine:

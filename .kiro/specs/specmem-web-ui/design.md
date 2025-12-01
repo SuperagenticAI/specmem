@@ -43,17 +43,17 @@ The SpecMem Web UI is a lightweight web dashboard that provides visual access to
 ```python
 class WebServer:
     """FastAPI-based web server for SpecMem UI."""
-    
+
     def __init__(self, config: SpecMemConfig, port: int = 8765):
         self.config = config
         self.port = port
         self.app = FastAPI(title="SpecMem UI")
         self._setup_routes()
         self._setup_static_files()
-    
+
     def start(self) -> None:
         """Start the web server."""
-        
+
     def stop(self) -> None:
         """Gracefully stop the server."""
 ```
@@ -280,4 +280,3 @@ tests/
 └── property/
     └── test_ui_props.py     # Property-based tests for UI backend
 ```
-

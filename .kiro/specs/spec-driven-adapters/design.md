@@ -15,7 +15,7 @@ classDiagram
         +load(repo_path) list[SpecBlock]
         +is_experimental() bool
     }
-    
+
     class TesslAdapter {
         +name: str = "Tessl"
         +detect(repo_path) bool
@@ -25,7 +25,7 @@ classDiagram
         -_extract_artifacts(content) list[dict]
         -_extract_dependencies(content) list[str]
     }
-    
+
     class SpecKitAdapter {
         +name: str = "SpecKit"
         +detect(repo_path) bool
@@ -35,7 +35,7 @@ classDiagram
         -_parse_json_spec(path) SpecBlock
         -_extract_requirements(data) list[dict]
     }
-    
+
     class CursorAdapter {
         +name: str = "Cursor"
         +detect(repo_path) bool
@@ -44,7 +44,7 @@ classDiagram
         -_parse_rules_file(path) list[SpecBlock]
         -_extract_sections(content) list[dict]
     }
-    
+
     class ClaudeAdapter {
         +name: str = "Claude"
         +detect(repo_path) bool
@@ -53,7 +53,7 @@ classDiagram
         -_parse_xml_project(path) SpecBlock
         -_extract_context(xml) dict
     }
-    
+
     SpecAdapter <|-- TesslAdapter
     SpecAdapter <|-- SpecKitAdapter
     SpecAdapter <|-- CursorAdapter
@@ -69,15 +69,15 @@ Add experimental adapter support to the base class:
 ```python
 class SpecAdapter(ABC):
     """Base interface for all spec framework adapters."""
-    
+
     def is_experimental(self) -> bool:
         """Check if this adapter is experimental.
-        
+
         Returns:
             True if adapter is experimental and may have limited functionality
         """
         return False
-    
+
     def warn_if_experimental(self) -> None:
         """Issue warning if adapter is experimental."""
         if self.is_experimental():
@@ -97,14 +97,14 @@ Handles Tessl AI-first development specifications:
 ```python
 class TesslAdapter(SpecAdapter):
     """Experimental adapter for Tessl specifications.
-    
+
     Detects and parses:
     - .tessl specification files
     - .spec.ts/.spec.js executable specifications
     - tessl.config.* configuration files
     - tessl.yaml/tessl.json manifests
     """
-    
+
     FILE_PATTERNS = [
         "**/*.tessl",
         "**/*.spec.ts",
@@ -122,14 +122,14 @@ Handles GitHub SpecKit (https://github.com/github/spec-kit) specifications:
 ```python
 class SpecKitAdapter(SpecAdapter):
     """Experimental adapter for GitHub SpecKit specifications.
-    
+
     Detects and parses:
     - .specify/specs/*/spec.md - Feature specifications with user stories
     - .specify/specs/*/plan.md - Implementation plans with technical context
     - .specify/specs/*/tasks.md - Task breakdowns by user story
     - .specify/memory/constitution.md - Project governing principles
     """
-    
+
     # Detects .specify/ directory structure
 ```
 
@@ -140,12 +140,12 @@ Handles Cursor AI assistant rules:
 ```python
 class CursorAdapter(SpecAdapter):
     """Experimental adapter for Cursor rules.
-    
+
     Detects and parses:
     - .cursorrules files
     - cursor.rules files
     """
-    
+
     FILE_PATTERNS = [
         "**/.cursorrules",
         "**/cursor.rules"
@@ -159,12 +159,12 @@ Handles Claude AI project files:
 ```python
 class ClaudeAdapter(SpecAdapter):
     """Experimental adapter for Claude project files.
-    
+
     Detects and parses:
     - claude_project.xml files
     - .claude/**/*.xml files
     """
-    
+
     FILE_PATTERNS = [
         "**/claude_project.xml",
         "**/.claude/**/*.xml",
@@ -288,7 +288,7 @@ def load(self, repo_path: str) -> list[SpecBlock]:
     """Load specs with graceful error handling."""
     self.warn_if_experimental()
     blocks = []
-    
+
     for file_path in self._find_spec_files(repo_path):
         try:
             block = self._parse_file(file_path)
@@ -297,7 +297,7 @@ def load(self, repo_path: str) -> list[SpecBlock]:
         except Exception as e:
             logger.warning(f"Failed to parse {file_path}: {e}")
             # Continue processing other files
-    
+
     return blocks
 ```
 

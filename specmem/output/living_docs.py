@@ -9,7 +9,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-from specmem.core.specir import SpecBlock, SpecType
+from specmem.core.specir import SpecBlock
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +81,14 @@ class LivingDocsGenerator:
             if count > 0:
                 lines.append(f"- [{spec_type.title()}s](./{spec_type}s.md) ({count})")
 
-        lines.extend([
-            "",
-            "## By Source",
-            "",
-            "See [Source Index](./sources.md) for specifications organized by source file.",
-        ])
+        lines.extend(
+            [
+                "",
+                "## By Source",
+                "",
+                "See [Source Index](./sources.md) for specifications organized by source file.",
+            ]
+        )
 
         output_path = self.output_dir / "index.md"
         output_path.write_text("\n".join(lines))

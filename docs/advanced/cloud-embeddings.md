@@ -257,11 +257,11 @@ class CustomEmbeddings(EmbeddingProvider):
     def __init__(self, model: str, **kwargs):
         self.model = model
         self.dimensions = 768
-    
+
     def embed(self, text: str) -> list[float]:
         # Your embedding logic
         return [0.0] * self.dimensions
-    
+
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         return [self.embed(t) for t in texts]
 ```

@@ -9,28 +9,29 @@ __version__ = "0.1.0"
 
 # Export SpecMemClient for agent integration
 from specmem.client import (
-    SpecMemClient,
+    ConfigurationError,
     ContextBundle,
+    MemoryStoreError,
     Proposal,
+    ProposalError,
     ProposalStatus,
+    SpecMemClient,
+    SpecMemError,
     SpecSummary,
     TestMapping,
-    SpecMemError,
-    ConfigurationError,
-    MemoryStoreError,
-    ProposalError,
 )
 
+
 __all__ = [
-    "__version__",
-    "SpecMemClient",
+    "ConfigurationError",
     "ContextBundle",
+    "MemoryStoreError",
     "Proposal",
+    "ProposalError",
     "ProposalStatus",
+    "SpecMemClient",
+    "SpecMemError",
     "SpecSummary",
     "TestMapping",
-    "SpecMemError",
-    "ConfigurationError",
-    "MemoryStoreError",
-    "ProposalError",
+    "__version__",
 ]

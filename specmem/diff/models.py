@@ -16,11 +16,11 @@ from typing import Any
 class ChangeType(str, Enum):
     """Type of specification change."""
 
-    SEMANTIC = "semantic"      # Meaning changed
-    COSMETIC = "cosmetic"      # Formatting only
-    BREAKING = "breaking"      # Breaking change
-    ADDITION = "addition"      # New content added
-    REMOVAL = "removal"        # Content removed
+    SEMANTIC = "semantic"  # Meaning changed
+    COSMETIC = "cosmetic"  # Formatting only
+    BREAKING = "breaking"  # Breaking change
+    ADDITION = "addition"  # New content added
+    REMOVAL = "removal"  # Content removed
 
 
 class Severity(str, Enum):
@@ -78,7 +78,6 @@ class SpecVersion:
             content_hash=data.get("content_hash", ""),
             metadata=data.get("metadata", {}),
         )
-
 
 
 @dataclass
@@ -188,7 +187,9 @@ class SpecChange:
             removed=data.get("removed", []),
             modified=[ModifiedSection.from_dict(m) for m in data.get("modified", [])],
             change_type=ChangeType(data.get("change_type", "semantic")),
-            inferred_reason=ChangeReason.from_dict(data["inferred_reason"]) if data.get("inferred_reason") else None,
+            inferred_reason=ChangeReason.from_dict(data["inferred_reason"])
+            if data.get("inferred_reason")
+            else None,
         )
 
 
@@ -226,9 +227,10 @@ class StalenessWarning:
             changes_since=[SpecChange.from_dict(c) for c in data.get("changes_since", [])],
             severity=Severity(data.get("severity", "medium")),
             acknowledged=data.get("acknowledged", False),
-            acknowledged_at=datetime.fromisoformat(data["acknowledged_at"]) if data.get("acknowledged_at") else None,
+            acknowledged_at=datetime.fromisoformat(data["acknowledged_at"])
+            if data.get("acknowledged_at")
+            else None,
         )
-
 
 
 @dataclass
@@ -290,7 +292,9 @@ class DriftReport:
         return cls(
             drifted_code=[DriftItem.from_dict(d) for d in data.get("drifted_code", [])],
             total_drift_score=data.get("total_drift_score", 0.0),
-            generated_at=datetime.fromisoformat(data["generated_at"]) if data.get("generated_at") else datetime.now(),
+            generated_at=datetime.fromisoformat(data["generated_at"])
+            if data.get("generated_at")
+            else datetime.now(),
         )
 
     def get_by_severity(self, min_severity: float) -> list[DriftItem]:
