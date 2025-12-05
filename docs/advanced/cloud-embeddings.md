@@ -161,4 +161,4 @@ model = "my-model"
 
 ## Future Providers
 
-Support for additional providers (Anthropic, Google, Together AI) is planned for future releases.
+Support for additional providers (Google, Together AI) is planned for future releases.

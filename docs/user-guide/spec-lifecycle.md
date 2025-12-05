@@ -192,7 +192,7 @@ compressed = sm.compress_specs(all_verbose=True, save=True)
     Run `specmem health` weekly to catch orphaned specs early.
 
 !!! tip "Archive Before Delete"
-    Use archive mode first—you can always delete later.
+    Use archive mode first. You can always delete later.
 
 !!! tip "Review Generated Specs"
     Auto-generated specs are starting points; refine them manually.

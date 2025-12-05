@@ -62,7 +62,6 @@ First public release of SpecMem - Cognitive Memory Layer for AI Coding Agents.
 #### Embedding Providers
 - Local embeddings (sentence-transformers)
 - OpenAI embeddings
-- Anthropic embeddings
 - Google embeddings
 - Together AI embeddings
 

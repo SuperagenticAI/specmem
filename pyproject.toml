@@ -72,7 +72,6 @@ local = [
 
 # Cloud embedding providers (lightweight)
 openai = ["openai>=1.0.0"]
-anthropic = ["anthropic>=0.18.0"]
 google = ["google-generativeai>=0.3.0"]
 together = ["together>=0.2.0"]
 
@@ -91,7 +90,6 @@ ui = [
 # All cloud providers
 cloud = [
     "specmem[openai]",
-    "specmem[anthropic]",
     "specmem[google]",
     "specmem[together]",
 ]

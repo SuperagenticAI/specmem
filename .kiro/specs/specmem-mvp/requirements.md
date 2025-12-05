@@ -10,7 +10,7 @@ SpecMem is a unified, embeddable memory layer for AI coding agents built on top 
 
 - **SpecMem**: The unified memory engine system being developed
 - **SpecBlock**: The canonical data structure representing a single unit of specification knowledge
-- **SpecIR**: Spec Intermediate Representation — the normalized internal format for all specifications
+- **SpecIR**: Spec Intermediate Representation - the normalized internal format for all specifications
 - **Adapter**: A modular component that reads specs from a specific framework and converts them to SpecIR
 - **Agent Experience Pack (AgentXPack)**: The output bundle containing optimized memory for coding agents (stored in `.specmem/`)
 - **Vector Memory**: Semantic search-enabled storage using embeddings for similarity retrieval
@@ -18,7 +18,7 @@ SpecMem is a unified, embeddable memory layer for AI coding agents built on top 
 - **Legacy Memory**: SpecBlocks marked as outdated, excluded from retrieval unless explicitly requested
 - **LanceDB**: The default vector database backend for storing embeddings
 - **AgentVectorDB**: Advanced vector database from Superagentic AI with deep integration support
-- **SDD**: Spec-Driven Development — methodology using structured specification files
+- **SDD**: Spec-Driven Development - methodology using structured specification files
 - **SpecImpact**: Module that maps code files to related specifications for targeted execution
 - **VectorStore**: Abstract interface for pluggable vector database backends
 - **Embedding Provider**: Service that converts text to vector embeddings (local or cloud-based)

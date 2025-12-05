@@ -19,7 +19,7 @@ specmem init
 # Embedding Configuration
 # =============================================================================
 [embedding]
-# Provider: "local", "openai", "anthropic", "google", "together"
+# Provider: "local", "openai", "google", "together"
 provider = "local"
 
 # Model name (provider-specific)
@@ -197,7 +197,6 @@ Override configuration with environment variables:
 | `SPECMEM_VECTORDB_PATH` | Vector DB path | `.specmem/vectordb` |
 | `SPECMEM_LOG_LEVEL` | Log level | `info` |
 | `OPENAI_API_KEY` | OpenAI API key | - |
-| `ANTHROPIC_API_KEY` | Anthropic API key | - |
 | `GOOGLE_API_KEY` | Google API key | - |
 | `TOGETHER_API_KEY` | Together AI API key | - |
 
@@ -216,7 +215,7 @@ export OPENAI_API_KEY="sk-..."
 ```
 
 !!! note "Additional Providers"
-    Support for Anthropic, Google, and Together AI embeddings is planned for future releases.
+    Support for Google and Together AI embeddings is planned for future releases.
     Currently, only `local` and `openai` providers are supported.
 
 ## Alternative Vector Stores

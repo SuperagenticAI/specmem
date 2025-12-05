@@ -21,13 +21,6 @@ All environment variables supported by SpecMem.
 | `OPENAI_ORG_ID` | Organization ID | No |
 | `OPENAI_BASE_URL` | Custom API base URL | No |
 
-### Anthropic
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key | Yes |
-| `ANTHROPIC_BASE_URL` | Custom API base URL | No |
-
 ### Google
 
 | Variable | Description | Required |

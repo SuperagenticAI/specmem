@@ -13,7 +13,7 @@ SpecMem is a **Cognitive Memory + Agent Experience (AgentEx) platform** for AI c
 | **Core Memory Engine** | ✅ | SpecIR, MemoryBank, lifecycle management |
 | **Multi-Framework Adapters** | ✅ | Kiro, SpecKit, Tessl, Claude, Cursor, Powers |
 | **Pluggable Vector DB** | ✅ | LanceDB, ChromaDB, Qdrant, AgentVectorDB |
-| **Cloud Embeddings** | ✅ | OpenAI, Anthropic, Gemini, Together, Cohere |
+| **Cloud Embeddings** | ✅ | OpenAI, Gemini, Together |
 | **SpecImpact Graph** | ✅ | Code ↔ Spec ↔ Test relationships |
 | **SpecDiff Timeline** | ✅ | Spec evolution tracking, drift detection |
 | **SpecValidator** | ✅ | Quality rules for specifications |
@@ -129,7 +129,7 @@ Modern coding agents (Kiro, Cursor, Claude Code, etc.) suffer from:
 1. **Market Timing** - SDD adoption may be too early
 2. **Agent Evolution** - Agents may build native memory features
 3. **Maintenance Burden** - Many adapters to keep updated
-4. **Competition** - Big players (OpenAI, Anthropic) could build similar
+4. **Competition** - Big players (OpenAI, Google) could build similar
 
 ---
 

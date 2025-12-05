@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+" />
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License" />
   <img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Status" />
 </p>
@@ -94,17 +94,34 @@ print(bundle.tldr)
 
 ## ✨ Key Features
 
+### Core Features
+
 | Feature | Description |
 |---------|-------------|
 | **🔌 Multi-Framework Adapters** | Parse specs from Kiro, SpecKit, Tessl, Claude Code, Cursor, Codex, Factory, Warp, Gemini CLI |
-| **🧠 Intelligent Memory** | Vector-based semantic search with LanceDB, ChromaDB, or Qdrant |
+| **🧠 Intelligent Memory** | Vector-based semantic search with LanceDB, ChromaDB, Qdrant, or AgentVectorDB |
 | **📊 SpecImpact Graph** | Bidirectional relationships between specs, code, and tests |
 | **⏱️ SpecDiff Timeline** | Track spec evolution, detect drift, find contradictions |
-| **✅ SpecValidator** | Quality assurance for specifications |
-| **📈 Spec Coverage** | Analyze gaps between acceptance criteria and tests |
-| **🎯 Selective Testing** | Run only the tests that matter |
+| **✅ SpecValidator** | Quality assurance with 6 validation rules (structure, timeline, duplicates, constraints, acceptance criteria, contradictions) |
+| **📈 Spec Coverage** | Analyze gaps between acceptance criteria and tests with suggestions |
+| **🎯 Test Mapping Engine** | Map tests to specs across pytest, jest, vitest, and more |
 | **💚 Health Score** | Project health grades (A-F) with improvement suggestions |
-| **🌐 Web UI** | Interactive dashboard with live sync and impact graph |
+| **🌐 Web UI** | Interactive dashboard with live sync, filtering, and WebSocket updates |
+
+### Advanced Features
+
+| Feature | Description |
+|---------|-------------|
+| **☁️ Cloud Embeddings** | Support for OpenAI, Google, Together AI embedding providers |
+| **📜 Coding Guidelines** | Aggregate and view guidelines from Kiro steering, CLAUDE.md, .cursorrules |
+| **🔄 Spec Lifecycle** | Prune stale specs, generate specs from code, compress verbose specs |
+| **🔍 Kiro Session Search** | Index and search Kiro chat sessions for context |
+| **⚙️ Kiro Config Indexer** | Index hooks, steering files, and MCP configurations |
+| **📤 Static Dashboard** | Export specs to a static HTML dashboard for GitHub Pages |
+| **🤖 GitHub Action** | CI integration with coverage thresholds and PR comments |
+| **🔌 MCP Server** | Model Context Protocol server for AI agent integration |
+| **⚡ Kiro Powers** | Native Kiro IDE integration as a Power |
+| **🌊 Streaming Context API** | Token-aware context optimization with streaming support |
 
 ---
 
@@ -205,11 +222,46 @@ specmem impact --files src/auth/service.py
 # Check spec coverage
 specmem cov
 
+# Get test suggestions for uncovered criteria
+specmem cov suggest auth-feature
+
 # Check project health score
 specmem health
 
+# Validate spec quality
+specmem validate
+
+# View spec diff/history
+specmem diff auth.login
+specmem history auth.login
+
+# Lifecycle management
+specmem prune --orphaned          # Archive orphaned specs
+specmem generate src/             # Generate specs from code
+specmem compress --all            # Compress verbose specs
+
+# View coding guidelines
+specmem guidelines
+
+# Kiro configuration
+specmem kiro-config               # Show all Kiro config
+specmem steering --file src/app.py  # Get applicable steering
+
+# Session search (Kiro)
+specmem sessions search "auth"    # Search chat sessions
+specmem sessions link             # Link sessions to specs
+
+# Export static dashboard
+specmem export data               # Export spec data to JSON
+specmem export build              # Build static HTML dashboard
+
+# Graph commands
+specmem graph impact src/auth.py  # Show affected specs/tests
+specmem graph show spec:auth      # Show node relationships
+specmem graph export --format dot # Export graph
+
 # Launch Web UI
-specmem serve
+specmem demo
 ```
 
 ### Python API
@@ -327,6 +379,57 @@ See [Kiro Integration Guide](https://superagenticai.github.io/specmem/user-guide
 
 ---
 
+## 🤖 GitHub Action
+
+Integrate SpecMem into your CI/CD pipeline:
+
+```yaml
+# .github/workflows/specmem.yml
+name: Spec Analysis
+on: [pull_request]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: SuperagenticAI/specmem/.github/actions/specmem@main
+        with:
+          commands: cov,health,validate
+          comment_on_pr: true
+          coverage_threshold: 80
+          health_threshold: B
+```
+
+**Features:**
+- 📊 Coverage, health, and validation checks
+- 💬 Automatic PR comments with results
+- 🚦 Configurable thresholds for quality gates
+- 📈 Static dashboard deployment to GitHub Pages
+
+---
+
+## 📤 Static Dashboard
+
+Export your specs to a static HTML dashboard:
+
+```bash
+# Generate and preview locally
+specmem export data
+specmem export build
+python -m http.server -d .specmem/static 8080
+```
+
+Or deploy to GitHub Pages with the dashboard action:
+
+```yaml
+- uses: SuperagenticAI/specmem/.github/actions/specmem-dashboard@main
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+---
+
 ## 🔌 Supported Frameworks
 
 ### Spec-Driven Development (Priority)
@@ -347,6 +450,64 @@ See [Kiro Integration Guide](https://superagenticai.github.io/specmem/user-guide
 | Factory | `factory` | `.factory/**/*.yaml` |
 | Warp | `warp` | `.warp/**/*.md` |
 | Gemini CLI | `gemini` | `GEMINI.md`, `.gemini/**/*.md` |
+
+---
+
+## 🗄️ Vector Database Backends
+
+SpecMem supports multiple vector database backends:
+
+| Backend | Install | Best For |
+|---------|---------|----------|
+| **LanceDB** (default) | `pip install specmem[local]` | Local development, no server needed |
+| **ChromaDB** | `pip install specmem[chroma]` | Local/embedded with persistence |
+| **Qdrant** | `pip install specmem[qdrant]` | Production, distributed deployments |
+| **AgentVectorDB** | Built-in | Lightweight, in-memory |
+
+Switch backends:
+```bash
+specmem vector-backend chroma
+```
+
+---
+
+## ☁️ Cloud Embedding Providers
+
+Use cloud embedding providers for better semantic search:
+
+| Provider | Install | Model |
+|----------|---------|-------|
+| **OpenAI** | `pip install specmem[openai]` | text-embedding-3-small |
+| **Google** | `pip install specmem[google]` | embedding-001 |
+| **Together AI** | `pip install specmem[together]` | togethercomputer/m2-bert |
+
+Configure in `.specmem.toml`:
+```toml
+[embedding]
+provider = "openai"
+model = "text-embedding-3-small"
+```
+
+---
+
+## ✅ Spec Validation Rules
+
+SpecMem validates your specifications with 6 built-in rules:
+
+| Rule | What It Checks |
+|------|----------------|
+| **Structure** | Required sections (requirements, design, tasks) exist |
+| **Timeline** | Tasks follow logical order, no circular dependencies |
+| **Duplicates** | No duplicate acceptance criteria or requirements |
+| **Constraints** | Acceptance criteria are testable and measurable |
+| **Acceptance Criteria** | EARS pattern compliance, INCOSE quality rules |
+| **Contradictions** | No conflicting requirements across specs |
+
+Run validation:
+```bash
+specmem validate
+specmem validate --spec auth-feature --format json
+```
 
 ---
 
@@ -413,7 +574,3 @@ For commercial licensing options, contact team@super-agentic.ai
 ## 🏢 About
 
 **SpecMem** is developed by [Superagentic AI](https://super-agentic.ai) as part of the Kiroween Hackathon, December 2025.
-
-<p align="center">
-  <sub>Built for the AI coding agent community</sub>
-</p>

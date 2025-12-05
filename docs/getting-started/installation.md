@@ -34,12 +34,6 @@ SpecMem supports various optional features. Install them based on your needs:
     pip install "specmem[openai]"
     ```
 
-=== "Anthropic"
-
-    ```bash
-    pip install "specmem[anthropic]"
-    ```
-
 === "Google"
 
     ```bash

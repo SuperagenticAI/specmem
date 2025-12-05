@@ -178,7 +178,6 @@ SpecMem supports multiple embedding providers:
 | Local | all-MiniLM-L6-v2 | 384 | ⚡⚡⚡ | ⭐⭐⭐ |
 | OpenAI | text-embedding-3-small | 1536 | ⚡⚡ | ⭐⭐⭐⭐ |
 | OpenAI | text-embedding-3-large | 3072 | ⚡ | ⭐⭐⭐⭐⭐ |
-| Anthropic | claude-3-haiku | 1024 | ⚡⚡ | ⭐⭐⭐⭐ |
 
 ## Vector Stores
 

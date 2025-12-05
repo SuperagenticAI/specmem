@@ -251,6 +251,4 @@ SpecMem generates a `.specmem/` directory containing everything your agents need
 
 **SpecMem** is developed by [Superagentic AI](https://super-agentic.ai) as part of the Kiroween Hackathon, December 2025.
 
-<p align="center">
-  <sub>Built for the AI coding agent community</sub>
-</p>
+

@@ -7,7 +7,7 @@ Complete reference for all `.specmem.toml` configuration options.
 ```toml
 [embedding]
 # Embedding provider
-# Options: "local", "openai", "anthropic", "google", "together"
+# Options: "local", "openai", "google", "together"
 provider = "local"
 
 # Model name (provider-specific)
@@ -29,7 +29,6 @@ batch_size = 32
 |----------|--------|--------|
 | local | all-MiniLM-L6-v2, all-mpnet-base-v2 | ✅ Supported |
 | openai | text-embedding-3-small, text-embedding-3-large | ✅ Supported |
-| anthropic | (planned) | 🔜 Coming soon |
 | google | (planned) | 🔜 Coming soon |
 | together | (planned) | 🔜 Coming soon |
 
