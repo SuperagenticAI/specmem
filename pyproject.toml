@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "specmem"
-version = "0.1.0"
+version = "0.1.1"
 description = "Unified, embeddable memory layer for AI coding agents built on Spec-Driven Development metadata"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -60,6 +60,7 @@ dependencies = [
     "toml>=0.10.2",
     "pydantic>=2.0.0",
     "numpy>=1.24.0",
+    "pyyaml>=6.0.0",
 ]
 
 [project.optional-dependencies]

@@ -1,6 +1,5 @@
 # SpecMem Documentation Deployment
 # Builds and deploys documentation to GitHub Pages
-# NOTE: Disabled until repo is public. Remove 'if: false' to enable.
 
 name: Deploy Documentation
 
@@ -25,8 +24,6 @@ concurrency:
 
 jobs:
   build:
-    # DISABLED: Enable when repo is public
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -61,8 +58,6 @@ jobs:
           path: site
 
   deploy:
-    # DISABLED: Enable when repo is public
-    if: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.png" alt="SpecMem Logo" width="200" />
+  <img src="https://raw.githubusercontent.com/SuperagenticAI/specmem/main/docs/assets/logo.png" alt="SpecMem Logo" width="200" />
 </p>
 
 <h1 align="center">SpecMem</h1>
