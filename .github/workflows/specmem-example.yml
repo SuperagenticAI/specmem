@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run SpecMem Analysis
         uses: SuperagenticAI/specmem/.github/actions/specmem@main
@@ -49,7 +49,7 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run SpecMem with Thresholds
         uses: SuperagenticAI/specmem/.github/actions/specmem@main
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run SpecMem
         uses: SuperagenticAI/specmem/.github/actions/specmem@main
@@ -105,7 +105,7 @@ jobs:
         package: [frontend, backend, shared]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Analyze ${{ matrix.package }}
         uses: SuperagenticAI/specmem/.github/actions/specmem@main
@@ -122,7 +122,7 @@ jobs:
     if: false  # Disabled by default
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run with GitHub version
         uses: SuperagenticAI/specmem/.github/actions/specmem@main
