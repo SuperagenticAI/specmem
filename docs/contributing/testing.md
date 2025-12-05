@@ -225,7 +225,7 @@ import pytest
 from pathlib import Path
 from specmem.core import MemoryBank
 from specmem.vectordb import LanceDBStore
-from specmem.vectordb.embeddings import LocalEmbeddings
+from specmem.vectordb.embeddings import LocalEmbeddingProvider
 
 @pytest.fixture
 def tmp_db(tmp_path):
@@ -235,17 +235,17 @@ def tmp_db(tmp_path):
 @pytest.fixture
 def embeddings():
     """Create test embeddings provider."""
-    return LocalEmbeddings(model="all-MiniLM-L6-v2")
+    return LocalEmbeddingProvider(model_name="all-MiniLM-L6-v2")
 
 @pytest.fixture
 def vectordb(tmp_db):
     """Create test vector store."""
-    return LanceDBStore(path=tmp_db)
+    return LanceDBStore(db_path=str(tmp_db))
 
 @pytest.fixture
 def memory(vectordb, embeddings):
     """Create test memory bank."""
-    return MemoryBank(vectordb=vectordb, embedding_provider=embeddings)
+    return MemoryBank(vector_store=vectordb, embedding_provider=embeddings)
 
 @pytest.fixture
 def project_with_specs(tmp_path):

@@ -61,6 +61,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -90,6 +91,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -98,12 +100,12 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest tests/unit -v --tb=short -m "not slow" || true
+          pytest tests/unit -v --tb=short -m "not slow" --ignore=tests/unit/test_embeddings.py || true
         continue-on-error: true
 
       - name: Run property tests
         run: |
-          pytest tests/property -v --tb=short --hypothesis-seed=42 || true
+          pytest tests/property -v --tb=short --hypothesis-seed=42 --ignore=tests/property/test_embedding_props.py || true
         continue-on-error: true
 
   # ===========================================================================
@@ -120,6 +122,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
       - name: Install build tools
         run: |

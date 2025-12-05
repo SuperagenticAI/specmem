@@ -66,15 +66,15 @@ The MCP server exposes SpecMem functionality as tools that Kiro can invoke.
 # specmem/mcp/server.py
 class SpecMemMCPServer:
     """MCP server exposing SpecMem tools to Kiro."""
-    
+
     def __init__(self, workspace_path: Path):
         self.workspace_path = workspace_path
         self.client: SpecMemClient | None = None
-    
+
     async def initialize(self) -> dict:
         """Initialize spec memory for the workspace."""
         ...
-    
+
     async def handle_tool_call(self, tool_name: str, arguments: dict) -> dict:
         """Route tool calls to appropriate handlers."""
         ...
@@ -159,34 +159,34 @@ A new adapter that detects and parses Kiro Power configurations.
 # specmem/adapters/power.py
 class PowerAdapter(SpecAdapter):
     """Adapter for Kiro Power configurations.
-    
+
     Detects and parses:
     - .kiro/powers/*/POWER.md - Power documentation
     - .kiro/powers/*/steering/*.md - Steering files
     - .kiro/powers/*/mcp.json - MCP configuration (for tool metadata)
     """
-    
+
     @property
     def name(self) -> str:
         return "KiroPower"
-    
+
     def detect(self, repo_path: str) -> bool:
         """Check if any Powers are installed."""
         powers_dir = Path(repo_path) / ".kiro" / "powers"
         return powers_dir.exists() and any(powers_dir.iterdir())
-    
+
     def load(self, repo_path: str) -> list[SpecBlock]:
         """Load all Power documentation as SpecBlocks."""
         ...
-    
+
     def _parse_power_md(self, power_path: Path) -> list[SpecBlock]:
         """Parse POWER.md file into SpecBlocks."""
         ...
-    
+
     def _parse_steering_files(self, power_path: Path) -> list[SpecBlock]:
         """Parse steering files into SpecBlocks."""
         ...
-    
+
     def _parse_mcp_config(self, power_path: Path) -> dict:
         """Parse mcp.json for tool metadata."""
         ...
@@ -200,20 +200,20 @@ Extends the SpecImpact graph builder to handle Power relationships.
 # specmem/impact/power_builder.py
 class PowerGraphBuilder:
     """Builds graph nodes and edges for Kiro Powers."""
-    
+
     def build_power_nodes(self, powers: list[PowerInfo]) -> list[GraphNode]:
         """Create graph nodes for each installed Power."""
         ...
-    
+
     def build_power_edges(
-        self, 
-        power: PowerInfo, 
+        self,
+        power: PowerInfo,
         code_files: list[Path],
         specs: list[SpecBlock]
     ) -> list[GraphEdge]:
         """Create edges linking Powers to code and specs."""
         ...
-    
+
     def extract_code_patterns(self, steering_content: str) -> list[str]:
         """Extract code patterns from steering file content."""
         ...

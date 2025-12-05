@@ -215,29 +215,9 @@ model = "text-embedding-3-small"
 export OPENAI_API_KEY="sk-..."
 ```
 
-### Anthropic
-
-```toml
-[embedding]
-provider = "anthropic"
-model = "claude-3-haiku-20240307"
-```
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-### Google
-
-```toml
-[embedding]
-provider = "google"
-model = "embedding-001"
-```
-
-```bash
-export GOOGLE_API_KEY="..."
-```
+!!! note "Additional Providers"
+    Support for Anthropic, Google, and Together AI embeddings is planned for future releases.
+    Currently, only `local` and `openai` providers are supported.
 
 ## Alternative Vector Stores
 

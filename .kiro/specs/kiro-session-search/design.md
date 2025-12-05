@@ -19,20 +19,20 @@ graph TB
         Config --> Discovery[Auto-Discovery]
         Discovery --> Validator[Path Validator]
     end
-    
+
     subgraph "Data Layer"
         Scanner[Session Scanner] --> Parser[Session Parser]
         Parser --> Normalizer[Data Normalizer]
         Normalizer --> Store[Session Store]
     end
-    
+
     subgraph "Search Layer"
         Store --> Indexer[Session Indexer]
         Indexer --> VectorDB[Vector Store]
         Search[Search Engine] --> VectorDB
         Search --> Linker[Spec Linker]
     end
-    
+
     CLI --> Scanner
     CLI --> Search
 ```
@@ -62,7 +62,7 @@ class DiscoveryResult:
 
 class SessionDiscovery:
     """Discovers Kiro session directories on the local system."""
-    
+
     PLATFORM_PATHS = {
         Platform.MACOS: [
             "~/Library/Application Support/Kiro/workspace-sessions"
@@ -75,15 +75,15 @@ class SessionDiscovery:
             "%APPDATA%/Kiro/workspace-sessions"
         ]
     }
-    
+
     def discover(self, platform: Platform | None = None) -> DiscoveryResult:
         """Auto-discover Kiro session directories."""
         ...
-    
+
     def validate_directory(self, path: Path) -> bool:
         """Check if directory contains valid session data."""
         ...
-    
+
     def get_platform_paths(self, platform: Platform) -> list[Path]:
         """Get default paths for a specific platform."""
         ...
@@ -103,27 +103,27 @@ class SessionConfig:
 
 class SessionConfigManager:
     """Manages session search configuration."""
-    
+
     def configure_interactive(self) -> SessionConfig:
         """Interactive configuration with permission prompt."""
         ...
-    
+
     def configure_with_path(self, path: Path) -> SessionConfig:
         """Configure with explicit path (skips auto-discovery)."""
         ...
-    
+
     def configure_auto(self) -> SessionConfig:
         """Auto-configure without prompts (assumes permission)."""
         ...
-    
+
     def load_config(self) -> SessionConfig | None:
         """Load existing configuration from .specmem.toml."""
         ...
-    
+
     def save_config(self, config: SessionConfig) -> None:
         """Save configuration to .specmem.toml."""
         ...
-    
+
     def is_configured(self) -> bool:
         """Check if session search is configured."""
         ...
@@ -154,19 +154,19 @@ class Session:
 
 class KiroSessionParser:
     """Parses Kiro session files."""
-    
+
     def parse_sessions_index(self, index_path: Path) -> list[dict]:
         """Parse sessions.json index file."""
         ...
-    
+
     def parse_session_file(self, session_path: Path) -> Session:
         """Parse individual session JSON file."""
         ...
-    
+
     def flatten_content(self, content: list | str) -> str:
         """Flatten content arrays into readable text."""
         ...
-    
+
     def extract_tool_calls(self, message: dict) -> list[dict]:
         """Extract tool call information from message."""
         ...
@@ -179,18 +179,18 @@ Scans configured directory for sessions.
 ```python
 class SessionScanner:
     """Scans for Kiro sessions in configured directory."""
-    
+
     def __init__(self, config: SessionConfig):
         self.config = config
-    
+
     def scan(self, workspace_filter: Path | None = None) -> list[Session]:
         """Scan for sessions, optionally filtered by workspace."""
         ...
-    
+
     def decode_workspace_path(self, encoded: str) -> Path:
         """Decode base64-encoded workspace path."""
         ...
-    
+
     def list_workspace_directories(self) -> list[Path]:
         """List all workspace directories in sessions folder."""
         ...
@@ -203,18 +203,18 @@ Indexes sessions for semantic search.
 ```python
 class SessionIndexer:
     """Indexes sessions for search."""
-    
+
     def __init__(self, vector_store: VectorStore):
         self.vector_store = vector_store
-    
+
     def index_session(self, session: Session) -> None:
         """Index a single session."""
         ...
-    
+
     def index_sessions(self, sessions: list[Session]) -> int:
         """Batch index multiple sessions. Returns count indexed."""
         ...
-    
+
     def remove_session(self, session_id: str) -> None:
         """Remove session from index."""
         ...
@@ -242,23 +242,23 @@ class SearchResult:
 
 class SessionSearchEngine:
     """Searches indexed sessions."""
-    
+
     def search(
-        self, 
-        query: str, 
+        self,
+        query: str,
         filters: SearchFilters | None = None
     ) -> list[SearchResult]:
         """Search sessions by query with optional filters."""
         ...
-    
+
     def list_recent(
-        self, 
+        self,
         limit: int = 10,
         workspace: Path | None = None
     ) -> list[Session]:
         """List recent sessions."""
         ...
-    
+
     def get_session(self, session_id: str) -> Session | None:
         """Get a specific session by ID."""
         ...
@@ -279,19 +279,19 @@ class SessionSpecLink:
 
 class SpecLinker:
     """Links sessions to specifications."""
-    
+
     def detect_spec_references(self, session: Session) -> list[str]:
         """Detect spec file references in session content."""
         ...
-    
+
     def create_links(self, session: Session) -> list[SessionSpecLink]:
         """Create links between session and detected specs."""
         ...
-    
+
     def get_sessions_for_spec(self, spec_id: str) -> list[Session]:
         """Get all sessions linked to a spec."""
         ...
-    
+
     def get_specs_for_session(self, session_id: str) -> list[str]:
         """Get all spec IDs linked to a session."""
         ...
@@ -374,7 +374,7 @@ workspace_only = false
       "content": "Help me implement authentication"
     },
     {
-      "role": "assistant", 
+      "role": "assistant",
       "content": [
         {"type": "text", "text": "I'll help you..."},
         {"type": "tool_use", "name": "readFile", "input": {...}}

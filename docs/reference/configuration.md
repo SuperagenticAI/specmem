@@ -25,13 +25,13 @@ batch_size = 32
 
 ### Provider-Specific Models
 
-| Provider | Models |
-|----------|--------|
-| local | all-MiniLM-L6-v2, all-mpnet-base-v2 |
-| openai | text-embedding-3-small, text-embedding-3-large |
-| anthropic | claude-3-haiku-20240307 |
-| google | embedding-001 |
-| together | m2-bert-80M-8k-retrieval |
+| Provider | Models | Status |
+|----------|--------|--------|
+| local | all-MiniLM-L6-v2, all-mpnet-base-v2 | ✅ Supported |
+| openai | text-embedding-3-small, text-embedding-3-large | ✅ Supported |
+| anthropic | (planned) | 🔜 Coming soon |
+| google | (planned) | 🔜 Coming soon |
+| together | (planned) | 🔜 Coming soon |
 
 ## Vector Database
 

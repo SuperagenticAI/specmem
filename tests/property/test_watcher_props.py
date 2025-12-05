@@ -110,9 +110,9 @@ class TestDebounceRapidChanges:
         time.sleep(0.2)
 
         # Should have exactly num_files events (one per unique file)
-        assert len(received_events) == num_files, (
-            f"Expected {num_files} events, got {len(received_events)}"
-        )
+        assert (
+            len(received_events) == num_files
+        ), f"Expected {num_files} events, got {len(received_events)}"
 
     def test_cancel_prevents_callback(self):
         """Canceling debouncer should prevent callback."""

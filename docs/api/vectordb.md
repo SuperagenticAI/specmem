@@ -26,17 +26,16 @@ High-performance embedded vector database.
 from specmem.vectordb import LanceDBStore
 
 store = LanceDBStore(
-    path=".specmem/vectordb",
-    table_name="specs",
+    db_path=".specmem/vectordb",
 )
+store.initialize()
 ```
 
-### Parameters
+### Installation
 
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `path` | `str \| Path` | Database path | required |
-| `table_name` | `str` | Table name | `"specs"` |
+```bash
+pip install "specmem[local]"
+```
 
 ### Features
 
@@ -51,20 +50,13 @@ store = LanceDBStore(
 Popular open-source vector database.
 
 ```python
-from specmem.vectordb import ChromaDBStore
+from specmem.vectordb.chroma_store import ChromaDBStore
 
 store = ChromaDBStore(
     path=".specmem/chroma",
     collection_name="specs",
 )
 ```
-
-### Parameters
-
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `path` | `str \| Path` | Database path | required |
-| `collection_name` | `str` | Collection name | `"specs"` |
 
 ### Installation
 
@@ -84,7 +76,7 @@ pip install "specmem[chroma]"
 Production-grade vector database.
 
 ```python
-from specmem.vectordb import QdrantStore
+from specmem.vectordb.qdrant_store import QdrantStore
 
 # Local (embedded)
 store = QdrantStore(
@@ -97,23 +89,7 @@ store = QdrantStore(
     url="http://localhost:6333",
     collection_name="specs",
 )
-
-# Qdrant Cloud
-store = QdrantStore(
-    url="https://your-cluster.qdrant.io",
-    api_key="your-api-key",
-    collection_name="specs",
-)
 ```
-
-### Parameters
-
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `path` | `str \| Path \| None` | Local path | `None` |
-| `url` | `str \| None` | Server URL | `None` |
-| `api_key` | `str \| None` | API key | `None` |
-| `collection_name` | `str` | Collection name | `"specs"` |
 
 ### Installation
 
@@ -134,92 +110,87 @@ pip install "specmem[qdrant]"
 Use the factory to create stores from configuration:
 
 ```python
-from specmem.vectordb import create_vectordb
+from specmem.vectordb.factory import get_vector_store
 
-# From config
-store = create_vectordb(
+# Create a LanceDB store
+store = get_vector_store(
     backend="lancedb",
-    path=".specmem/vectordb",
+    db_path=".specmem/vectordb",
 )
-
-# From config file
-store = create_vectordb_from_config(config)
 ```
 
 ## Embedding Providers
 
-### Local Embeddings
+### Local Embeddings (Default)
+
+Uses SentenceTransformers locally - no API key required.
 
 ```python
-from specmem.vectordb.embeddings import LocalEmbeddings
+from specmem.vectordb.embeddings import LocalEmbeddingProvider
 
-embeddings = LocalEmbeddings(
-    model="all-MiniLM-L6-v2",
-)
-
-vector = embeddings.embed("authentication requirements")
-vectors = embeddings.embed_batch(["query1", "query2"])
+embeddings = LocalEmbeddingProvider(model_name="all-MiniLM-L6-v2")
+vectors = embeddings.embed(["authentication requirements", "user login"])
 ```
 
 ### OpenAI Embeddings
 
 ```python
-from specmem.vectordb.embeddings import OpenAIEmbeddings
+from specmem.vectordb.embeddings import OpenAIEmbeddingProvider
 
-embeddings = OpenAIEmbeddings(
+embeddings = OpenAIEmbeddingProvider(
     model="text-embedding-3-small",
     api_key="sk-...",  # Or use OPENAI_API_KEY env var
 )
+vectors = embeddings.embed(["authentication requirements"])
 ```
 
-### Anthropic Embeddings
+### Factory Function
+
+The recommended way to get an embedding provider:
 
 ```python
-from specmem.vectordb.embeddings import AnthropicEmbeddings
+from specmem.vectordb.embeddings import get_embedding_provider
 
-embeddings = AnthropicEmbeddings(
-    model="claude-3-haiku-20240307",
-    api_key="sk-ant-...",  # Or use ANTHROPIC_API_KEY env var
-)
-```
+# Local embeddings (default)
+local = get_embedding_provider(provider="local")
 
-### Google Embeddings
-
-```python
-from specmem.vectordb.embeddings import GoogleEmbeddings
-
-embeddings = GoogleEmbeddings(
-    model="embedding-001",
-    api_key="...",  # Or use GOOGLE_API_KEY env var
+# OpenAI embeddings
+openai = get_embedding_provider(
+    provider="openai",
+    model="text-embedding-3-small",
+    api_key="sk-...",
 )
 ```
 
 ## Custom Vector Store
 
-Implement the `VectorStore` protocol:
+Implement the `VectorStore` base class:
 
 ```python
-from specmem.vectordb.base import VectorStore, SearchResult
+from specmem.vectordb.base import VectorStore, QueryResult
 
 class MyVectorStore(VectorStore):
-    def add(self, id: str, embedding: list[float], metadata: dict) -> None:
+    def initialize(self) -> None:
+        # Initialize the store
+        pass
+
+    def add_block(self, block, embedding: list[float]) -> None:
         # Store the embedding
         pass
 
     def search(
         self,
-        embedding: list[float],
+        query_embedding: list[float],
         top_k: int = 5,
-        filters: dict | None = None,
-    ) -> list[SearchResult]:
+    ) -> list[QueryResult]:
         # Search for similar embeddings
         return []
 
-    def get(self, id: str) -> dict | None:
+    def get_block(self, block_id: str):
         # Get by ID
         return None
 
-    def delete(self, id: str) -> bool:
+    def delete_block(self, block_id: str) -> bool:
         # Delete by ID
         return False
 
@@ -230,12 +201,4 @@ class MyVectorStore(VectorStore):
     def clear(self) -> None:
         # Clear all data
         pass
-```
-
-Register your custom store:
-
-```python
-from specmem.vectordb import register_backend
-
-register_backend("mystore", MyVectorStore)
 ```

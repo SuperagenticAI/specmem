@@ -51,36 +51,36 @@ Main class that orchestrates indexing of all Kiro configuration artifacts.
 @dataclass
 class KiroConfigIndexer:
     """Indexes Kiro CLI configuration artifacts."""
-    
+
     workspace_path: Path
-    
+
     def index_all(self) -> list[SpecBlock]:
         """Index all Kiro configuration files."""
         ...
-    
+
     def index_steering(self) -> list[SpecBlock]:
         """Index steering files from .kiro/steering/."""
         ...
-    
+
     def index_mcp_config(self) -> list[SpecBlock]:
         """Index MCP configuration from .kiro/settings/mcp.json."""
         ...
-    
+
     def index_hooks(self) -> list[SpecBlock]:
         """Index hooks from .kiro/hooks/."""
         ...
-    
+
     def get_steering_for_file(self, file_path: str) -> list[SpecBlock]:
         """Get steering files applicable to a specific file."""
         ...
-    
+
     def get_available_tools(self) -> list[MCPToolInfo]:
         """Get list of available (enabled) MCP tools."""
         ...
-    
+
     def get_hooks_for_trigger(
-        self, 
-        trigger: str, 
+        self,
+        trigger: str,
         file_path: str | None = None
     ) -> list[HookInfo]:
         """Get hooks matching a trigger type and optional file pattern."""
@@ -95,13 +95,13 @@ Parses steering files with YAML frontmatter support.
 @dataclass
 class SteeringFile:
     """Parsed steering file."""
-    
+
     path: Path
     content: str
     inclusion: Literal["always", "fileMatch", "manual"]
     file_match_pattern: str | None
     title: str
-    
+
     def matches_file(self, file_path: str) -> bool:
         """Check if this steering applies to a file."""
         ...
@@ -109,11 +109,11 @@ class SteeringFile:
 
 class SteeringParser:
     """Parses steering files with frontmatter."""
-    
+
     def parse(self, file_path: Path) -> SteeringFile:
         """Parse a steering file."""
         ...
-    
+
     def parse_frontmatter(self, content: str) -> dict[str, Any]:
         """Extract YAML frontmatter from content."""
         ...
@@ -127,7 +127,7 @@ Parses MCP server configuration.
 @dataclass
 class MCPServerInfo:
     """Parsed MCP server configuration."""
-    
+
     name: str
     command: str
     args: list[str]
@@ -139,7 +139,7 @@ class MCPServerInfo:
 @dataclass
 class MCPToolInfo:
     """Information about an MCP tool."""
-    
+
     server_name: str
     tool_name: str
     description: str
@@ -148,11 +148,11 @@ class MCPToolInfo:
 
 class MCPConfigParser:
     """Parses MCP configuration."""
-    
+
     def parse(self, config_path: Path) -> list[MCPServerInfo]:
         """Parse mcp.json configuration."""
         ...
-    
+
     def get_tools(self, servers: list[MCPServerInfo]) -> list[MCPToolInfo]:
         """Extract tool information from servers."""
         ...
@@ -166,14 +166,14 @@ Parses hook configuration files.
 @dataclass
 class HookInfo:
     """Parsed hook configuration."""
-    
+
     name: str
     description: str
     trigger: Literal["file_save", "manual", "session_start"]
     file_pattern: str | None
     action: str
     enabled: bool
-    
+
     def matches_file(self, file_path: str) -> bool:
         """Check if hook's file pattern matches a file."""
         ...
@@ -181,7 +181,7 @@ class HookInfo:
 
 class HookParser:
     """Parses hook configuration files."""
-    
+
     def parse(self, hook_path: Path) -> HookInfo:
         """Parse a hook JSON file."""
         ...

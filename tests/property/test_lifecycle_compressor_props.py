@@ -93,9 +93,9 @@ This section adds bulk but not value to the spec.
             # Verify all criteria are preserved
             for criterion in criteria:
                 # The criterion text should appear in compressed content
-                assert criterion in compressed.compressed_content, (
-                    f"Criterion '{criterion}' not found in compressed content"
-                )
+                assert (
+                    criterion in compressed.compressed_content
+                ), f"Criterion '{criterion}' not found in compressed content"
 
             # Verify preserved_criteria list contains all criteria
             assert len(compressed.preserved_criteria) >= len(criteria)

@@ -537,4 +537,3 @@ coverage_strategy = st.builds(
 - Test end-to-end coverage analysis with real spec files
 - Test CLI commands with sample workspace
 - Test API integration with SpecMemClient
-

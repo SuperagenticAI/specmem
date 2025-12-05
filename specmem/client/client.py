@@ -31,7 +31,17 @@ from specmem.diff.models import (
     StalenessWarning,
 )
 from specmem.impact import GraphBuilder, ImpactSet, SpecImpactGraph
-from specmem.vectordb import LanceDBStore, get_embedding_provider
+
+
+# Optional: local embeddings (requires specmem[local])
+try:
+    from specmem.vectordb import LanceDBStore, get_embedding_provider
+
+    _HAS_LOCAL = True
+except ImportError:
+    _HAS_LOCAL = False
+    LanceDBStore = None  # type: ignore
+    get_embedding_provider = None  # type: ignore
 
 
 if TYPE_CHECKING:
@@ -111,6 +121,11 @@ class SpecMemClient:
 
     def _initialize_store(self) -> None:
         """Initialize the memory store."""
+        if not _HAS_LOCAL:
+            raise MemoryStoreError(
+                "Local embeddings not available. Install with: pip install specmem[local]"
+            )
+
         try:
             # Create .specmem directory if needed
             specmem_dir = self.path / ".specmem"

@@ -57,7 +57,7 @@ class HealthScore:
 class HealthScoreEngine:
     def calculate(self, workspace_path: Path) -> HealthScore:
         """Calculate overall health score for specifications."""
-        
+
     def get_suggestions(self, score: HealthScore) -> list[str]:
         """Get actionable suggestions for improvement."""
 ```
@@ -68,13 +68,13 @@ class HealthScoreEngine:
 class SpecFileWatcher:
     def __init__(self, workspace_path: Path, callback: Callable):
         """Initialize file watcher for spec files."""
-        
+
     def start(self) -> None:
         """Start watching for file changes."""
-        
+
     def stop(self) -> None:
         """Stop watching."""
-        
+
     def on_change(self, path: Path) -> None:
         """Handle file change with debouncing."""
 ```
@@ -111,10 +111,10 @@ class ImpactGraphBuilder:
 class DemoHandler:
     def setup_demo(self, workspace_path: Path) -> None:
         """Set up demo environment with sample specs."""
-        
+
     def copy_specmem_specs(self, target_path: Path) -> None:
         """Copy SpecMem's own specs for dogfooding demo."""
-        
+
     def launch_ui(self, port: int = 8765) -> None:
         """Launch Web UI and open browser."""
 ```
@@ -132,7 +132,7 @@ class KiroHook:
 class KiroHooksGenerator:
     def generate_hooks(self, workspace_path: Path) -> list[KiroHook]:
         """Generate Kiro hook configurations."""
-        
+
     def write_hooks(self, hooks: list[KiroHook], output_path: Path) -> None:
         """Write hooks to .kiro/hooks/ directory."""
 ```
@@ -143,13 +143,13 @@ class KiroHooksGenerator:
 class QuickActionsAPI:
     async def scan(self) -> dict:
         """Execute scan and return results."""
-        
+
     async def build(self) -> dict:
         """Execute build and return results."""
-        
+
     async def validate(self) -> dict:
         """Execute validation and return results."""
-        
+
     async def coverage(self) -> dict:
         """Execute coverage analysis and return results."""
 ```

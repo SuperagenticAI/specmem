@@ -60,7 +60,7 @@ Modern coding agents (Kiro, Cursor, Claude Code, etc.) suffer from:
 
 **Pain Point:** Specifications exist but agents don't use them effectively. Context gets lost between sessions.
 
-**Value Proposition:** 
+**Value Proposition:**
 - Agents always have access to relevant specs
 - Specs are searchable via semantic queries
 - Impact analysis shows which specs relate to code changes

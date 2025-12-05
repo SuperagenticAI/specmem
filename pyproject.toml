@@ -58,14 +58,18 @@ dependencies = [
     "rich>=13.0.0",
     "toml>=0.10.2",
     "pydantic>=2.0.0",
-    "lancedb>=0.4.0",
-    "sentence-transformers>=2.2.0",
     "numpy>=1.24.0",
-    "pyarrow>=14.0.0",
 ]
 
 [project.optional-dependencies]
-# Cloud embedding providers
+# Local embeddings (heavy - includes PyTorch ~2GB)
+local = [
+    "lancedb>=0.4.0",
+    "sentence-transformers>=2.2.0",
+    "pyarrow>=14.0.0",
+]
+
+# Cloud embedding providers (lightweight)
 openai = ["openai>=1.0.0"]
 anthropic = ["anthropic>=0.18.0"]
 google = ["google-generativeai>=0.3.0"]
@@ -91,7 +95,7 @@ cloud = [
     "specmem[together]",
 ]
 
-# Development dependencies
+# Development dependencies (lightweight - no ML models)
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
@@ -112,8 +116,9 @@ docs = [
     "pymdown-extensions>=10.0.0",
 ]
 
-# All optional dependencies
+# Full installation with local embeddings
 all = [
+    "specmem[local]",
     "specmem[cloud]",
     "specmem[chroma]",
     "specmem[qdrant]",

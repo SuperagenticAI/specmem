@@ -28,12 +28,12 @@ MemoryBank(
 
 ```python
 from specmem.vectordb import LanceDBStore
-from specmem.vectordb.embeddings import LocalEmbeddings
+from specmem.vectordb.embeddings import LocalEmbeddingProvider
 
-vectordb = LanceDBStore(path=".specmem/vectordb")
-embeddings = LocalEmbeddings(model="all-MiniLM-L6-v2")
+vectordb = LanceDBStore(db_path=".specmem/vectordb")
+embeddings = LocalEmbeddingProvider(model_name="all-MiniLM-L6-v2")
 
-memory = MemoryBank(vectordb=vectordb, embedding_provider=embeddings)
+memory = MemoryBank(vector_store=vectordb, embedding_provider=embeddings)
 ```
 
 ## Methods

@@ -39,7 +39,7 @@ $ specmem cov
 ========================================
 Overall: 374/463 criteria covered (80.8%)
 
-                      Coverage by Feature                       
+                      Coverage by Feature  
 ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ Feature               ┃ Tested ┃ Total ┃ Coverage ┃      Gap ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━┩
@@ -151,7 +151,7 @@ For best results, add explicit links in your test docstrings:
 ```python
 def test_account_lockout_after_failed_attempts():
     """Test that accounts are locked after 5 failed login attempts.
-    
+
     Validates: 1.3
     """
     # Test implementation

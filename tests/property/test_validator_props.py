@@ -807,7 +807,7 @@ from specmem.validator.rules.timeline import TimelineRule
 
 
 @given(
-    year=st.integers(min_value=2020, max_value=2024),
+    year=st.integers(min_value=2020, max_value=2025),
     month=st.integers(min_value=1, max_value=12),
     day=st.integers(min_value=1, max_value=28),
 )

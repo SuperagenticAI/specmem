@@ -88,7 +88,7 @@ $ specmem cov
 ========================================
 Overall: 374/463 criteria covered (80.8%)
 
-                      Coverage by Feature                       
+                      Coverage by Feature  
 ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ Feature               ┃ Tested ┃ Total ┃ Coverage ┃      Gap ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━┩
@@ -192,7 +192,7 @@ For best results, add explicit links in your tests:
 ```python
 def test_account_lockout_after_failed_attempts():
     """Test that accounts are locked after 5 failed login attempts.
-    
+
     Validates: 1.3
     """
     # Test implementation
@@ -212,7 +212,7 @@ test('account lockout after failed attempts', () => {
 ```python
 def test_authentication_flow():
     """Test the complete authentication flow.
-    
+
     Validates: 1.1, 1.2, 1.3
     """
     pass
@@ -233,16 +233,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install SpecMem
         run: pip install specmem
-      
+
       - name: Check coverage
         run: specmem cov
-      
+
       - name: Export report
         run: specmem cov export --format json > coverage.json
-      
+
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:

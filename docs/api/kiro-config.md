@@ -106,7 +106,7 @@ class SteeringFile:
     inclusion: str         # "always", "fileMatch", or "manual"
     file_match_pattern: str | None
     title: str
-    
+
     def matches_file(self, file_path: str) -> bool:
         """Check if this steering applies to a file."""
 ```
@@ -158,7 +158,7 @@ class HookInfo:
     file_pattern: str | None
     action: str
     enabled: bool
-    
+
     def matches_file(self, file_path: str) -> bool:
         """Check if hook's file pattern matches a file."""
 ```

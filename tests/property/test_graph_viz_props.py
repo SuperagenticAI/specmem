@@ -68,9 +68,9 @@ class TestGraphFilterConsistency:
 
         # All filtered nodes should have matching type
         for node in filtered.nodes:
-            assert node.type in filter_types, (
-                f"Node {node.id} has type {node.type} not in {filter_types}"
-            )
+            assert (
+                node.type in filter_types
+            ), f"Node {node.id} has type {node.type} not in {filter_types}"
 
         # Count should match expected
         expected_count = sum(1 for n in nodes if n.type in filter_types)

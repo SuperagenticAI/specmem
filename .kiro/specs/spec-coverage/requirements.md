@@ -124,4 +124,3 @@ This feature provides Spec Coverage Analysis for SpecMem, enabling developers an
 3. WHEN returning coverage THEN the system SHALL include criteria, tests, and confidence scores
 4. WHEN returning coverage THEN the system SHALL include suggestions for uncovered criteria
 5. WHEN no specs exist THEN the system SHALL return an empty CoverageResult without errors
-

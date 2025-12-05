@@ -234,9 +234,9 @@ class TestOrphanDetectionProperties:
             orphaned_ids = {s.spec_id for s in orphaned}
 
             # Verify orphan detection matches expected
-            assert orphaned_ids == expected_orphans, (
-                f"Expected orphans {expected_orphans}, got {orphaned_ids}"
-            )
+            assert (
+                orphaned_ids == expected_orphans
+            ), f"Expected orphans {expected_orphans}, got {orphaned_ids}"
 
             # Verify summary count matches
             summary = analyzer.get_summary()

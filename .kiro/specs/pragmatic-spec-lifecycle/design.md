@@ -60,7 +60,7 @@ class HealthAnalyzer:
         vector_store: VectorStore,
         stale_threshold_days: int = 90
     ): ...
-    
+
     def analyze_spec(self, spec_id: str) -> SpecHealthScore: ...
     def analyze_all(self) -> list[SpecHealthScore]: ...
     def get_orphaned_specs(self) -> list[SpecHealthScore]: ...
@@ -87,7 +87,7 @@ class PrunerEngine:
         vector_store: VectorStore,
         archive_dir: Path = Path(".specmem/archive")
     ): ...
-    
+
     def analyze(self) -> list[SpecHealthScore]: ...
     def prune_orphaned(
         self,
@@ -130,7 +130,7 @@ class GeneratorEngine:
         adapters: list[SpecAdapter],
         default_format: str = "kiro"
     ): ...
-    
+
     def generate_from_file(
         self,
         file_path: Path,
@@ -165,7 +165,7 @@ class CompressorEngine:
         max_summary_tokens: int = 500,
         preserve_acceptance_criteria: bool = True
     ): ...
-    
+
     def compress_spec(self, spec_id: str) -> CompressedSpec: ...
     def compress_all(
         self,
@@ -190,7 +190,7 @@ def calculate_health_score(
 ) -> float:
     # Base score from code references (0-40 points)
     ref_score = min(code_references * 10, 40)
-    
+
     # Freshness score (0-30 points)
     if days_since_modified <= 7:
         fresh_score = 30
@@ -200,10 +200,10 @@ def calculate_health_score(
         fresh_score = 10
     else:
         fresh_score = 0
-    
+
     # Usage score (0-30 points)
     usage_score = min(query_count * 5, 30)
-    
+
     return (ref_score + fresh_score + usage_score) / 100.0
 ```
 
