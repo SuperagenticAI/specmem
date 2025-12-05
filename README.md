@@ -265,12 +265,14 @@ Install SpecMem as a **Kiro Power** for seamless IDE integration:
 Full **Model Context Protocol** support. Kiro's agent can query your specs, analyze impact, and get optimized context automatically.
 
 ```json
-// Add to your mcp.json for instant Kiro integration
+// .kiro/settings/mcp.json
 {
   "mcpServers": {
     "specmem": {
-      "command": "uvx",
-      "args": ["specmem-mcp"]
+      "command": "specmem-mcp",
+      "args": [],
+      "env": { "SPECMEM_WORKSPACE": "${workspaceFolder}" },
+      "autoApprove": ["specmem_query", "specmem_tldr", "specmem_coverage"]
     }
   }
 }
@@ -297,7 +299,24 @@ First-class support for `.kiro/specs/` structure:
 | `design.md` | Architecture decisions, component interfaces |
 | `tasks.md` | Implementation checklist, progress tracking |
 
-See [Kiro Powers Documentation](https://superagenticai.github.io/specmem/user-guide/kiro-powers/) for details.
+### 🎣 Hooks & Steering
+
+SpecMem includes pre-configured hooks and steering files:
+
+```
+.kiro/
+├── settings/mcp.json       # MCP server config
+├── hooks/
+│   ├── spec-coverage.yaml  # Check coverage on test save
+│   ├── spec-validation.yaml # Validate on spec edit
+│   └── impact-analysis.yaml # Analyze impact on code change
+└── steering/
+    ├── specmem-development.md  # Always included
+    ├── spec-writing.md         # When editing specs
+    └── python-style.md         # When editing Python
+```
+
+See [Kiro Integration Guide](https://superagenticai.github.io/specmem/user-guide/kiro-integration/) for details.
 
 ---
 

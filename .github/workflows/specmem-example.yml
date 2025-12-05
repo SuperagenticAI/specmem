@@ -1,0 +1,132 @@
+# Example workflow showing SpecMem GitHub Action usage
+# Copy this to your repository and customize as needed
+
+name: Spec Analysis
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ==========================================================================
+  # Basic Analysis - Run on every PR
+  # ==========================================================================
+  analyze:
+    name: SpecMem Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run SpecMem Analysis
+        uses: specmem/specmem/.github/actions/specmem@main
+        id: specmem
+        with:
+          commands: cov,health,validate
+          comment_on_pr: true
+          # Uncomment to enforce thresholds:
+          # coverage_threshold: 80
+          # health_threshold: B
+          # fail_on_validation_errors: true
+
+      - name: Print Results
+        run: |
+          echo "📊 SpecMem Results:"
+          echo "  Coverage: ${{ steps.specmem.outputs.coverage_percentage }}%"
+          echo "  Health: ${{ steps.specmem.outputs.health_grade }} (${{ steps.specmem.outputs.health_score }}/100)"
+          echo "  Validation Errors: ${{ steps.specmem.outputs.validation_errors }}"
+
+  # ==========================================================================
+  # Advanced: Quality Gate with Thresholds
+  # ==========================================================================
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run SpecMem with Thresholds
+        uses: specmem/specmem/.github/actions/specmem@main
+        with:
+          commands: cov,health
+          coverage_threshold: 70
+          health_threshold: C
+          fail_on_validation_errors: false
+
+  # ==========================================================================
+  # Advanced: Use Outputs for Custom Logic
+  # ==========================================================================
+  custom-checks:
+    name: Custom Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run SpecMem
+        uses: specmem/specmem/.github/actions/specmem@main
+        id: specmem
+        with:
+          commands: cov,health
+          comment_on_pr: false  # We'll handle reporting ourselves
+
+      - name: Check Coverage Trend
+        run: |
+          COVERAGE=${{ steps.specmem.outputs.coverage_percentage }}
+          if (( $(echo "$COVERAGE < 50" | bc -l) )); then
+            echo "::warning::Coverage is below 50%!"
+          fi
+
+      - name: Create Custom Summary
+        run: |
+          echo "## 📊 Spec Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage | ${{ steps.specmem.outputs.coverage_percentage }}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | ${{ steps.specmem.outputs.health_grade }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Errors | ${{ steps.specmem.outputs.validation_errors }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # Advanced: Monorepo with Multiple Packages
+  # ==========================================================================
+  monorepo:
+    name: Monorepo Analysis
+    runs-on: ubuntu-latest
+    if: false  # Disabled by default - enable if you have a monorepo
+    strategy:
+      matrix:
+        package: [frontend, backend, shared]
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Analyze ${{ matrix.package }}
+        uses: specmem/specmem/.github/actions/specmem@main
+        with:
+          working_directory: packages/${{ matrix.package }}
+          commands: cov,health
+
+  # ==========================================================================
+  # Advanced: Install from GitHub (development version)
+  # ==========================================================================
+  dev-version:
+    name: Test with Dev Version
+    runs-on: ubuntu-latest
+    if: false  # Disabled by default
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run with GitHub version
+        uses: specmem/specmem/.github/actions/specmem@main
+        with:
+          install_from: github
+          github_repo: specmem/specmem
+          version: main  # or a specific branch/tag/commit

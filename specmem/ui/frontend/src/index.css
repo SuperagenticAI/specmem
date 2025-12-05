@@ -13,10 +13,10 @@
   }
 
   .dark {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
   }
 
   body {
@@ -24,8 +24,12 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
+  .dark body {
+    background-color: #000000;
+  }
+
   * {
-    @apply border-slate-200 dark:border-slate-700;
+    @apply border-slate-200 dark:border-zinc-800;
   }
 }
 

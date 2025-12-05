@@ -1,0 +1,139 @@
+name: 'SpecMem Analysis'
+description: 'Analyze spec coverage, health, and quality for AI-assisted development'
+author: 'SpecMem'
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  commands:
+    description: 'Commands to run (comma-separated: cov,health,validate)'
+    required: false
+    default: 'cov,health'
+  install_from:
+    description: 'Installation source: pypi or github'
+    required: false
+    default: 'pypi'
+  version:
+    description: 'SpecMem version (PyPI) or ref (GitHub). Use "latest" for newest.'
+    required: false
+    default: 'latest'
+  github_repo:
+    description: 'GitHub repo for installation (owner/repo)'
+    required: false
+    default: 'specmem/specmem'
+  working_directory:
+    description: 'Directory to run analysis in'
+    required: false
+    default: '.'
+  comment_on_pr:
+    description: 'Post results as PR comment'
+    required: false
+    default: 'true'
+  fail_on_coverage_drop:
+    description: 'Fail if coverage decreases from base branch'
+    required: false
+    default: 'false'
+  coverage_threshold:
+    description: 'Minimum coverage percentage (0-100)'
+    required: false
+    default: '0'
+  health_threshold:
+    description: 'Minimum health grade (A, B, C, D, or empty)'
+    required: false
+    default: ''
+  fail_on_validation_errors:
+    description: 'Fail if validation finds errors'
+    required: false
+    default: 'false'
+  github_token:
+    description: 'GitHub token for API calls (PR comments)'
+    required: false
+    default: ${{ github.token }}
+  python_version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+
+outputs:
+  coverage_percentage:
+    description: 'Spec coverage percentage'
+    value: ${{ steps.run.outputs.coverage_percentage }}
+  health_grade:
+    description: 'Health grade (A-F)'
+    value: ${{ steps.run.outputs.health_grade }}
+  health_score:
+    description: 'Health score (0-100)'
+    value: ${{ steps.run.outputs.health_score }}
+  validation_errors:
+    description: 'Number of validation errors'
+    value: ${{ steps.run.outputs.validation_errors }}
+  results_json:
+    description: 'Full results as JSON'
+    value: ${{ steps.run.outputs.results_json }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: specmem-${{ inputs.install_from }}-${{ inputs.version }}-${{ runner.os }}
+        restore-keys: |
+          specmem-${{ inputs.install_from }}-
+          specmem-
+
+    - name: Install SpecMem
+      shell: bash
+      run: |
+        echo "::group::Installing SpecMem"
+        if [ "${{ inputs.install_from }}" = "github" ]; then
+          if [ "${{ inputs.version }}" = "latest" ] || [ "${{ inputs.version }}" = "main" ]; then
+            pip install "git+https://github.com/${{ inputs.github_repo }}.git"
+          else
+            pip install "git+https://github.com/${{ inputs.github_repo }}.git@${{ inputs.version }}"
+          fi
+        else
+          if [ "${{ inputs.version }}" = "latest" ]; then
+            pip install specmem
+          else
+            pip install "specmem==${{ inputs.version }}"
+          fi
+        fi
+        echo "::endgroup::"
+        specmem --version || echo "SpecMem installed (version check may not be available)"
+
+    - name: Run SpecMem Analysis
+      id: run
+      shell: bash
+      env:
+        COMMANDS: ${{ inputs.commands }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+      run: |
+        python3 "${{ github.action_path }}/scripts/runner.py"
+
+    - name: Post PR Comment
+      if: inputs.comment_on_pr == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        RESULTS_JSON: ${{ steps.run.outputs.results_json }}
+      run: |
+        python3 "${{ github.action_path }}/scripts/reporter.py"
+
+    - name: Check Thresholds
+      shell: bash
+      env:
+        RESULTS_JSON: ${{ steps.run.outputs.results_json }}
+        COVERAGE_THRESHOLD: ${{ inputs.coverage_threshold }}
+        HEALTH_THRESHOLD: ${{ inputs.health_threshold }}
+        FAIL_ON_VALIDATION: ${{ inputs.fail_on_validation_errors }}
+      run: |
+        python3 "${{ github.action_path }}/scripts/threshold_checker.py"

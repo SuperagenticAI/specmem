@@ -1,0 +1,146 @@
+# Implementation Plan
+
+- [x] 1. Create data exporter module
+  - [x] 1.1 Create export models and data structures
+    - Create `specmem/export/models.py` with ExportMetadata, ExportBundle dataclasses
+    - Define TypedDict schemas for JSON output
+    - _Requirements: 1.1_
+  - [x] 1.2 Implement StaticExporter class
+    - Create `specmem/export/exporter.py`
+    - Implement data collection from cov, health, validate commands
+    - Implement spec content parsing
+    - Implement guidelines collection
+    - _Requirements: 1.1, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
+  - [x] 1.3 Write property test for export completeness
+    - **Property 1: Export data completeness**
+    - **Validates: Requirements 1.1, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6**
+  - [x] 1.4 Write property test for export round-trip
+    - **Property 2: Export round-trip consistency**
+    - **Validates: Requirements 1.1**
+
+- [x] 2. Implement history tracking
+  - [x] 2.1 Create history manager
+    - Create `specmem/export/history.py`
+    - Implement history file reading/writing
+    - Implement append logic
+    - Implement truncation to configured limit
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [x] 2.2 Write property test for history append
+    - **Property 8: History append consistency**
+    - **Validates: Requirements 7.1**
+  - [x] 2.3 Write property test for history truncation
+    - **Property 9: History truncation**
+    - **Validates: Requirements 7.3**
+
+- [x] 3. Implement conflict detection
+  - [x] 3.1 Create conflict detector
+    - Create `specmem/export/conflicts.py`
+    - Detect existing GitHub Pages patterns (index.html, _config.yml, mkdocs.yml, etc.)
+    - Implement warning generation
+    - Implement overwrite protection logic
+    - _Requirements: 3.1, 3.4_
+  - [x] 3.2 Write property test for conflict detection
+    - **Property 3: Conflict detection accuracy**
+    - **Validates: Requirements 3.1**
+  - [x] 3.3 Write property test for overwrite protection
+    - **Property 5: Overwrite protection**
+    - **Validates: Requirements 3.4**
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 5. Create CLI commands
+  - [x] 5.1 Implement `specmem export` command
+    - Create `specmem/cli/export.py`
+    - Add `--output` option for directory
+    - Add `--include-history` flag
+    - Wire up to StaticExporter
+    - _Requirements: 1.1, 1.2_
+  - [x] 5.2 Implement `specmem build-static` command
+    - Add build command to export CLI
+    - Implement static site generation
+    - _Requirements: 1.3, 1.4_
+
+- [x] 6. Create static dashboard frontend
+  - [x] 6.1 Set up static dashboard project
+    - Create `specmem/ui/static/` directory structure
+    - Set up Vite + React + TypeScript
+    - Configure for static data injection
+    - _Requirements: 1.3, 1.4_
+  - [x] 6.2 Implement data loading
+    - Create data.ts for loading embedded JSON
+    - Implement type-safe data access
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [x] 6.3 Implement overview page
+    - Display coverage, health, validation summary
+    - Show metadata (timestamp, commit SHA)
+    - Add static data warning banner
+    - _Requirements: 4.1, 4.2, 4.3, 5.1_
+  - [x] 6.4 Implement coverage page
+    - Display per-feature coverage breakdown
+    - Add coverage charts
+    - _Requirements: 5.2_
+  - [x] 6.5 Implement health page
+    - Display health score breakdown
+    - Show category scores
+    - _Requirements: 5.3_
+  - [x] 6.6 Implement specs browser
+    - Display spec list with client-side search
+    - Implement filtering by feature, status, health
+    - _Requirements: 5.4, 6.1, 6.2, 6.3_
+  - [x] 6.7 Implement spec detail view
+    - Display requirements, design, tasks
+    - Show task progress
+    - _Requirements: 5.5_
+  - [x] 6.8 Implement guidelines page
+    - Display all guidelines
+    - _Requirements: 5.6_
+  - [x] 6.9 Implement trends page
+    - Display historical charts
+    - Show coverage and health over time
+    - _Requirements: 7.2_
+
+- [x] 7. Implement client-side filtering
+  - [x] 7.1 Create filter utilities
+    - Implement search by name/content
+    - Implement multi-criteria filtering
+    - _Requirements: 6.1, 6.2, 6.3_
+  - [x] 7.2 Write property test for search filtering
+    - **Property 6: Client-side search filtering**
+    - **Validates: Requirements 6.1, 6.2**
+  - [x] 7.3 Write property test for multi-criteria filtering
+    - **Property 7: Multi-criteria filtering**
+    - **Validates: Requirements 6.3**
+
+- [x] 8. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 9. Create GitHub Action for deployment
+  - [x] 9.1 Create action directory structure
+    - Create `.github/actions/specmem-dashboard/action.yml`
+    - Define inputs (deploy_path, force, include_history, github_token)
+    - Define outputs (dashboard_url)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+  - [x] 9.2 Implement deployment script
+    - Create deployment script
+    - Handle conflict detection
+    - Deploy to gh-pages branch
+    - _Requirements: 2.3, 3.2, 3.3_
+  - [x] 9.3 Write property test for deploy path configuration
+    - **Property 4: Deploy path configuration**
+    - **Validates: Requirements 3.3**
+
+- [x] 10. Create documentation
+  - [x] 10.1 Create user documentation
+    - Add `docs/static-dashboard.md`
+    - Document CLI commands
+    - Document GitHub Action usage
+    - Include conflict warnings and workarounds
+    - _Requirements: 3.1_
+  - [x] 10.2 Create example workflow
+    - Create `.github/workflows/specmem-dashboard-example.yml`
+    - Show basic and advanced usage
+    - _Requirements: 2.1_
+
+- [x] 11. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

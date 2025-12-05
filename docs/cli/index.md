@@ -32,6 +32,7 @@ Options:
 | [`impact`](impact.md) | Analyze impact of changes |
 | [`validate`](validate.md) | Validate specifications |
 | [`cov`](cov.md) | Analyze spec coverage |
+| [`guidelines`](guidelines.md) | Manage coding guidelines |
 | [`serve`](serve.md) | Start the web UI |
 | [`demo`](demo.md) | Launch demo with SpecMem's own specs |
 
@@ -67,6 +68,11 @@ specmem validate
 
 # Spec coverage
 specmem cov
+
+# Coding guidelines
+specmem guidelines                # List all guidelines
+specmem guidelines --source claude  # Filter by source
+specmem guidelines convert <id> steering  # Convert format
 
 # Web UI
 specmem serve

@@ -1,0 +1,75 @@
+# Example workflow for deploying SpecMem static dashboard to GitHub Pages
+# Copy this to your repository and customize as needed
+
+name: Deploy SpecMem Dashboard
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  # ==========================================================================
+  # Deploy Static Dashboard to GitHub Pages
+  # ==========================================================================
+  deploy:
+    name: Deploy Dashboard
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for trends
+
+      - name: Deploy SpecMem Dashboard
+        uses: specmem/specmem/.github/actions/specmem-dashboard@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Customize these options:
+          # deploy_path: specmem-dashboard  # URL path for dashboard
+          # include_history: true           # Track metrics over time
+          # history_limit: 30               # Keep last 30 data points
+
+      - name: Print Dashboard URL
+        run: |
+          echo "📊 Dashboard deployed!"
+          echo "   URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/specmem-dashboard/"
+
+  # ==========================================================================
+  # Alternative: Manual Export and Deploy (more control)
+  # ==========================================================================
+  # deploy-manual:
+  #   name: Manual Deploy
+  #   runs-on: ubuntu-latest
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #     
+  #     - name: Install SpecMem
+  #       run: pip install specmem
+  #     
+  #     - name: Export spec data
+  #       run: specmem export data --output .specmem/export
+  #     
+  #     - name: Build static dashboard
+  #       run: specmem export build --data .specmem/export --output .specmem/static
+  #     
+  #     - name: Deploy to GitHub Pages
+  #       uses: peaceiris/actions-gh-pages@v4
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: .specmem/static
+  #         destination_dir: specmem-dashboard
+  #         keep_files: true

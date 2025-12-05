@@ -171,6 +171,19 @@ class SessionDiscovery:
 
         return result
 
+    def find_sessions_path(self) -> Path | None:
+        """Find the first valid sessions directory.
+
+        Convenience method that returns the first found path from discover().
+
+        Returns:
+            Path to sessions directory, or None if not found.
+        """
+        result = self.discover()
+        if result.found_paths:
+            return result.found_paths[0]
+        return None
+
     def get_help_text(self) -> str:
         """Get help text showing default paths for all platforms.
 

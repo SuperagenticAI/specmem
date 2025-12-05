@@ -116,35 +116,54 @@ class ImpactGraphBuilder:
         return nodes
 
     def _build_code_nodes(self) -> list[GraphNode]:
-        """Build nodes for code files from impact graph."""
+        """Build nodes for code files from impact graph or by scanning workspace."""
         nodes = []
+        code_files: set[str] = set()
 
+        # Try to load from impact graph first
         try:
             from specmem.impact.graph import SpecImpactGraph
+            from specmem.impact.graph_models import NodeType as ImpactNodeType
 
-            graph = SpecImpactGraph(self.workspace_path)
-            graph.load()
+            graph_path = self.workspace_path / ".specmem" / "impact_graph.json"
+            if graph_path.exists():
+                graph = SpecImpactGraph(graph_path)
+                graph.load()
 
-            # Get unique code files from the impact graph
-            code_files = set()
-            for spec_id in graph.spec_to_code:
-                code_files.update(graph.spec_to_code[spec_id])
-
-            for code_path in code_files:
-                path = Path(code_path)
-                node = GraphNode(
-                    id=f"code:{code_path}",
-                    type=NodeType.CODE,
-                    label=path.name,
-                    metadata={
-                        "path": code_path,
-                        "extension": path.suffix,
-                    },
-                )
-                nodes.append(node)
+                # Get code nodes from the graph
+                for node_id, node in graph.nodes.items():
+                    if node.type == ImpactNodeType.CODE:
+                        # Extract path from node id (format: "code:path/to/file.py")
+                        if node_id.startswith("code:"):
+                            code_files.add(node_id[5:])
+                        else:
+                            code_files.add(node_id)
 
         except Exception as e:
             logger.debug(f"Could not load impact graph: {e}")
+
+        # If no code files from graph, scan for Python files in specmem/
+        if not code_files:
+            src_dir = self.workspace_path / "specmem"
+            if src_dir.exists():
+                for py_file in src_dir.rglob("*.py"):
+                    if "__pycache__" not in str(py_file):
+                        rel_path = str(py_file.relative_to(self.workspace_path))
+                        code_files.add(rel_path)
+
+        # Create nodes for code files
+        for code_path in code_files:
+            path = Path(code_path)
+            node = GraphNode(
+                id=f"code:{code_path}",
+                type=NodeType.CODE,
+                label=path.name,
+                metadata={
+                    "path": code_path,
+                    "extension": path.suffix,
+                },
+            )
+            nodes.append(node)
 
         return nodes
 
@@ -194,30 +213,34 @@ class ImpactGraphBuilder:
     def _build_spec_code_edges(
         self, specs: list[GraphNode], code_nodes: list[GraphNode]
     ) -> list[GraphEdge]:
-        """Build edges from specs to code files."""
+        """Build edges from specs to code files using heuristics."""
         edges = []
+        code_node_ids = {c.id for c in code_nodes}
 
-        try:
-            from specmem.impact.graph import SpecImpactGraph
+        # Build edges using name matching heuristics
+        for spec in specs:
+            feature_name = spec.metadata.get("feature", "")
+            if not feature_name:
+                continue
 
-            graph = SpecImpactGraph(self.workspace_path)
-            graph.load()
+            # Convert feature name to possible module names
+            # e.g., "streaming-context-api" -> ["streaming_context_api", "context", "streaming"]
+            feature_parts = feature_name.replace("-", "_").split("_")
 
-            for spec in specs:
-                spec_path = spec.metadata.get("path", "")
-                if spec_path in graph.spec_to_code:
-                    for code_path in graph.spec_to_code[spec_path]:
-                        code_id = f"code:{code_path}"
-                        if any(c.id == code_id for c in code_nodes):
-                            edge = GraphEdge(
-                                source=spec.id,
-                                target=code_id,
-                                relationship=EdgeType.IMPLEMENTS,
-                            )
-                            edges.append(edge)
+            for code in code_nodes:
+                code_path = code.metadata.get("path", "")
+                code_name = Path(code_path).stem
 
-        except Exception as e:
-            logger.debug(f"Could not build spec-code edges: {e}")
+                # Check if any feature part matches the code file name
+                for part in feature_parts:
+                    if len(part) > 3 and part in code_name.lower():
+                        edge = GraphEdge(
+                            source=spec.id,
+                            target=code.id,
+                            relationship=EdgeType.IMPLEMENTS,
+                        )
+                        edges.append(edge)
+                        break
 
         return edges
 

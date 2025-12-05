@@ -262,11 +262,23 @@ class WebServer:
         static_dir = Path(__file__).parent / "static"
 
         if static_dir.exists():
-            self.app.mount(
-                "/assets",
-                StaticFiles(directory=static_dir / "assets"),
-                name="assets",
-            )
+            # Mount assets directory
+            assets_dir = static_dir / "assets"
+            if assets_dir.exists():
+                self.app.mount(
+                    "/assets",
+                    StaticFiles(directory=assets_dir),
+                    name="assets",
+                )
+
+            # Serve logo.png directly
+            @self.app.get("/logo.png")
+            async def serve_logo():
+                logo_path = static_dir / "logo.png"
+                if logo_path.exists():
+                    return FileResponse(logo_path, media_type="image/png")
+                from fastapi import HTTPException
+                raise HTTPException(status_code=404, detail="Logo not found")
 
             @self.app.get("/")
             async def serve_index():

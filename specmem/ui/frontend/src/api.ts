@@ -64,6 +64,15 @@ export interface ExportResponse {
   message: string
 }
 
+// Spec file content types
+export interface SpecFileResponse {
+  feature_name: string
+  file_type: string
+  file_path: string
+  content: string
+  exists: boolean
+}
+
 const API_BASE = '/api'
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
@@ -173,7 +182,7 @@ export const api = {
   },
 
   getBlock: (id: string): Promise<BlockDetail> => {
-    return fetchJson(`${API_BASE}/blocks/${id}`)
+    return fetchJson(`${API_BASE}/blocks/${encodeURIComponent(id)}`)
   },
 
   getStats: (): Promise<StatsResponse> => {
@@ -190,6 +199,11 @@ export const api = {
 
   exportPack: (): Promise<ExportResponse> => {
     return fetchJson(`${API_BASE}/export`, { method: 'POST' })
+  },
+
+  // Spec file content endpoint
+  getSpecFile: (featureName: string, fileType: string): Promise<SpecFileResponse> => {
+    return fetchJson(`${API_BASE}/specs/${encodeURIComponent(featureName)}/${encodeURIComponent(fileType)}`)
   },
 
   // Coverage endpoints
@@ -463,5 +477,132 @@ export const lifecycleApi = {
   // Quick action for lifecycle health
   healthAction: (): Promise<ActionResultResponse> => {
     return fetchJson(`${API_BASE}/actions/lifecycle-health`, { method: 'POST' })
+  },
+}
+
+
+// =============================================================================
+// Kiro Configuration API Types
+// =============================================================================
+
+export interface SteeringFileResponse {
+  name: string
+  title: string
+  inclusion: string
+  file_match_pattern: string | null
+  body_preview: string
+}
+
+export interface MCPServerResponse {
+  name: string
+  command: string
+  args: string[]
+  disabled: boolean
+  auto_approve: string[]
+}
+
+export interface HookResponse {
+  name: string
+  description: string
+  trigger: string
+  file_pattern: string | null
+  enabled: boolean
+  action: string | null
+}
+
+export interface KiroConfigResponse {
+  steering_files: SteeringFileResponse[]
+  mcp_servers: MCPServerResponse[]
+  hooks: HookResponse[]
+  total_tools: number
+  enabled_servers: number
+  active_hooks: number
+}
+
+// =============================================================================
+// Kiro Configuration API Methods
+// =============================================================================
+
+export const kiroConfigApi = {
+  getConfig: (): Promise<KiroConfigResponse> => {
+    return fetchJson(`${API_BASE}/kiro-config`)
+  },
+}
+
+
+// =============================================================================
+// Coding Guidelines API Types
+// =============================================================================
+
+export interface GuidelineResponse {
+  id: string
+  title: string
+  content: string
+  source_type: string
+  source_file: string
+  file_pattern: string | null
+  tags: string[]
+  is_sample: boolean
+}
+
+export interface GuidelinesListResponse {
+  guidelines: GuidelineResponse[]
+  total_count: number
+  counts_by_source: Record<string, number>
+}
+
+export interface ConversionResultResponse {
+  filename: string
+  content: string
+  frontmatter: Record<string, unknown>
+  source_id: string
+}
+
+export interface ExportResultResponse {
+  format: string
+  content: string
+  filename: string
+}
+
+// =============================================================================
+// Coding Guidelines API Methods
+// =============================================================================
+
+export const guidelinesApi = {
+  // Get all guidelines with optional filtering
+  getGuidelines: (params?: { source?: string; file?: string; q?: string }): Promise<GuidelinesListResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.source) searchParams.set('source', params.source)
+    if (params?.file) searchParams.set('file', params.file)
+    if (params?.q) searchParams.set('q', params.q)
+    const query = searchParams.toString()
+    return fetchJson(`${API_BASE}/guidelines${query ? `?${query}` : ''}`)
+  },
+
+  // Convert a guideline to any format (steering, claude, cursor)
+  convertGuideline: (guidelineId: string, format: string, preview = true): Promise<ConversionResultResponse> => {
+    return fetchJson(`${API_BASE}/guidelines/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guideline_id: guidelineId, format, preview }),
+    })
+  },
+
+  // Legacy: Convert to steering (for backwards compatibility)
+  convertToSteering: (guidelineId: string, preview = true): Promise<ConversionResultResponse> => {
+    return fetchJson(`${API_BASE}/guidelines/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guideline_id: guidelineId, format: 'steering', preview }),
+    })
+  },
+
+  // Export guidelines to Claude or Cursor format
+  exportGuidelines: (format: 'claude' | 'cursor'): Promise<ExportResultResponse> => {
+    return fetchJson(`${API_BASE}/guidelines/export`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ format }),
+    })
   },
 }

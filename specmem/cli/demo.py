@@ -167,7 +167,7 @@ Manages user sessions and tokens.
             db_path.mkdir(parents=True, exist_ok=True)
 
             embedding_provider = get_embedding_provider()
-            vector_store = LanceDBStore(db_path, embedding_provider)
+            vector_store = LanceDBStore(db_path=str(db_path))
 
             # Build memory
             memory_bank = MemoryBank(vector_store, embedding_provider)
@@ -203,23 +203,53 @@ Manages user sessions and tokens.
             enable_file_watcher=True,
         )
 
+        # Pre-warm cache by calling API endpoints (populates server-side cache)
+        def prewarm_cache():
+            """Pre-compute expensive data by calling API endpoints."""
+            import urllib.request
+            import urllib.error
+
+            sleep(3)  # Wait for server to fully start
+            base_url = f"http://127.0.0.1:{port}/api"
+
+            endpoints = [
+                ("health", "Health score"),
+                ("coverage", "Coverage"),
+                ("graph", "Impact graph"),
+            ]
+
+            for endpoint, name in endpoints:
+                try:
+                    url = f"{base_url}/{endpoint}"
+                    req = urllib.request.Request(url, method="GET")
+                    with urllib.request.urlopen(req, timeout=120) as resp:
+                        if resp.status == 200:
+                            console.print(f"[dim]✓ {name} cached[/dim]")
+                except urllib.error.URLError:
+                    pass  # Server not ready yet or endpoint failed
+                except Exception:
+                    pass
+
+        import threading
+        threading.Thread(target=prewarm_cache, daemon=True).start()
+
         if open_browser:
             # Open browser after a short delay
             def open_browser_delayed():
                 sleep(1.5)
                 webbrowser.open(f"http://127.0.0.1:{port}")
 
-            import threading
-
             threading.Thread(target=open_browser_delayed, daemon=True).start()
 
         server.start()
 
 
+
+
 @app.command()
 def demo(
     port: int = typer.Option(8765, "--port", "-p", help="Port for Web UI"),
-    no_browser: bool = typer.Option(False, "--no-browser", help="Don't open browser"),
+    open_browser: bool = typer.Option(False, "--open", "-o", help="Open browser automatically"),
     sample: bool = typer.Option(False, "--sample", help="Use sample specs instead of dogfooding"),
 ):
     """Launch SpecMem demo with one command.
@@ -228,9 +258,9 @@ def demo(
     1. Creates sample specs if none exist (using SpecMem's own specs)
     2. Builds the memory index
     3. Launches the Web UI
-    4. Opens your browser
 
-    Perfect for demos and quick starts!
+    Copy the URL and paste in your browser to view the dashboard.
+    Use --open to auto-launch browser.
     """
     console.print(
         Panel.fit(
@@ -280,7 +310,7 @@ def demo(
                 )
             )
 
-    handler.launch_ui(port=port, open_browser=not no_browser)
+    handler.launch_ui(port=port, open_browser=open_browser)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,198 @@
+name: 'SpecMem Dashboard Deploy'
+description: 'Deploy static SpecMem dashboard to GitHub Pages'
+author: 'SpecMem'
+
+branding:
+  icon: 'bar-chart-2'
+  color: 'purple'
+
+inputs:
+  deploy_path:
+    description: 'Path within GitHub Pages (default: specmem-dashboard)'
+    required: false
+    default: 'specmem-dashboard'
+  force:
+    description: 'Force deployment even if conflicts detected'
+    required: false
+    default: 'false'
+  include_history:
+    description: 'Include historical trend data'
+    required: false
+    default: 'true'
+  history_limit:
+    description: 'Maximum number of history entries to keep'
+    required: false
+    default: '30'
+  install_from:
+    description: 'Installation source: pypi or github'
+    required: false
+    default: 'pypi'
+  version:
+    description: 'SpecMem version (PyPI) or ref (GitHub)'
+    required: false
+    default: 'latest'
+  github_repo:
+    description: 'GitHub repo for installation (owner/repo)'
+    required: false
+    default: 'specmem/specmem'
+  github_token:
+    description: 'GitHub token for deployment'
+    required: true
+  python_version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+  working_directory:
+    description: 'Directory to run analysis in'
+    required: false
+    default: '.'
+
+outputs:
+  dashboard_url:
+    description: 'URL of deployed dashboard'
+    value: ${{ steps.deploy.outputs.dashboard_url }}
+  export_path:
+    description: 'Path to exported data'
+    value: ${{ steps.export.outputs.export_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: specmem-dashboard-${{ inputs.install_from }}-${{ inputs.version }}-${{ runner.os }}
+        restore-keys: |
+          specmem-dashboard-${{ inputs.install_from }}-
+          specmem-dashboard-
+
+    - name: Install SpecMem
+      shell: bash
+      run: |
+        echo "::group::Installing SpecMem"
+        if [ "${{ inputs.install_from }}" = "github" ]; then
+          if [ "${{ inputs.version }}" = "latest" ] || [ "${{ inputs.version }}" = "main" ]; then
+            pip install "git+https://github.com/${{ inputs.github_repo }}.git"
+          else
+            pip install "git+https://github.com/${{ inputs.github_repo }}.git@${{ inputs.version }}"
+          fi
+        else
+          if [ "${{ inputs.version }}" = "latest" ]; then
+            pip install specmem
+          else
+            pip install "specmem==${{ inputs.version }}"
+          fi
+        fi
+        echo "::endgroup::"
+        specmem --version || echo "SpecMem installed"
+
+    - name: Export spec data
+      id: export
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        echo "::group::Exporting spec data"
+        
+        HISTORY_FLAG=""
+        if [ "${{ inputs.include_history }}" = "true" ]; then
+          HISTORY_FLAG="--include-history"
+        else
+          HISTORY_FLAG="--no-history"
+        fi
+        
+        specmem export data \
+          --output .specmem/export \
+          $HISTORY_FLAG \
+          --history-limit ${{ inputs.history_limit }}
+        
+        echo "export_path=.specmem/export" >> $GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Build static dashboard
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        echo "::group::Building static dashboard"
+        specmem export build \
+          --data .specmem/export \
+          --output .specmem/static \
+          --base-path "/${{ inputs.deploy_path }}/"
+        echo "::endgroup::"
+
+    - name: Check for conflicts
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        echo "::group::Checking for conflicts"
+        python3 << 'EOF'
+        import os
+        import sys
+        from pathlib import Path
+
+        # Check for existing GitHub Pages content
+        conflict_patterns = [
+            "index.html", "_config.yml", "mkdocs.yml",
+            "docusaurus.config.js", "docusaurus.config.ts",
+            "book.toml", "conf.py", "_sidebar.md"
+        ]
+
+        deploy_path = "${{ inputs.deploy_path }}"
+        force = "${{ inputs.force }}" == "true"
+
+        # For root deployment, check repo root
+        if deploy_path in [".", "", "/"]:
+            check_dir = Path(".")
+        else:
+            check_dir = Path(".")
+
+        conflicts = []
+        for pattern in conflict_patterns:
+            if (check_dir / pattern).exists():
+                conflicts.append(pattern)
+
+        if conflicts and not force:
+            print("::warning::Existing GitHub Pages content detected:")
+            for c in conflicts:
+                print(f"  - {c}")
+            print("")
+            print("The dashboard will be deployed to /${{ inputs.deploy_path }}/ to avoid conflicts.")
+            print("Use force: true to override this behavior.")
+        elif conflicts and force:
+            print("::warning::Force mode enabled - existing content may be affected")
+
+        print("Conflict check complete")
+        EOF
+        echo "::endgroup::"
+
+    - name: Deploy to GitHub Pages
+      id: deploy
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ inputs.github_token }}
+        publish_dir: ${{ inputs.working_directory }}/.specmem/static
+        destination_dir: ${{ inputs.deploy_path }}
+        keep_files: true
+
+    - name: Output dashboard URL
+      shell: bash
+      run: |
+        REPO_NAME="${{ github.repository }}"
+        OWNER="${REPO_NAME%%/*}"
+        REPO="${REPO_NAME##*/}"
+        
+        # Construct GitHub Pages URL
+        DASHBOARD_URL="https://${OWNER}.github.io/${REPO}/${{ inputs.deploy_path }}/"
+        
+        echo "dashboard_url=${DASHBOARD_URL}" >> $GITHUB_OUTPUT
+        echo ""
+        echo "📊 Dashboard deployed!"
+        echo "   URL: ${DASHBOARD_URL}"
+        echo ""
+        echo "⚠️  Note: This is a STATIC dashboard."
+        echo "   Data is from the last CI run, not live."

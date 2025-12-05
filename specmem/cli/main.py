@@ -16,6 +16,7 @@ from specmem.adapters import detect_adapters, get_registry
 from specmem.agentx import PackBuilder
 from specmem.cli.cov import app as cov_app
 from specmem.cli.demo import demo as demo_command
+from specmem.cli.guidelines import app as guidelines_app
 from specmem.cli.kiro_config import steering_command
 from specmem.cli.lifecycle import app as lifecycle_app
 from specmem.cli.sessions import app as sessions_app
@@ -32,8 +33,14 @@ app = typer.Typer(
 
 # Register subcommands
 app.add_typer(cov_app, name="cov")
+app.add_typer(guidelines_app, name="guidelines")
 app.add_typer(sessions_app, name="sessions")
 app.add_typer(lifecycle_app, name="lifecycle")
+
+# Register export commands for static dashboard
+from specmem.cli.export import app as export_app
+
+app.add_typer(export_app, name="export")
 
 # Register demo command
 app.command(name="demo")(demo_command)
@@ -1282,6 +1289,9 @@ def serve(
 
     server.start()
 
+
+# Export for entry point
+cli = app
 
 if __name__ == "__main__":
     app()
