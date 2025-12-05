@@ -352,3 +352,15 @@ deadline = 500
 max_examples = 100
 verbosity = "normal"
 suppress_health_check = ["too_slow", "data_too_large"]
+
+# =============================================================================
+# UV Configuration
+# =============================================================================
+
+[tool.uv]
+# Make this project a standalone workspace (not part of parent workspaces)
+package = true
+
+[tool.uv.workspace]
+# Exclude from parent workspace discovery
+members = []

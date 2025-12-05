@@ -72,7 +72,14 @@ We have **DevEx** (Developer Experience) for humans. But where is **AgentEx** fo
 
 
 ```bash
+# Using pip
 pip install specmem
+
+# Using uv (recommended - faster)
+uv pip install specmem
+
+# Or run directly with uvx
+uvx specmem --help
 ```
 
 ```python
@@ -363,14 +370,34 @@ Full documentation is available at **[superagenticai.github.io/specmem](https://
 git clone https://github.com/SuperagenticAI/specmem.git
 cd specmem
 
-# Install dependencies
-make install
+# Using uv (recommended)
+uv sync --dev
+uv run pytest
+
+# Or using pip
+pip install -e ".[dev]"
+pytest
+```
+
+### Using uv
+
+SpecMem supports [uv](https://docs.astral.sh/uv/) for fast dependency management:
+
+```bash
+# Install uv if you haven't
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies from lock file
+uv sync
+
+# Run specmem commands
+uv run specmem --help
 
 # Run tests
-make test
+uv run pytest
 
-# Run linting
-make lint
+# Add a new dependency
+uv add <package>
 ```
 
 ---

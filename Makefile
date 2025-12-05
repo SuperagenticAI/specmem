@@ -38,10 +38,18 @@ help:
 install:
 	pip install -e .
 
+install-uv:
+	uv sync
+
 dev:
 	pip install -e ".[dev]"
 	pre-commit install
 	pre-commit install --hook-type commit-msg
+
+dev-uv:
+	uv sync --dev
+	uv run pre-commit install
+	uv run pre-commit install --hook-type commit-msg
 
 # =============================================================================
 # Testing
