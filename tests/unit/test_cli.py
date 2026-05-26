@@ -5,6 +5,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
+from specmem.cli import guidelines as guidelines_cli
 from specmem.cli.main import app
 
 
@@ -70,6 +71,226 @@ class TestScanCommand:
             assert result.exit_code == 0
             assert "Detected" in result.stdout
             assert "Kiro" in result.stdout
+
+
+class TestGuidelinesOptimizeCommands:
+    """Tests for optimized skill CLI commands."""
+
+    def test_guidelines_optimize_requires_candidate_or_instruction(self) -> None:
+        """Optimize should require a candidate file or rewrite instruction."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".codex" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nCheck regressions and tests.")
+
+            result = runner.invoke(
+                app,
+                ["guidelines", "optimize", str(skill), "--path", tmpdir],
+            )
+
+            assert result.exit_code == 1
+            assert "provide either --candidate or --instruction" in result.stdout
+
+    def test_guidelines_optimize_candidate_accepts_and_status_reports(self) -> None:
+        """Accepted candidate should be visible in optimized-status."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".codex" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nCheck regressions and tests.")
+            candidate = Path(tmpdir) / "candidate.md"
+            candidate.write_text(
+                "# Review\n\n"
+                "Check regressions and tests.\n\n"
+                "## Routing\n\n"
+                "Use this review skill for code review, regression checks, and test analysis."
+            )
+
+            result = runner.invoke(
+                app,
+                [
+                    "guidelines",
+                    "optimize",
+                    str(skill),
+                    "--candidate",
+                    str(candidate),
+                    "--score-before",
+                    "0.4",
+                    "--score-after",
+                    "0.8",
+                    "--path",
+                    tmpdir,
+                ],
+            )
+
+            assert result.exit_code == 0
+            assert "Accepted optimized skill candidate" in result.stdout
+
+            status = runner.invoke(
+                app,
+                ["guidelines", "optimized-status", "--path", tmpdir],
+            )
+
+            assert status.exit_code == 0
+            assert "optimized" in status.stdout
+            assert "review" in status.stdout
+
+    def test_guidelines_optimize_dry_run_does_not_promote(self) -> None:
+        """Dry run should not create an accepted optimized artifact."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".codex" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nCheck regressions and tests.")
+            candidate = Path(tmpdir) / "candidate.md"
+            candidate.write_text("# Review\n\nCheck regressions, tests, and compatibility.")
+
+            result = runner.invoke(
+                app,
+                [
+                    "guidelines",
+                    "optimize",
+                    str(skill),
+                    "--candidate",
+                    str(candidate),
+                    "--dry-run",
+                    "--path",
+                    tmpdir,
+                ],
+            )
+
+            assert result.exit_code == 0
+            assert "Dry run" in result.stdout
+
+            status = runner.invoke(
+                app,
+                ["guidelines", "optimized-status", "--path", tmpdir],
+            )
+
+            assert status.exit_code == 0
+            assert "raw" in status.stdout
+
+    def test_guidelines_optimized_status_reports_stale_artifact(self) -> None:
+        """Status should report stale when source changes after acceptance."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".claude" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nFind regressions.")
+            candidate = Path(tmpdir) / "candidate.md"
+            candidate.write_text(
+                "# Review\n\n"
+                "Find regressions.\n\n"
+                "## Evidence\n\n"
+                "Check failing tests and changed call sites."
+            )
+
+            accepted = runner.invoke(
+                app,
+                [
+                    "guidelines",
+                    "optimize",
+                    str(skill),
+                    "--candidate",
+                    str(candidate),
+                    "--score-before",
+                    "0.3",
+                    "--score-after",
+                    "0.9",
+                    "--path",
+                    tmpdir,
+                ],
+            )
+            assert accepted.exit_code == 0
+
+            skill.write_text("# Review\n\nFind regressions and security issues.")
+            status = runner.invoke(
+                app,
+                ["guidelines", "optimized-status", "--path", tmpdir],
+            )
+
+            assert status.exit_code == 0
+            assert "stale" in status.stdout
+
+    def test_guidelines_optimize_write_source_updates_skill(self) -> None:
+        """--write-source should copy accepted best skill back to source."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".codex" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nCheck regressions.")
+            candidate = Path(tmpdir) / "candidate.md"
+            candidate.write_text(
+                "# Review\n\n"
+                "Check regressions.\n\n"
+                "## Test Analysis\n\n"
+                "Inspect failing tests and compatibility notes."
+            )
+
+            result = runner.invoke(
+                app,
+                [
+                    "guidelines",
+                    "optimize",
+                    str(skill),
+                    "--candidate",
+                    str(candidate),
+                    "--score-before",
+                    "0.2",
+                    "--score-after",
+                    "0.7",
+                    "--write-source",
+                    "--path",
+                    tmpdir,
+                ],
+            )
+
+            assert result.exit_code == 0
+            assert "Wrote accepted skill back" in result.stdout
+            assert "Test Analysis" in skill.read_text()
+
+    def test_guidelines_optimize_instruction_uses_rewriter(self, monkeypatch) -> None:
+        """Instruction mode should generate and promote a candidate without real network access."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill = Path(tmpdir) / ".codex" / "skills" / "review" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Review\n\nCheck regressions and tests.")
+
+            def fake_rewrite(skill_content: str, instruction: str, *, model: str) -> str:
+                assert "Check regressions" in skill_content
+                assert "retrieval" in instruction
+                assert model == "test-model"
+                return (
+                    "# Review\n\n"
+                    "Check regressions and tests.\n\n"
+                    "## Retrieval\n\n"
+                    "Use explicit review, regression, and test-analysis terms for routing."
+                )
+
+            monkeypatch.setattr(guidelines_cli, "rewrite_skill_with_openai", fake_rewrite)
+
+            result = runner.invoke(
+                app,
+                [
+                    "guidelines",
+                    "optimize",
+                    str(skill),
+                    "--instruction",
+                    "make retrieval intent explicit",
+                    "--model",
+                    "test-model",
+                    "--path",
+                    tmpdir,
+                ],
+            )
+
+            assert result.exit_code == 0
+            assert "Wrote candidate" in result.stdout
+            assert "Accepted optimized skill candidate" in result.stdout
+
+            status = runner.invoke(
+                app,
+                ["guidelines", "optimized-status", "--path", tmpdir],
+            )
+
+            assert status.exit_code == 0
+            assert "optimized" in status.stdout
 
 
 class TestInfoCommand:

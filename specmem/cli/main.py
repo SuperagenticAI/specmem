@@ -290,6 +290,11 @@ def scan(path: str = typer.Argument(".", help="Repository path to scan")) -> Non
 def build(
     path: str = typer.Argument(".", help="Repository path"),
     output: str = typer.Option("", "--output", "-o", help="Output directory"),
+    optimize_skills: bool = typer.Option(
+        False,
+        "--optimize-skills",
+        help="Use validated optimized skill artifacts from .specmem/skillopt when available",
+    ),
 ) -> None:
     """Build Agent Experience Pack from specifications."""
     repo_path = path
@@ -308,10 +313,14 @@ def build(
 
     from specmem.guidelines.aggregator import GuidelinesAggregator
 
-    guideline_blocks = GuidelinesAggregator(Path(repo_path)).to_spec_blocks()
+    guideline_blocks = GuidelinesAggregator(Path(repo_path)).to_spec_blocks(
+        optimize_skills=optimize_skills
+    )
     if guideline_blocks:
         all_blocks.extend(guideline_blocks)
         console.print(f"[green]✓[/green] Loaded {len(guideline_blocks)} blocks from agent guidance")
+        if optimize_skills:
+            console.print("  Using validated optimized skill artifacts when available")
 
     all_blocks = _dedupe_blocks(all_blocks)
 

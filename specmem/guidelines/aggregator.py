@@ -8,6 +8,7 @@ from pathlib import Path
 
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
 from specmem.guidelines.models import Guideline, GuidelinesResponse, SourceType
+from specmem.guidelines.optimizer import OptimizedSkillStore
 from specmem.guidelines.parser import GuidelinesParser
 from specmem.guidelines.scanner import GuidelinesScanner
 
@@ -153,9 +154,14 @@ class GuidelinesAggregator:
             "skills": self._dedupe_guidelines(skills),
         }
 
-    def to_spec_blocks(self, include_samples: bool = False) -> list[SpecBlock]:
+    def to_spec_blocks(
+        self,
+        include_samples: bool = False,
+        optimize_skills: bool = False,
+    ) -> list[SpecBlock]:
         """Convert discovered guidelines to SpecBlocks for memory indexing."""
         response = self.get_all(include_samples=include_samples)
+        optimized_store = OptimizedSkillStore(self.workspace_path) if optimize_skills else None
         blocks: list[SpecBlock] = []
 
         for guideline in response.guidelines:
@@ -164,6 +170,11 @@ class GuidelinesAggregator:
                 tags.append("file-scoped")
 
             text = guideline.content.strip()
+            if optimized_store and self._is_skill(guideline):
+                optimized = optimized_store.resolve(Path(guideline.source_file))
+                if optimized:
+                    text = optimized.content.strip()
+                    tags.extend(optimized.tags)
             if not text:
                 continue
 

@@ -5,7 +5,7 @@ project's specs. Coding agents can be swapped at any time without losing
 context or rewriting spec files.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Export SpecMemClient for agent integration
 from specmem.client import (

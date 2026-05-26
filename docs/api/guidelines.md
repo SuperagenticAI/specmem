@@ -139,6 +139,37 @@ interface ConversionResult {
 }
 ```
 
+### Optimized Skill APIs
+
+The optimized-skill helpers are available from `specmem.guidelines`:
+
+```python
+from pathlib import Path
+
+from specmem.guidelines import OptimizedSkillStore, score_skill_static
+
+workspace = Path(".")
+store = OptimizedSkillStore(workspace)
+
+score, issues = score_skill_static(
+    Path(".codex/skills/review/SKILL.md").read_text()
+)
+
+result = store.promote_candidate(
+    Path(".codex/skills/review/SKILL.md"),
+    Path("/tmp/review-best-skill.md"),
+    score_before=0.62,
+    score_after=0.74,
+    evaluator="codex-rollout",
+)
+
+status = store.status(Path(".codex/skills/review/SKILL.md"))
+optimized = store.resolve(Path(".codex/skills/review/SKILL.md"))
+```
+
+`resolve()` returns `None` when the artifact is missing, rejected, stale, or
+invalid. `status()` gives the user-facing state and reason.
+
 ## Examples
 
 ### List all guidelines

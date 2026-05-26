@@ -27,6 +27,7 @@ The command uses `.specmem.toml` from the target repository when present.
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--output`, `-o` | Output directory | `<PATH>/.specmem` |
+| `--optimize-skills` | Use validated optimized skill artifacts from `.specmem/skillopt` when available | `false` |
 
 ## Inputs
 
@@ -38,6 +39,13 @@ The command uses `.specmem.toml` from the target repository when present.
 
 Instruction files are pinned in memory by default. Skill files are indexed as
 procedural memory and selected by task intent.
+
+Optimized skill artifacts are opt-in. Run `specmem guidelines optimize` to
+validate and promote a candidate skill, then build with `--optimize-skills` to
+index the accepted `best_skill.md` instead of the raw source skill. Artifacts are
+ignored if the source skill changed after validation.
+
+See [Optimized Skills](../user-guide/optimized-skills.md) for the full workflow.
 
 ## Generated Files
 
@@ -66,6 +74,12 @@ specmem build ../service-api
 
 ```bash
 specmem build . --output ./build/specmem
+```
+
+### Build With Validated Optimized Skills
+
+```bash
+specmem build --optimize-skills
 ```
 
 ### Build with Qdrant

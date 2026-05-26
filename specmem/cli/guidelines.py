@@ -17,6 +17,11 @@ from rich.table import Table
 from specmem.guidelines.aggregator import GuidelinesAggregator
 from specmem.guidelines.converter import GuidelinesConverter
 from specmem.guidelines.models import Guideline, SourceType
+from specmem.guidelines.optimizer import (
+    OptimizedSkillStore,
+    rewrite_skill_with_openai,
+    score_skill_static,
+)
 
 
 app = typer.Typer(
@@ -39,6 +44,205 @@ def _guideline_summary(guideline: Guideline) -> dict:
         if len(guideline.content) > 240
         else guideline.content,
     }
+
+
+@app.command("optimize")
+def optimize_skill(
+    skill: str = typer.Argument(..., help="Source SKILL.md to optimize"),
+    candidate: str | None = typer.Option(
+        None,
+        "--candidate",
+        "-c",
+        help="Candidate optimized SKILL.md produced by a rollout/reflection process",
+    ),
+    instruction: str | None = typer.Option(
+        None,
+        "--instruction",
+        "-i",
+        help="Rewrite instruction for generating a candidate with OpenAI",
+    ),
+    model: str = typer.Option(
+        "gpt-5-mini",
+        "--model",
+        help="OpenAI model for --instruction mode",
+    ),
+    path: str = typer.Option(".", "--path", "-p", help="Workspace path"),
+    score_before: float | None = typer.Option(
+        None,
+        "--score-before",
+        help="Baseline validation score for the source skill",
+    ),
+    score_after: float | None = typer.Option(
+        None,
+        "--score-after",
+        help="Validation score for the candidate skill",
+    ),
+    evaluator: str = typer.Option("static", "--evaluator", help="Evaluation method name"),
+    notes: str = typer.Option("", "--notes", help="Optional provenance notes"),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Generate/write the candidate but do not promote it through the gate",
+    ),
+    write_source: bool = typer.Option(
+        False,
+        "--write-source",
+        help="After acceptance, copy best_skill.md back to the source SKILL.md",
+    ),
+) -> None:
+    """Validate and promote an optimized skill artifact for future indexing.
+
+    With --candidate, the gate requires score improvement unless no explicit
+    scores are supplied and static checks improve. With --instruction, SpecMem
+    generates a candidate and accepts changed candidates that do not regress
+    static checks. Accepted artifacts are consumed by
+    ``specmem build --optimize-skills``.
+    """
+    workspace_path = Path(path)
+    store = OptimizedSkillStore(workspace_path)
+
+    candidate_path: Path
+    if candidate:
+        candidate_path = Path(candidate)
+    elif instruction:
+        source_path = Path(skill)
+        if not source_path.is_absolute():
+            source_path = workspace_path / source_path
+        source_content = source_path.read_text(encoding="utf-8")
+        console.print("[bold]Generating optimized skill candidate...[/bold]")
+        candidate_content = rewrite_skill_with_openai(
+            source_content,
+            instruction,
+            model=model,
+        )
+        candidate_path = store.write_generated_candidate(Path(skill), candidate_content)
+        console.print(f"[green]✓[/green] Wrote candidate to {candidate_path}")
+    else:
+        console.print("[red]Error:[/red] provide either --candidate or --instruction")
+        raise typer.Exit(1)
+
+    if dry_run:
+        console.print("[yellow]![/yellow] Dry run: candidate was not promoted")
+        return
+
+    result = store.promote_candidate(
+        Path(skill),
+        candidate_path,
+        score_before=score_before,
+        score_after=score_after,
+        evaluator=evaluator if candidate else f"openai:{model}",
+        notes=notes,
+        allow_static_non_regression=bool(instruction and not candidate),
+    )
+
+    if result.accepted:
+        console.print("[green]✓[/green] Accepted optimized skill candidate")
+        if write_source:
+            written = store.write_best_to_source(Path(skill))
+            console.print(f"[green]✓[/green] Wrote accepted skill back to {written}")
+    else:
+        console.print("[yellow]![/yellow] Rejected optimized skill candidate")
+
+    table = Table(title="Skill Optimization Gate")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="white")
+    table.add_row("Score before", f"{result.score_before:.4f}")
+    table.add_row("Score after", f"{result.score_after:.4f}")
+    table.add_row("Artifact", str(result.artifact_dir))
+    table.add_row("Best skill", str(result.best_skill_path))
+    table.add_row("Report", str(result.report_path))
+    console.print(table)
+
+    if result.issues:
+        console.print("\n[bold]Gate notes:[/bold]")
+        for issue in result.issues:
+            console.print(f"  - {issue}")
+
+
+@app.command("score-skill")
+def score_skill(
+    skill: str = typer.Argument(..., help="SKILL.md to score with static checks"),
+    path: str = typer.Option(".", "--path", "-p", help="Workspace path"),
+) -> None:
+    """Score a skill document using SpecMem's static optimization checks."""
+    skill_path = Path(skill)
+    if not skill_path.is_absolute():
+        skill_path = Path(path) / skill_path
+    content = skill_path.read_text(encoding="utf-8")
+    score, issues = score_skill_static(content)
+
+    console.print(f"[bold]Static score:[/bold] {score:.4f}")
+    if issues:
+        console.print("[bold]Issues:[/bold]")
+        for issue in issues:
+            console.print(f"  - {issue}")
+
+
+@app.command("optimized-status")
+def optimized_status(
+    path: str = typer.Option(".", "--path", "-p", help="Workspace path"),
+    robot: bool = typer.Option(False, "--robot", "-r", help="Output JSON for AI agents"),
+) -> None:
+    """Show optimized-skill artifact status for discovered skills."""
+    workspace_path = Path(path)
+    aggregator = GuidelinesAggregator(workspace_path)
+    response = aggregator.get_all(include_samples=False)
+    skills = [
+        guideline
+        for guideline in response.guidelines
+        if guideline.source_type in {SourceType.CODEX_SKILL, SourceType.CLAUDE_SKILL}
+    ]
+    store = OptimizedSkillStore(workspace_path)
+    rows = [(guideline, store.status(Path(guideline.source_file))) for guideline in skills]
+
+    if robot:
+        output = {
+            "count": len(rows),
+            "skills": [
+                {
+                    "title": guideline.title,
+                    "source_type": guideline.source_type.value,
+                    "source_file": str(status.source_path),
+                    "state": status.state,
+                    "reason": status.reason,
+                    "artifact_dir": str(status.artifact_dir),
+                    "best_skill_path": str(status.best_skill_path)
+                    if status.best_skill_path
+                    else None,
+                    "report_path": str(status.report_path) if status.report_path else None,
+                    "score_before": status.score_before,
+                    "score_after": status.score_after,
+                }
+                for guideline, status in rows
+            ],
+        }
+        print(json.dumps(output, indent=2))
+        return
+
+    if not rows:
+        console.print("[yellow]No skill files found.[/yellow]")
+        return
+
+    table = Table(title="Optimized Skill Status")
+    table.add_column("State", style="cyan", width=12)
+    table.add_column("Skill", style="white")
+    table.add_column("Source", style="dim")
+    table.add_column("Score", style="green", width=15)
+    table.add_column("Reason", style="dim")
+
+    for guideline, status in rows:
+        score = "-"
+        if status.score_before is not None and status.score_after is not None:
+            score = f"{status.score_before:.4f}->{status.score_after:.4f}"
+        table.add_row(
+            status.state,
+            guideline.title,
+            str(status.source_path),
+            score,
+            status.reason,
+        )
+
+    console.print(table)
 
 
 @app.callback(invoke_without_command=True)

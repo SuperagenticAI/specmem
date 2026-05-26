@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from specmem.core.specir import SpecType
 from specmem.guidelines.aggregator import GuidelinesAggregator
 from specmem.guidelines.models import SourceType
+from specmem.guidelines.optimizer import OptimizedSkillStore
 from specmem.guidelines.parser import GuidelinesParser
 from specmem.guidelines.scanner import GuidelinesScanner
 
@@ -162,3 +163,102 @@ def test_build_context_layers_always_file_scoped_and_task_skills(tmp_path: Path)
     assert [g.source_type for g in context["always_on"]] == [SourceType.AGENTS]
     assert [g.source_type for g in context["file_scoped"]] == [SourceType.COPILOT]
     assert [g.source_type for g in context["skills"]] == [SourceType.CODEX_SKILL]
+
+
+def test_optimized_skill_artifact_is_used_only_when_enabled(tmp_path: Path) -> None:
+    skill = tmp_path / ".codex" / "skills" / "qdrant-memory" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\n"
+        "name: qdrant-memory\n"
+        "description: Design Qdrant memory retrieval\n"
+        "---\n"
+        "# Workflow\n\nUse payload filters."
+    )
+    candidate = tmp_path / "candidate.md"
+    candidate.write_text(
+        "# Workflow\n\n"
+        "Use payload filters.\n\n"
+        "## Verification\n\n"
+        "Before indexing retrieval skills, verify that task intent, collection name, "
+        "and metadata filters are all represented in the final memory text."
+    )
+
+    result = OptimizedSkillStore(tmp_path).promote_candidate(
+        skill,
+        candidate,
+        score_before=0.4,
+        score_after=0.8,
+        evaluator="unit",
+    )
+
+    assert result.accepted
+
+    default_blocks = GuidelinesAggregator(tmp_path).to_spec_blocks()
+    optimized_blocks = GuidelinesAggregator(tmp_path).to_spec_blocks(optimize_skills=True)
+
+    assert "Verify that task intent" not in default_blocks[0].text
+    assert "verify that task intent" in optimized_blocks[0].text.lower()
+    assert "optimized-skill" in optimized_blocks[0].tags
+    assert "skillopt:validated" in optimized_blocks[0].tags
+
+
+def test_stale_optimized_skill_artifact_is_ignored(tmp_path: Path) -> None:
+    skill = tmp_path / ".claude" / "skills" / "review" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("# Review\n\nFind regressions.")
+    candidate = tmp_path / "candidate.md"
+    candidate.write_text(
+        "# Review\n\n"
+        "Find regressions.\n\n"
+        "## Evidence\n\n"
+        "Check failing tests, changed call sites, and backwards compatibility notes."
+    )
+
+    result = OptimizedSkillStore(tmp_path).promote_candidate(
+        skill,
+        candidate,
+        score_before=0.2,
+        score_after=0.9,
+        evaluator="unit",
+    )
+    assert result.accepted
+
+    skill.write_text("# Review\n\nFind regressions and security issues.")
+
+    blocks = GuidelinesAggregator(tmp_path).to_spec_blocks(optimize_skills=True)
+
+    assert "backwards compatibility notes" not in blocks[0].text
+    assert "security issues" in blocks[0].text
+    assert "optimized-skill" not in blocks[0].tags
+
+
+def test_instruction_generated_candidate_accepts_static_non_regression(tmp_path: Path) -> None:
+    skill = tmp_path / ".codex" / "skills" / "review" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "# Review\n\n"
+        "Check regressions, compatibility, tests, and project-specific constraints."
+    )
+    candidate = tmp_path / "candidate.md"
+    candidate.write_text(
+        "# Review\n\n"
+        "Check regressions, compatibility, tests, and project-specific constraints.\n\n"
+        "## Retrieval Notes\n\n"
+        "Keep review keywords explicit so this skill is easier to select for code review tasks."
+    )
+
+    result = OptimizedSkillStore(tmp_path).promote_candidate(
+        skill,
+        candidate,
+        evaluator="openai:test",
+        allow_static_non_regression=True,
+    )
+
+    assert result.accepted
+    assert result.score_after > result.score_before
+
+    blocks = GuidelinesAggregator(tmp_path).to_spec_blocks(optimize_skills=True)
+
+    assert "Retrieval Notes" in blocks[0].text
+    assert any(tag.startswith("skillopt:score:") for tag in blocks[0].tags)

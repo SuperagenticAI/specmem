@@ -12,6 +12,8 @@ SpecMem detects and parses guidelines from:
 | **Cursor** | `.cursorrules` | Cursor AI rules file |
 | **Kiro** | `.kiro/steering/*.md` | Kiro steering files |
 | **Agents** | `AGENTS.md` | Generic agent instructions |
+| **Codex skills** | `.codex/skills/*/SKILL.md` | Task-routed procedural skills |
+| **Claude skills** | `.claude/skills/*/SKILL.md` | Task-routed procedural skills |
 
 ## Viewing Guidelines
 
@@ -64,6 +66,31 @@ View full content of a guideline:
 ```bash
 specmem guidelines show <guideline-id>
 ```
+
+Score and promote an optimized skill candidate:
+
+```bash
+specmem guidelines score-skill .codex/skills/review/SKILL.md
+
+specmem guidelines optimize .codex/skills/review/SKILL.md \
+  --instruction "tighten this for code review tasks and make retrieval keywords explicit"
+
+specmem guidelines optimize .codex/skills/review/SKILL.md \
+  --candidate /tmp/review-best-skill.md \
+  --score-before 0.62 \
+  --score-after 0.74 \
+  --evaluator codex-rollout
+```
+
+Accepted optimized skills are stored under `.specmem/skillopt/` and are used
+only when building with:
+
+```bash
+specmem build --optimize-skills
+```
+
+See [Optimized Skills](optimized-skills.md) for the full workflow, artifact
+layout, and gate behavior.
 
 ## Converting Guidelines
 

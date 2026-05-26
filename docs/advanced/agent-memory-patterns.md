@@ -51,6 +51,11 @@ Instruction files are pinned by default. Skills are indexed as procedural
 memory, but they are not pinned because agents should load them only when the
 task matches the skill.
 
+Skills can also be optimized before indexing. SpecMem stores accepted optimized
+artifacts under `.specmem/skillopt/` and uses them only when
+`specmem build --optimize-skills` is requested. See
+[Optimized Skills](../user-guide/optimized-skills.md).
+
 ## Demo Flow
 
 Build the memory index:

@@ -173,6 +173,7 @@ nav:
     - Kiro Powers: user-guide/kiro-powers.md
     - Kiro Configuration: user-guide/kiro-config.md
     - Coding Guidelines: user-guide/guidelines.md
+    - Optimized Skills: user-guide/optimized-skills.md
     - SpecImpact Graph: user-guide/specimpact.md
     - SpecDiff Timeline: user-guide/specdiff.md
     - SpecValidator: user-guide/validator.md

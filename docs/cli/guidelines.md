@@ -16,6 +16,9 @@ specmem guidelines [OPTIONS] [COMMAND]
 | `show` | Show full content of a specific guideline |
 | `convert` | Convert a guideline to another format |
 | `convert-all` | Convert all guidelines to a target format |
+| `score-skill` | Score a skill document with static optimization checks |
+| `optimize` | Validate and promote an optimized skill artifact |
+| `optimized-status` | Show optimized-skill artifact status |
 
 ## Options
 
@@ -121,6 +124,59 @@ specmem guidelines convert-all claude --no-preview
 # Convert only from specific source
 specmem guidelines convert-all steering --source claude --no-preview
 ```
+
+### Optimize Skill Artifacts
+
+Use `optimize` to generate or promote a candidate `SKILL.md` into
+`.specmem/skillopt/`. Accepted artifacts are consumed only when
+`specmem build --optimize-skills` is used.
+
+```bash
+specmem guidelines score-skill .codex/skills/review/SKILL.md
+
+specmem guidelines optimize .codex/skills/review/SKILL.md \
+  --instruction "tighten this for code review tasks and make retrieval keywords explicit"
+
+specmem guidelines optimize .codex/skills/review/SKILL.md \
+  --candidate /tmp/review-best-skill.md \
+  --score-before 0.62 \
+  --score-after 0.74 \
+  --evaluator codex-rollout
+```
+
+`--instruction` mode uses the optional OpenAI dependency and requires
+`OPENAI_API_KEY`. It accepts changed candidates that pass static checks without
+regressing. `--candidate` mode accepts only when the candidate improves the
+provided scores, or the static score when no scores are supplied.
+
+For a complete guide, see [Optimized Skills](../user-guide/optimized-skills.md).
+
+Check optimized artifact status:
+
+```bash
+specmem guidelines optimized-status
+specmem guidelines optimized-status --robot
+```
+
+Accepted optimized skills can also be written back to the source skill when you
+want the optimized document to become canonical:
+
+```bash
+specmem guidelines optimize .codex/skills/review/SKILL.md \
+  --candidate /tmp/review-best-skill.md \
+  --score-before 0.62 \
+  --score-after 0.74 \
+  --write-source
+```
+
+The command writes:
+
+| File | Purpose |
+|------|---------|
+| `.specmem/skillopt/<skill>/initial_skill.md` | Source skill snapshot |
+| `.specmem/skillopt/<skill>/candidate_skill.md` | Candidate snapshot |
+| `.specmem/skillopt/<skill>/best_skill.md` | Accepted optimized skill |
+| `.specmem/skillopt/<skill>/evaluation_report.json` | Gate result and provenance |
 
 ## Output Formats
 

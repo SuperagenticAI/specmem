@@ -8,27 +8,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Spec Coverage Analysis** - Analyze gaps between acceptance criteria and tests
-  - `specmem cov` - Show overall coverage summary
-  - `specmem cov report` - Detailed coverage report per feature
-  - `specmem cov suggest` - Get test suggestions for uncovered criteria
-  - `specmem cov badge` - Generate coverage badge for README
-  - `specmem cov export` - Export coverage data (JSON/Markdown)
-- Coverage API methods in `SpecMemClient`:
-  - `get_coverage()` - Analyze spec coverage
-  - `get_coverage_suggestions()` - Get test suggestions
-  - `get_coverage_badge()` - Generate badge markdown
-- Documentation site with MkDocs Material theme
-- Comprehensive API reference
-- Advanced configuration guide
-- User guide for Spec Coverage
+- N/A
 
 ### Changed
-- Improved error messages in CLI
-- Updated CLI index with coverage command
+- N/A
 
 ### Fixed
-- Memory leak in large spec collections
+- N/A
+
+---
+
+## [0.2.0] - 2026-05-26
+
+### Added
+
+- **Optimized Skills** - Validate and index improved agent skill artifacts
+  - `specmem guidelines optimize` - Generate or promote optimized skill candidates
+  - `specmem guidelines score-skill` - Run static quality checks for skills
+  - `specmem guidelines optimized-status` - Show raw, optimized, stale, rejected, and invalid artifact states
+  - `specmem build --optimize-skills` - Use accepted optimized skill artifacts during memory indexing
+- Optimized skill artifact storage under `.specmem/skillopt/`
+- Provenance tags for optimized skill memory blocks
+- Public Python APIs for optimized skill artifact management
+- User, CLI, API, and advanced memory-pattern documentation for optimized skills
+
+### Changed
+
+- Agent guidance indexing can opt into accepted optimized skill content while default builds keep indexing source skills.
+
+### Fixed
+
+- Aligned package version metadata across `pyproject.toml`, `uv.lock`, and `specmem.__version__`.
+- Avoided same-file candidate copy failures during generated skill promotion.
+
+---
+
+## [0.1.1] - 2026-05-26
+
+### Added
+
+- Spec Coverage Analysis commands and docs.
+- Documentation site, API reference, and advanced configuration guide.
+
+### Changed
+
+- Improved CLI error messages.
+
+### Fixed
+
+- Memory handling improvements for large spec collections.
 
 ---
 
@@ -100,6 +128,8 @@ First public release of SpecMem - Cognitive Memory Layer for AI Coding Agents.
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.2.0 | 2026-05-26 | Optimized Skills |
+| 0.1.1 | 2026-05-26 | Spec Coverage and documentation |
 | 0.1.0 | 2025-12-01 | Initial release |
 
 ## Upgrade Guide
