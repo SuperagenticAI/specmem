@@ -301,8 +301,9 @@ class AgentVectorDBStore(VectorStore):
                 f"Failed to get pinned: {e}", code="AGENTVECTORDB_PINNED_ERROR"
             ) from e
 
-    def update_status(self, block_id: str, status: SpecStatus, reason: str = "") -> bool:
+    def update_status(self, block_id: str, status: SpecStatus | str, reason: str = "") -> bool:
         self._ensure_initialized()
+        target_status = status if isinstance(status, SpecStatus) else SpecStatus(status)
 
         try:
             result = self._collection.get_by_id(block_id)
@@ -319,23 +320,25 @@ class AgentVectorDBStore(VectorStore):
                     extra = {}
 
             current_status = SpecStatus(extra.get("status", "active"))
+            if current_status == target_status:
+                return True
 
-            if not validate_transition(current_status, status):
+            if not validate_transition(current_status, target_status):
                 valid = [s.value for s in VALID_TRANSITIONS.get(current_status, set())]
                 raise LifecycleError(
                     "Invalid transition",
                     from_status=current_status.value,
-                    to_status=status.value,
+                    to_status=target_status.value,
                     block_id=block_id,
                     valid_transitions=valid,
                 )
 
-            if status == SpecStatus.OBSOLETE:
+            if target_status == SpecStatus.OBSOLETE:
                 self._move_to_audit(block_id, result, current_status, reason)
                 self._collection.delete(entry_id=block_id)
             else:
                 # Update status in extra metadata
-                extra["status"] = status.value
+                extra["status"] = target_status.value
                 # AgentVectorDB doesn't have direct update, so delete and re-add
                 self._collection.delete(entry_id=block_id)
                 result["metadata"]["extra"] = extra

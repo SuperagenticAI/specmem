@@ -1,4 +1,4 @@
-# 🗄️ Vector Backends
+# Vector Backends
 
 Configure and optimize vector database backends for your use case.
 
@@ -6,7 +6,8 @@ Configure and optimize vector database backends for your use case.
 
 | Backend | Best For | Persistence | Scalability | Setup |
 |---------|----------|-------------|-------------|-------|
-| LanceDB | Local development, small-medium projects | File-based | Medium | Zero config |
+| LanceDB | Local development, small to medium projects | File-based | Medium | Zero config |
+| AgentVectorDB | Agent-oriented local memory with importance scoring | File-based | Medium | Easy |
 | ChromaDB | Prototyping, experimentation | File-based | Medium | Easy |
 | Qdrant | Production, large scale | Server/Cloud | High | Moderate |
 
@@ -54,12 +55,55 @@ store = LanceDBStore(
 
 ### When to Use
 
-- ✅ Local development
-- ✅ CI/CD pipelines
-- ✅ Single-user applications
-- ✅ Projects with <100k specs
-- ❌ Multi-user concurrent access
-- ❌ Distributed systems
+- Local development
+- CI/CD pipelines
+- Single-user applications
+- Projects with fewer than 100,000 specs or memory blocks
+
+Use a server backend instead for multi-user concurrent access or distributed
+systems.
+
+## AgentVectorDB
+
+AgentVectorDB is an agent-oriented local memory backend. It stores SpecMem
+blocks with importance scoring, namespace isolation, and memory decay support.
+
+### Installation
+
+```bash
+pip install "specmem[agentvectordb]"
+```
+
+### Configuration
+
+```toml
+[vectordb]
+backend = "agentvectordb"
+path = ".specmem/agentvectordb"
+```
+
+### Python Usage
+
+```python
+from specmem.vectordb import get_vector_store
+
+store = get_vector_store(
+    backend="agentvectordb",
+    path=".specmem/agentvectordb",
+    namespace="default",
+    enable_importance_scoring=True,
+    enable_memory_decay=True,
+)
+```
+
+### When to Use
+
+- Local agent memory experiments
+- Repositories that benefit from importance scoring
+- Single-user memory stores with namespace isolation
+- Demonstrations of agent-specific memory behavior
+
+Use Qdrant for hosted deployments or multi-user server access.
 
 ## ChromaDB
 
@@ -104,12 +148,12 @@ store = ChromaDBStore(
 
 ### When to Use
 
-- ✅ Quick prototyping
-- ✅ Experimentation
-- ✅ Simple deployments
-- ✅ Projects with <50k specs
-- ❌ High-performance requirements
-- ❌ Large-scale production
+- Quick prototyping
+- Experimentation
+- Simple deployments
+- Projects with fewer than 50,000 specs or memory blocks
+
+Use Qdrant for high-performance requirements or large production deployments.
 
 ## Qdrant
 
@@ -128,8 +172,7 @@ pip install "specmem[qdrant]"
 backend = "qdrant"
 path = ".specmem/qdrant"
 
-[vectordb.qdrant]
-collection = "specs"
+qdrant_collection = "specs"
 ```
 
 ### Server Mode
@@ -137,10 +180,10 @@ collection = "specs"
 ```toml
 [vectordb]
 backend = "qdrant"
+path = ".specmem/qdrant"
 
-[vectordb.qdrant]
-url = "http://localhost:6333"
-collection = "specs"
+qdrant_url = "http://localhost:6333"
+qdrant_collection = "specs"
 ```
 
 ### Qdrant Cloud
@@ -148,46 +191,41 @@ collection = "specs"
 ```toml
 [vectordb]
 backend = "qdrant"
+path = ".specmem/qdrant"
 
-[vectordb.qdrant]
-url = "https://your-cluster.qdrant.io"
-api_key = "${QDRANT_API_KEY}"
-collection = "specs"
+qdrant_url = "https://your-cluster.qdrant.io"
+qdrant_api_key = "${QDRANT_API_KEY}"
+qdrant_collection = "specs"
 ```
 
 ### Advanced Configuration
 
 ```python
 from specmem.vectordb import QdrantStore
-from qdrant_client.models import Distance, VectorParams
 
 store = QdrantStore(
     url="http://localhost:6333",
-    collection="specs",
-    vector_params=VectorParams(
-        size=384,
-        distance=Distance.COSINE,
-    ),
-    # HNSW index parameters
-    hnsw_config={
-        "m": 16,
-        "ef_construct": 100,
-    },
-    # Optimizers
-    optimizer_config={
-        "indexing_threshold": 20000,
-    },
+    collection_name="specs",
+    audit_collection_name="specs_audit",
+    vector_dim=1536,  # Match the embedding model dimension
 )
 ```
 
+SpecMem creates the Qdrant collection with the active embedding dimension. When
+you use `specmem build`, the configured backend is honored, so setting
+`backend = "qdrant"` writes the memory index to Qdrant instead of the default
+LanceDB store.
+
 ### When to Use
 
-- ✅ Production deployments
-- ✅ Large-scale projects (>100k specs)
-- ✅ Multi-user applications
-- ✅ High availability requirements
-- ✅ Advanced filtering needs
-- ❌ Simple local development
+- Production deployments
+- Large repositories with more than 100,000 specs or memory blocks
+- Multi-user applications
+- High availability requirements
+- Advanced filtering needs
+
+For simple local development, use LanceDB unless you specifically need to test
+Qdrant behavior.
 
 ## Migration Between Backends
 

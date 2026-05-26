@@ -4,17 +4,23 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class SourceType(str, Enum):
+class SourceType(StrEnum):
     """Source type for coding guidelines."""
 
     CLAUDE = "claude"
     CURSOR = "cursor"
     STEERING = "steering"
     AGENTS = "agents"
+    CODEX_SKILL = "codex_skill"
+    CLAUDE_SKILL = "claude_skill"
+    COPILOT = "copilot"
+    GEMINI = "gemini"
+    OPENCODE = "opencode"
+    QWEN = "qwen"
     SAMPLE = "sample"
 
 

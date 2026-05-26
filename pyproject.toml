@@ -54,37 +54,37 @@ classifiers = [
 ]
 
 dependencies = [
-    "typer>=0.9.0",
-    "click>=8.1.0",
-    "rich>=13.0.0",
+    "typer>=0.25.1",
+    "click>=8.4.1",
+    "rich>=15.0.0",
     "toml>=0.10.2",
-    "pydantic>=2.0.0",
-    "numpy>=1.24.0",
-    "pyyaml>=6.0.0",
+    "pydantic>=2.13.4",
+    "numpy>=2.4.6",
+    "pyyaml>=6.0.3",
 ]
 
 [project.optional-dependencies]
 # Local embeddings (heavy - includes PyTorch ~2GB)
 local = [
-    "lancedb>=0.4.0",
-    "sentence-transformers>=2.2.0",
-    "pyarrow>=14.0.0",
+    "lancedb>=0.30.2",
+    "sentence-transformers>=5.5.1",
+    "pyarrow>=24.0.0",
 ]
 
 # Cloud embedding providers (lightweight)
-openai = ["openai>=1.0.0"]
-google = ["google-generativeai>=0.3.0"]
-together = ["together>=0.2.0"]
+openai = ["openai>=2.38.0"]
+google = ["google-generativeai>=0.8.6"]
+together = ["together>=2.16.0"]
 
 # Alternative vector stores
-chroma = ["chromadb>=0.4.0"]
-qdrant = ["qdrant-client>=1.7.0"]
+chroma = ["chromadb>=1.5.9"]
+qdrant = ["qdrant-client>=1.18.0"]
 
 # Web UI
 ui = [
-    "fastapi>=0.109.0",
-    "uvicorn>=0.27.0",
-    "websockets>=12.0",
+    "fastapi>=0.136.3",
+    "uvicorn>=0.48.0",
+    "websockets>=16.0",
     "jinja2>=3.1.0",
 ]
 
@@ -97,23 +97,23 @@ cloud = [
 
 # Development dependencies (lightweight - no ML models)
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
-    "pytest-asyncio>=0.23.0",
-    "pytest-benchmark>=4.0.0",
-    "hypothesis>=6.98.0",
-    "ruff>=0.3.0",
-    "mypy>=1.8.0",
-    "pre-commit>=3.6.0",
-    "types-toml>=0.10.8",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=5.2.3",
+    "hypothesis>=6.152.10",
+    "ruff>=0.15.14",
+    "mypy>=2.1.0",
+    "pre-commit>=4.6.0",
+    "types-toml>=0.10.8.20260518",
 ]
 
 # Documentation
 docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.5.0",
-    "mkdocstrings[python]>=0.24.0",
-    "pymdown-extensions>=10.0.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.4",
+    "pymdown-extensions>=10.21.3",
 ]
 
 # Full installation with local embeddings
@@ -185,7 +185,7 @@ select = [
     "UP",     # pyupgrade
     "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
+    "TC",     # flake8-type-checking
     "PTH",    # flake8-use-pathlib
     "ERA",    # eradicate (commented-out code)
     "PL",     # Pylint
@@ -212,10 +212,13 @@ ignore = [
     "SIM108",  # ternary operator
     "SIM110",  # any() instead of for loop
     "ERA001",  # commented out code
-    "TCH001",  # type checking imports
+    "TC001",   # type checking imports
     "E402",    # module level import not at top
     "B007",    # loop control variable not used
     "B017",    # blind exception
+    "PLC0415", # import outside top-level (intentional: lazy optional-dep imports)
+    "UP042",   # str+Enum (kept for stable str()/value semantics on core enums)
+    "RUF059",  # unused unpacked variable
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -1,4 +1,4 @@
-# ☁️ Cloud Embeddings
+# Cloud Embeddings
 
 Use cloud embedding providers for higher quality embeddings.
 

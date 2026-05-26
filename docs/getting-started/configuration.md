@@ -1,4 +1,4 @@
-# 🔧 Configuration
+# Configuration
 
 Configure SpecMem to match your project's needs.
 
@@ -35,7 +35,7 @@ batch_size = 32
 # Vector Database Configuration
 # =============================================================================
 [vectordb]
-# Backend: "lancedb", "chroma", "qdrant"
+# Backend: "lancedb", "agentvectordb", "chroma", "qdrant"
 backend = "lancedb"
 
 # Storage path (relative to project root)
@@ -43,6 +43,11 @@ path = ".specmem/vectordb"
 
 # Collection name
 collection = "specs"
+
+# Qdrant server or cloud settings
+# qdrant_url = "http://localhost:6333"
+# qdrant_api_key = "${QDRANT_API_KEY}"
+# qdrant_collection = "specmem"
 
 # =============================================================================
 # Adapter Configuration
@@ -90,8 +95,13 @@ spec_dirs = [
 spec_files = [
     "cursor.json",
     ".cursorrules",
+    "AGENTS.md",
+    "AGENT.md",
     "Claude.md",
     "CLAUDE.md",
+    "GEMINI.md",
+    "OPENCODE.md",
+    "QWEN.md",
 ]
 
 # Ignore patterns
@@ -234,10 +244,28 @@ path = ".specmem/chroma"
 [vectordb]
 backend = "qdrant"
 path = ".specmem/qdrant"
-# Or use Qdrant Cloud:
-# url = "https://your-cluster.qdrant.io"
-# api_key = "your-api-key"
+# Optional local server or Qdrant Cloud settings:
+# qdrant_url = "https://your-cluster.qdrant.io"
+# qdrant_api_key = "your-api-key"
+# qdrant_collection = "specmem"
 ```
+
+## Agent Guidance Sources
+
+SpecMem scans common coding-agent guidance files during `specmem scan` and
+`specmem build`.
+
+| Source | Files |
+|--------|-------|
+| Generic agents | `AGENTS.md`, `AGENT.md` |
+| Codex skills | `.codex/skills/*/SKILL.md` |
+| Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| OpenCode | `OPENCODE.md` |
+| Qwen Code | `QWEN.md` |
+| Kiro | `.kiro/steering/*.md` |
 
 ## Local Overrides
 

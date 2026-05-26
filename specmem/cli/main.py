@@ -22,7 +22,7 @@ from specmem.cli.lifecycle import app as lifecycle_app
 from specmem.cli.sessions import app as sessions_app
 from specmem.core import SpecMemConfig
 from specmem.core.memory_bank import MemoryBank
-from specmem.vectordb import SUPPORTED_BACKENDS, LanceDBStore, get_embedding_provider
+from specmem.vectordb import SUPPORTED_BACKENDS, get_embedding_provider, get_vector_store
 
 
 app = typer.Typer(
@@ -79,6 +79,49 @@ def steering_cmd(
 
 
 console = Console()
+
+
+def _dedupe_blocks(blocks: list) -> list:
+    """Deduplicate blocks by source and text while preserving adapter order."""
+    seen: set[tuple[str, str]] = set()
+    unique = []
+    for block in blocks:
+        key = (block.source, block.text.strip())
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(block)
+    return unique
+
+
+def _vector_store_kwargs(config: SpecMemConfig) -> dict:
+    kwargs = {}
+    if config.vectordb.backend == "qdrant":
+        if config.vectordb.qdrant_url:
+            kwargs["url"] = config.vectordb.qdrant_url
+        if config.vectordb.qdrant_api_key:
+            kwargs["api_key"] = config.vectordb.qdrant_api_key
+        if config.vectordb.qdrant_collection:
+            kwargs["collection_name"] = config.vectordb.qdrant_collection
+    return kwargs
+
+
+def _load_config_for_repo(repo_path: str | Path) -> SpecMemConfig:
+    repo = Path(repo_path)
+    toml_path = repo / ".specmem.toml"
+    json_path = repo / ".specmem.json"
+    if toml_path.exists():
+        return SpecMemConfig.load(toml_path)
+    if json_path.exists():
+        return SpecMemConfig.load(json_path)
+    return SpecMemConfig()
+
+
+def _resolve_vector_path(config: SpecMemConfig, repo_path: str | Path) -> str:
+    path = Path(config.vectordb.path)
+    if path.is_absolute():
+        return str(path)
+    return str(Path(repo_path) / path)
 
 
 def setup_logging(verbose: bool) -> None:
@@ -199,19 +242,32 @@ def scan(path: str = typer.Argument(".", help="Repository path to scan")) -> Non
     registry = get_registry()
     detected = detect_adapters(repo_path)
 
-    if not detected:
-        console.print("[yellow]No specification frameworks detected.[/yellow]")
-        console.print("\nSupported frameworks:")
-        for name in registry.names():
-            console.print(f"  • {name}")
-        raise typer.Exit(1)
-
     all_blocks = []
     for adapter in detected:
         console.print(f"[green]✓[/green] Detected [bold]{adapter.name}[/bold]")
         blocks = adapter.load(repo_path)
         all_blocks.extend(blocks)
         console.print(f"  Loaded {len(blocks)} specification blocks")
+
+    from specmem.guidelines.aggregator import GuidelinesAggregator
+
+    guideline_blocks = GuidelinesAggregator(Path(repo_path)).to_spec_blocks()
+    if guideline_blocks:
+        all_blocks.extend(guideline_blocks)
+        console.print("[green]✓[/green] Detected agent guidance")
+        console.print(f"  Loaded {len(guideline_blocks)} agent guidance blocks")
+
+    all_blocks = _dedupe_blocks(all_blocks)
+
+    if not all_blocks:
+        console.print(
+            "[yellow]No specification frameworks detected; no agent guidance files found.[/yellow]"
+        )
+        console.print("\nSupported frameworks:")
+        for name in registry.names():
+            console.print(f"  • {name}")
+        console.print("  • agent guidance files")
+        raise typer.Exit(1)
 
     console.print(f"\n[bold]Total:[/bold] {len(all_blocks)} specification blocks")
 
@@ -241,12 +297,8 @@ def build(
 
     console.print(f"Building Agent Experience Pack from [bold]{repo_path}[/bold]...\n")
 
-    config = SpecMemConfig.load()
+    config = _load_config_for_repo(repo_path)
     detected = detect_adapters(repo_path)
-
-    if not detected:
-        console.print("[red]No specification frameworks detected.[/red]")
-        raise typer.Exit(1)
 
     all_blocks = []
     for adapter in detected:
@@ -254,12 +306,25 @@ def build(
         all_blocks.extend(blocks)
         console.print(f"[green]✓[/green] Loaded {len(blocks)} blocks from {adapter.name}")
 
+    from specmem.guidelines.aggregator import GuidelinesAggregator
+
+    guideline_blocks = GuidelinesAggregator(Path(repo_path)).to_spec_blocks()
+    if guideline_blocks:
+        all_blocks.extend(guideline_blocks)
+        console.print(f"[green]✓[/green] Loaded {len(guideline_blocks)} blocks from agent guidance")
+
+    all_blocks = _dedupe_blocks(all_blocks)
+
     if not all_blocks:
-        console.print("[yellow]No specification blocks found.[/yellow]")
+        console.print("[yellow]No specification or agent guidance blocks found.[/yellow]")
         raise typer.Exit(1)
 
     console.print("\nGenerating embeddings...")
-    vector_store = LanceDBStore(db_path=config.vectordb.path)
+    vector_store = get_vector_store(
+        backend=config.vectordb.backend,
+        path=_resolve_vector_path(config, repo_path),
+        **_vector_store_kwargs(config),
+    )
     embedding_provider = get_embedding_provider(
         provider=config.embedding.provider,
         model=config.embedding.model,
@@ -327,11 +392,23 @@ def query(
     question: str = typer.Argument(..., help="Query to search for"),
     top_k: int = typer.Option(5, "--top", "-k", help="Number of results"),
     path: str = typer.Option(".", "--path", "-p", help="Repository path"),
+    files: list[str] | None = typer.Option(
+        None,
+        "--file",
+        "-f",
+        help="Changed file path for memory trace; repeat for multiple files",
+    ),
+    trace: bool = typer.Option(False, "--trace", help="Explain memory routing and result metadata"),
 ) -> None:
     """Query memory for relevant specifications."""
-    config = SpecMemConfig.load()
+    repo_path = Path(path)
+    config = _load_config_for_repo(repo_path)
 
-    vector_store = LanceDBStore(db_path=config.vectordb.path)
+    vector_store = get_vector_store(
+        backend=config.vectordb.backend,
+        path=_resolve_vector_path(config, repo_path),
+        **_vector_store_kwargs(config),
+    )
     vector_store.initialize()
 
     if vector_store.count() == 0:
@@ -351,6 +428,37 @@ def query(
         console.print("[yellow]No matching specifications found.[/yellow]")
         return
 
+    if trace:
+        from specmem.guidelines.aggregator import GuidelinesAggregator
+
+        layers = GuidelinesAggregator(repo_path).build_context(files=files or [], task=question)
+        trace_table = Table(title="Memory Trace")
+        trace_table.add_column("Layer", style="cyan")
+        trace_table.add_column("Count", justify="right")
+        trace_table.add_column("Why")
+        trace_table.add_row(
+            "always_on",
+            str(len(layers["always_on"])),
+            "Pinned project guidance that applies before semantic retrieval",
+        )
+        trace_table.add_row(
+            "file_scoped",
+            str(len(layers["file_scoped"])),
+            "Guidance whose file pattern matches --file",
+        )
+        trace_table.add_row(
+            "skills",
+            str(len(layers["skills"])),
+            "Procedural memory whose title, tags, or body match the query intent",
+        )
+        trace_table.add_row(
+            "vector",
+            str(len(results)),
+            f"Top {top_k} semantic matches after vector-store status filters",
+        )
+        console.print(trace_table)
+        console.print()
+
     console.print(f"\n[bold]Results for:[/bold] {question}\n")
 
     for i, result in enumerate(results, 1):
@@ -359,6 +467,13 @@ def query(
 
         console.print(f"[bold]{i}.[/bold] [{block.type.value}] (score: {score:.3f})")
         console.print(f"   [dim]{block.source}[/dim]")
+        if trace:
+            reasons = ["vector-match", f"status:{block.status.value}"]
+            if block.pinned:
+                reasons.append("pinned")
+            if block.tags:
+                reasons.append("tags:" + ",".join(block.tags[:5]))
+            console.print(f"   [dim]trace: {' | '.join(reasons)}[/dim]")
 
         text = block.text[:200]
         if len(block.text) > 200:
@@ -1270,8 +1385,12 @@ def serve(
     # Initialize vector store if available
     vector_store = None
     try:
-        config = SpecMemConfig.load()
-        vector_store = LanceDBStore(db_path=config.vectordb.path)
+        config = _load_config_for_repo(repo_path)
+        vector_store = get_vector_store(
+            backend=config.vectordb.backend,
+            path=_resolve_vector_path(config, repo_path),
+            **_vector_store_kwargs(config),
+        )
         vector_store.initialize()
     except Exception:
         console.print("[dim]Vector search not available (run 'specmem build' first)[/dim]")

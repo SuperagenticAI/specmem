@@ -92,6 +92,7 @@ class SpecMemClient:
         self._proposal_store: ProposalStore | None = None
         self._token_estimator = TokenEstimator()
         self._blocks: list[SpecBlock] = []
+        self._memory_indexed = False
         self._graph: SpecImpactGraph | None = None
         self._specdiff: SpecDiff | None = None
 
@@ -169,9 +170,13 @@ class SpecMemClient:
             except Exception as e:
                 logger.warning(f"Failed to load from {adapter.name}: {e}")
 
-        # Add to memory bank if we have blocks
+    def _ensure_memory_indexed(self) -> None:
+        """Index loaded specs into the vector store on first retrieval use."""
+        if self._memory_indexed:
+            return
         if self._blocks and self._memory_bank:
             self._memory_bank.add_blocks(self._blocks)
+        self._memory_indexed = True
 
     def get_context_for_change(
         self,
@@ -325,8 +330,9 @@ class SpecMemClient:
         Returns:
             List of matching SpecBlock objects
         """
-        if not self._memory_bank:
+        if not self._memory_bank or not self._blocks:
             return []
+        self._ensure_memory_indexed()
 
         results = self._memory_bank.query(
             query_text=text,
@@ -480,8 +486,9 @@ class SpecMemClient:
         files: list[str],
     ) -> list[tuple[SpecBlock, float]]:
         """Find blocks relevant to given files."""
-        if not self._memory_bank:
+        if not self._memory_bank or not self._blocks:
             return []
+        self._ensure_memory_indexed()
 
         # Create query from file paths
         query = " ".join(files)

@@ -16,14 +16,28 @@ class GuidelinesScanner:
     - CLAUDE.md (Claude Code)
     - AGENTS.md (Generic agent instructions)
     - .cursorrules (Cursor)
+    - .cursor/rules/*.mdc (Cursor project rules)
+    - .codex/skills/*/SKILL.md (Codex skills)
+    - .claude/skills/*/SKILL.md (Claude skills)
+    - .github/copilot-instructions.md and .github/instructions/*.instructions.md
+    - GEMINI.md, OPENCODE.md, QWEN.md
     - .kiro/steering/*.md (Kiro steering files)
     """
 
     FILE_PATTERNS: dict[str, list[str]] = {
         "claude": ["**/CLAUDE.md", "**/Claude.md", "**/claude.md"],
         "agents": ["**/AGENTS.md", "**/Agents.md", "**/AGENT.md", "**/Agent.md"],
-        "cursor": ["**/.cursorrules", "**/cursor.rules"],
+        "cursor": ["**/.cursorrules", "**/cursor.rules", "**/.cursor/rules/*.mdc"],
         "steering": [".kiro/steering/*.md"],
+        "codex_skill": ["**/.codex/skills/*/SKILL.md"],
+        "claude_skill": ["**/.claude/skills/*/SKILL.md"],
+        "copilot": [
+            "**/.github/copilot-instructions.md",
+            "**/.github/instructions/*.instructions.md",
+        ],
+        "gemini": ["**/GEMINI.md", "**/Gemini.md", "**/gemini.md"],
+        "opencode": ["**/OPENCODE.md", "**/OpenCode.md", "**/opencode.md"],
+        "qwen": ["**/QWEN.md", "**/Qwen.md", "**/qwen.md"],
     }
 
     def __init__(self, workspace_path: Path | None = None):

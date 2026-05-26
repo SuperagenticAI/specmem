@@ -255,11 +255,12 @@ class ChromaDBStore(VectorStore):
     def update_status(
         self,
         block_id: str,
-        status: SpecStatus,
+        status: SpecStatus | str,
         reason: str = "",
     ) -> bool:
         """Update block status with validation."""
         self._ensure_initialized()
+        target_status = status if isinstance(status, SpecStatus) else SpecStatus(status)
 
         try:
             # Get current block
@@ -270,24 +271,26 @@ class ChromaDBStore(VectorStore):
 
             metadata = results["metadatas"][0]
             current_status = SpecStatus(metadata["status"])
+            if current_status == target_status:
+                return True
 
             # Validate transition
-            if not validate_transition(current_status, status):
+            if not validate_transition(current_status, target_status):
                 valid = [s.value for s in VALID_TRANSITIONS.get(current_status, set())]
                 raise LifecycleError(
-                    f"Cannot transition from {current_status.value} to {status.value}",
+                    f"Cannot transition from {current_status.value} to {target_status.value}",
                     from_status=current_status.value,
-                    to_status=status.value,
+                    to_status=target_status.value,
                     block_id=block_id,
                     valid_transitions=valid,
                 )
 
             # Move to audit if obsolete
-            if status == SpecStatus.OBSOLETE:
+            if target_status == SpecStatus.OBSOLETE:
                 self._move_to_audit(block_id, results, current_status, reason)
                 self._collection.delete(ids=[block_id])
             else:
-                metadata["status"] = status.value
+                metadata["status"] = target_status.value
                 metadata["updated_at"] = datetime.now().timestamp()
                 self._collection.update(ids=[block_id], metadatas=[metadata])
 

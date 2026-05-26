@@ -1,4 +1,4 @@
-# ✍️ Writing Adapters
+# Writing Adapters
 
 Create custom adapters to parse specifications from any framework.
 

@@ -82,10 +82,22 @@ class MemoryBank:
         Returns:
             Configured MemoryBank instance
         """
-        from specmem.vectordb import LanceDBStore, get_embedding_provider
+        from specmem.vectordb import get_embedding_provider, get_vector_store
 
-        # Create vector store based on config
-        vector_store = LanceDBStore(db_path=config.vectordb.path)
+        vector_kwargs = {}
+        if config.vectordb.backend == "qdrant":
+            if config.vectordb.qdrant_url:
+                vector_kwargs["url"] = config.vectordb.qdrant_url
+            if config.vectordb.qdrant_api_key:
+                vector_kwargs["api_key"] = config.vectordb.qdrant_api_key
+            if config.vectordb.qdrant_collection:
+                vector_kwargs["collection_name"] = config.vectordb.qdrant_collection
+
+        vector_store = get_vector_store(
+            backend=config.vectordb.backend,
+            path=config.vectordb.path,
+            **vector_kwargs,
+        )
 
         # Create embedding provider with API key from config or env
         embedding_provider = get_embedding_provider(
@@ -268,7 +280,7 @@ class MemoryBank:
         Returns:
             True if update succeeded
         """
-        success = self.vector_store.update_status(block_id, status.value)
+        success = self.vector_store.update_status(block_id, status)
 
         # Update local tracking
         if success:

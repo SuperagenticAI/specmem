@@ -157,30 +157,30 @@ extra:
 
 # Navigation
 nav:
-  - 🏠 Home: index.md
-  - 💡 Why SpecMem: why-specmem.md
-  - 🚀 Getting Started:
+  - Home: index.md
+  - Why SpecMem: why-specmem.md
+  - Getting Started:
     - getting-started/index.md
-    - 📦 Installation: getting-started/installation.md
-    - ⚡ Quick Start: getting-started/quickstart.md
-    - 💎 Value Guide: getting-started/value-guide.md
-    - 🔧 Configuration: getting-started/configuration.md
-  - 📚 User Guide:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Value Guide: getting-started/value-guide.md
+    - Configuration: getting-started/configuration.md
+  - User Guide:
     - user-guide/index.md
-    - 🧠 Core Concepts: user-guide/concepts.md
-    - 🔌 Adapters: user-guide/adapters.md
-    - 🎯 Kiro Integration: user-guide/kiro-integration.md
-    - ⚡ Kiro Powers: user-guide/kiro-powers.md
-    - 🔧 Kiro Configuration: user-guide/kiro-config.md
-    - 📜 Coding Guidelines: user-guide/guidelines.md
-    - 📊 SpecImpact Graph: user-guide/specimpact.md
-    - ⏱️ SpecDiff Timeline: user-guide/specdiff.md
-    - ✅ SpecValidator: user-guide/validator.md
-    - 📈 Spec Coverage: user-guide/spec-coverage.md
-    - 🎯 Selective Testing: user-guide/selective-testing.md
-    - 🔄 Spec Lifecycle: user-guide/spec-lifecycle.md
-    - 🌐 Web UI: user-guide/web-ui.md
-  - 💻 CLI Reference:
+    - Core Concepts: user-guide/concepts.md
+    - Adapters: user-guide/adapters.md
+    - Kiro Integration: user-guide/kiro-integration.md
+    - Kiro Powers: user-guide/kiro-powers.md
+    - Kiro Configuration: user-guide/kiro-config.md
+    - Coding Guidelines: user-guide/guidelines.md
+    - SpecImpact Graph: user-guide/specimpact.md
+    - SpecDiff Timeline: user-guide/specdiff.md
+    - SpecValidator: user-guide/validator.md
+    - Spec Coverage: user-guide/spec-coverage.md
+    - Selective Testing: user-guide/selective-testing.md
+    - Spec Lifecycle: user-guide/spec-lifecycle.md
+    - Web UI: user-guide/web-ui.md
+  - CLI Reference:
     - cli/index.md
     - specmem init: cli/init.md
     - specmem scan: cli/scan.md
@@ -198,7 +198,7 @@ nav:
     - specmem guidelines: cli/guidelines.md
     - specmem kiro-config: cli/kiro-config.md
     - specmem steering: cli/steering.md
-  - 🐍 Python API:
+  - Python API:
     - api/index.md
     - SpecMemClient: api/client.md
     - Memory Bank: api/memory-bank.md
@@ -212,15 +212,16 @@ nav:
     - Lifecycle: api/lifecycle.md
     - Guidelines: api/guidelines.md
     - Kiro Config: api/kiro-config.md
-  - 🔧 Advanced:
+  - Advanced:
     - advanced/index.md
-    - ✍️ Writing Adapters: advanced/writing-adapters.md
-    - 🗄️ Vector Backends: advanced/vector-backends.md
-    - ☁️ Cloud Embeddings: advanced/cloud-embeddings.md
-    - 🔗 Agent Integration: advanced/agent-integration.md
-  - 🚀 CI/CD:
-    - 🔄 GitHub Action: github-action.md
-  - 📖 Reference:
+    - Writing Adapters: advanced/writing-adapters.md
+    - Vector Backends: advanced/vector-backends.md
+    - Cloud Embeddings: advanced/cloud-embeddings.md
+    - Agent Integration: advanced/agent-integration.md
+    - Agent Memory Patterns: advanced/agent-memory-patterns.md
+  - CI/CD:
+    - GitHub Action: github-action.md
+  - Reference:
     - reference/index.md
     - Configuration Options: reference/configuration.md
     - Environment Variables: reference/environment.md

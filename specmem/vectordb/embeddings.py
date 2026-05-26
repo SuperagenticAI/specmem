@@ -6,6 +6,7 @@ Supports local embeddings via SentenceTransformers and cloud providers.
 import logging
 import os
 from abc import ABC, abstractmethod
+from typing import Any
 
 from specmem.core.exceptions import EmbeddingError
 
@@ -81,6 +82,8 @@ class LocalEmbeddingProvider(EmbeddingProvider):
     good quality embeddings with fast inference.
     """
 
+    _MODEL_CACHE: dict[str, tuple[Any, int | None]] = {}
+
     def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
         """Initialize the local embedding provider.
 
@@ -95,13 +98,20 @@ class LocalEmbeddingProvider(EmbeddingProvider):
         """Lazy load the model on first use."""
         if self._model is not None:
             return
+        if self._model_name in self._MODEL_CACHE:
+            self._model, self._dimension = self._MODEL_CACHE[self._model_name]
+            return
 
         try:
             from sentence_transformers import SentenceTransformer
 
             logger.info(f"Loading embedding model: {self._model_name}")
             self._model = SentenceTransformer(self._model_name)
-            self._dimension = self._model.get_sentence_embedding_dimension()
+            if hasattr(self._model, "get_embedding_dimension"):
+                self._dimension = self._model.get_embedding_dimension()
+            else:
+                self._dimension = self._model.get_sentence_embedding_dimension()
+            self._MODEL_CACHE[self._model_name] = (self._model, self._dimension)
             logger.info(f"Model loaded, dimension: {self._dimension}")
 
         except ImportError as e:

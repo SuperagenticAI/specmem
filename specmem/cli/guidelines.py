@@ -16,7 +16,7 @@ from rich.table import Table
 
 from specmem.guidelines.aggregator import GuidelinesAggregator
 from specmem.guidelines.converter import GuidelinesConverter
-from specmem.guidelines.models import SourceType
+from specmem.guidelines.models import Guideline, SourceType
 
 
 app = typer.Typer(
@@ -25,6 +25,20 @@ app = typer.Typer(
 )
 
 console = Console()
+
+
+def _guideline_summary(guideline: Guideline) -> dict:
+    return {
+        "id": guideline.id,
+        "title": guideline.title,
+        "source_type": guideline.source_type.value,
+        "source_file": guideline.source_file,
+        "file_pattern": guideline.file_pattern,
+        "tags": guideline.tags,
+        "content_preview": guideline.content[:240] + "..."
+        if len(guideline.content) > 240
+        else guideline.content,
+    }
 
 
 @app.callback(invoke_without_command=True)
@@ -130,6 +144,76 @@ def list_guidelines(
         console.print(
             f"\n[dim]Showing 20 of {len(guidelines)} guidelines. Use --robot for full list.[/dim]"
         )
+
+
+@app.command("context")
+def context(
+    task: str | None = typer.Option(None, "--task", "-t", help="Task intent for skill routing"),
+    files: list[str] | None = typer.Option(
+        None,
+        "--file",
+        "-f",
+        help="Changed file path; repeat for multiple files",
+    ),
+    path: str = typer.Option(".", "--path", "-p", help="Workspace path"),
+    robot: bool = typer.Option(False, "--robot", "-r", help="Output JSON for AI agents"),
+) -> None:
+    """Show the layered memory context an agent should load for a task.
+
+    This is a deterministic routing view: always-on guidance first, file-scoped
+    guidance for changed files second, and procedural skills only when the task
+    intent matches.
+    """
+    workspace_path = Path(path)
+    aggregator = GuidelinesAggregator(workspace_path)
+    layers = aggregator.build_context(files=files or [], task=task)
+
+    if robot:
+        output = {
+            "task": task,
+            "files": files or [],
+            "layers": {
+                name: [_guideline_summary(guideline) for guideline in guidelines]
+                for name, guidelines in layers.items()
+            },
+        }
+        print(json.dumps(output, indent=2))
+        return
+
+    console.print("[bold]Agent Memory Context[/bold]\n")
+    if task:
+        console.print(f"[bold]Task:[/bold] {task}")
+    if files:
+        console.print(f"[bold]Files:[/bold] {', '.join(files)}")
+    if task or files:
+        console.print()
+
+    labels = {
+        "always_on": "1. Always-on Project Guidance",
+        "file_scoped": "2. File-scoped Guidance",
+        "skills": "3. Candidate Skills",
+    }
+
+    for layer_name, title in labels.items():
+        guidelines = layers[layer_name]
+        table = Table(title=f"{title} ({len(guidelines)})")
+        table.add_column("Source", style="cyan", width=14)
+        table.add_column("Title", style="white")
+        table.add_column("Pattern", style="dim")
+        table.add_column("File", style="dim")
+
+        for guideline in guidelines[:10]:
+            table.add_row(
+                guideline.source_type.value,
+                guideline.title[:48] + ("..." if len(guideline.title) > 48 else ""),
+                guideline.file_pattern or "-",
+                guideline.source_file,
+            )
+
+        console.print(table)
+        if len(guidelines) > 10:
+            console.print(f"[dim]Showing 10 of {len(guidelines)} in this layer.[/dim]")
+        console.print()
 
 
 @app.command("show")

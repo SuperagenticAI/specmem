@@ -101,6 +101,31 @@ class TestQueryCommand:
             assert result.exit_code == 1
             assert "No data in memory" in result.stdout
 
+    def test_query_accepts_trace_options_when_no_data(self) -> None:
+        """Query should accept trace options before reporting empty memory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / ".specmem.toml"
+            config_path.write_text("[embedding]\nprovider = 'local'\n")
+
+            vectordb_path = Path(tmpdir) / ".specmem" / "vectordb"
+            vectordb_path.mkdir(parents=True)
+
+            result = runner.invoke(
+                app,
+                [
+                    "query",
+                    "test query",
+                    "--path",
+                    tmpdir,
+                    "--trace",
+                    "--file",
+                    "src/app.py",
+                ],
+            )
+
+            assert result.exit_code == 1
+            assert "No data in memory" in result.stdout
+
 
 class TestVerboseFlag:
     """Tests for verbose flag."""

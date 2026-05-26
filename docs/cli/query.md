@@ -1,33 +1,36 @@
 # specmem query
 
-Search specifications using semantic search.
+Search the indexed memory store with a natural language question.
 
 ## Usage
 
 ```bash
-specmem query [OPTIONS] QUERY
+specmem query [OPTIONS] QUESTION
 ```
 
 ## Description
 
-Performs semantic search across all indexed specifications using vector similarity.
+`specmem query` embeds the question, searches the configured vector backend, and
+returns the most relevant memory blocks. Results can include structured specs,
+living documentation, and indexed agent guidance.
+
+Run `specmem build` before querying. The command uses the vector backend
+configured in `.specmem.toml`.
 
 ## Arguments
 
 | Argument | Description | Required |
 |----------|-------------|----------|
-| `QUERY` | Search query (natural language) | Yes |
+| `QUESTION` | Natural language query to search for | Yes |
 
 ## Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--top-k, -k INT` | Number of results | `5` |
-| `--type TYPE` | Filter by spec type | all |
-| `--lifecycle LIFECYCLE` | Filter by lifecycle | `active` |
-| `--threshold FLOAT` | Minimum similarity score | `0.5` |
-| `--format FORMAT` | Output format (text, json, markdown) | `text` |
-| `--verbose, -v` | Show detailed output | `false` |
+| `--top`, `-k` | Number of results to return | `5` |
+| `--path`, `-p` | Repository path | `.` |
+| `--file`, `-f` | Changed file path for trace output. Repeat for multiple files. | none |
+| `--trace` | Explain memory routing and result metadata | off |
 
 ## Examples
 
@@ -37,117 +40,61 @@ Performs semantic search across all indexed specifications using vector similari
 specmem query "authentication requirements"
 ```
 
-Output:
+Example output:
 
-```
-🔍 Query: "authentication requirements"
+```text
+Results for: authentication requirements
 
-📄 auth/requirements.md (score: 0.92)
-   User authentication with JWT tokens and refresh mechanism
-   Type: requirement | Priority: critical | Lifecycle: active
+1. [requirement] (score: 0.921)
+   .kiro/specs/auth/requirements.md
+   # Requirement 1
 
-📄 api-security/design.md (score: 0.87)
-   API security layer with rate limiting and auth middleware
-   Type: design | Priority: high | Lifecycle: active
-
-📄 session-management/tasks.md (score: 0.81)
-   Session handling and token refresh implementation
-   Type: task | Priority: medium | Lifecycle: active
+   Users must authenticate with a valid session token...
 ```
 
-### More Results
+### Return More Results
 
 ```bash
-specmem query "user management" --top-k 10
+specmem query "database schema" --top 10
 ```
 
-### Filter by Type
+### Query Another Repository
 
 ```bash
-specmem query "security" --type requirement
+specmem query "release process" --path ../service-api
 ```
 
-### Filter by Lifecycle
+### Show Memory Trace
+
+Use `--trace` when you want to explain why memory was loaded for a task.
+Pass changed files with `--file` so SpecMem can show file-scoped guidance.
 
 ```bash
-specmem query "api" --lifecycle deprecated
+specmem query "What constraints apply before changing authentication?" \
+  --file src/auth.py \
+  --trace
 ```
 
-### Higher Threshold
+The trace includes:
 
-```bash
-specmem query "database schema" --threshold 0.8
-```
+| Layer | Meaning |
+|-------|---------|
+| `always_on` | Pinned project guidance that applies before semantic retrieval |
+| `file_scoped` | Guidance whose file pattern matches `--file` |
+| `skills` | Procedural memory whose title, tags, or body match the query intent |
+| `vector` | Top semantic matches from the configured vector backend |
 
-### JSON Output
+Each result also includes trace metadata such as `vector-match`,
+`status:active`, `pinned`, and relevant tags.
 
-```bash
-specmem query "authentication" --format json
-```
+## Lifecycle Filtering
 
-Output:
-
-```json
-{
-  "query": "authentication",
-  "results": [
-    {
-      "id": "auth-req-001",
-      "path": "auth/requirements.md",
-      "score": 0.92,
-      "title": "User Authentication",
-      "summary": "User authentication with JWT tokens",
-      "type": "requirement",
-      "lifecycle": "active",
-      "priority": "critical"
-    }
-  ]
-}
-```
-
-### Markdown Output
-
-```bash
-specmem query "api design" --format markdown
-```
-
-Output:
-
-```markdown
-## Search Results: "api design"
-
-### 1. api/design.md (0.94)
-**Type:** design | **Priority:** high
-
-API design with RESTful endpoints and OpenAPI specification.
-
----
-
-### 2. gateway/design.md (0.88)
-**Type:** design | **Priority:** medium
-
-API gateway design with routing and load balancing.
-```
-
-## Spec Types
-
-| Type | Description |
-|------|-------------|
-| `requirement` | What the system should do |
-| `design` | How the system works |
-| `task` | Implementation steps |
-| `constraint` | Limitations and rules |
-
-## Lifecycle Values
-
-| Lifecycle | Description |
-|-----------|-------------|
-| `active` | Current, in-use spec |
-| `deprecated` | Being phased out |
-| `legacy` | Old but still referenced |
-| `obsolete` | No longer relevant |
+The vector store excludes obsolete memory by default. Deprecated and legacy
+memory are included only when the calling API requests them. The CLI currently
+uses the default active-memory query behavior.
 
 ## See Also
 
-- [Core Concepts](../user-guide/concepts.md)
-- [specmem impact](impact.md)
+- [specmem build](build.md)
+- [specmem guidelines](guidelines.md)
+- [Agent Memory Patterns](../advanced/agent-memory-patterns.md)

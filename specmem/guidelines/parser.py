@@ -39,6 +39,22 @@ class GuidelinesParser:
             return self.parse_steering(file_path)
         elif source_type == "agents":
             return self.parse_agents(file_path)
+        elif source_type == "codex_skill":
+            return self.parse_skill(file_path, SourceType.CODEX_SKILL, ["codex", "skill"])
+        elif source_type == "claude_skill":
+            return self.parse_skill(file_path, SourceType.CLAUDE_SKILL, ["claude", "skill"])
+        elif source_type == "copilot":
+            return self.parse_markdown_file(
+                file_path, SourceType.COPILOT, ["copilot", "instructions"]
+            )
+        elif source_type == "gemini":
+            return self.parse_markdown_file(file_path, SourceType.GEMINI, ["gemini", "guidelines"])
+        elif source_type == "opencode":
+            return self.parse_markdown_file(
+                file_path, SourceType.OPENCODE, ["opencode", "guidelines"]
+            )
+        elif source_type == "qwen":
+            return self.parse_markdown_file(file_path, SourceType.QWEN, ["qwen", "guidelines"])
         else:
             logger.warning(f"Unknown source type: {source_type}")
             return []
@@ -63,10 +79,14 @@ class GuidelinesParser:
         )
 
     def parse_cursor(self, file_path: Path) -> list[Guideline]:
-        """Parse .cursorrules file into guidelines.
+        """Parse a Cursor rules file into guidelines.
+
+        Handles both legacy ``.cursorrules`` files (plain markdown) and modern
+        ``.cursor/rules/*.mdc`` files, which carry YAML frontmatter with
+        ``description``, ``globs``, and ``alwaysApply`` keys.
 
         Args:
-            file_path: Path to .cursorrules file
+            file_path: Path to the Cursor rules file
 
         Returns:
             List of Guideline objects
@@ -77,9 +97,24 @@ class GuidelinesParser:
             logger.warning(f"Failed to read {file_path}: {e}")
             return []
 
-        return self._parse_markdown_sections(
-            content, str(file_path), SourceType.CURSOR, ["cursor", "rules"]
+        frontmatter = self._parse_frontmatter(content)
+        body = self._extract_body(content)
+
+        guidelines = self._parse_markdown_sections(
+            body, str(file_path), SourceType.CURSOR, ["cursor", "rules"]
         )
+
+        always_apply = bool(frontmatter.get("alwaysApply"))
+        file_pattern = self._normalize_patterns(frontmatter.get("globs"))
+        for guideline in guidelines:
+            # alwaysApply rules apply to every file, so leave file_pattern unset.
+            if file_pattern and not always_apply:
+                guideline.file_pattern = file_pattern
+            if always_apply:
+                guideline.tags.append("always-apply")
+            if frontmatter.get("description"):
+                guideline.tags.append("described")
+        return guidelines
 
     def parse_steering(self, file_path: Path) -> list[Guideline]:
         """Parse Kiro steering file into guidelines.
@@ -141,6 +176,71 @@ class GuidelinesParser:
         return self._parse_markdown_sections(
             content, str(file_path), SourceType.AGENTS, ["agents", "guidelines"]
         )
+
+    def parse_markdown_file(
+        self,
+        file_path: Path,
+        source_type: SourceType,
+        base_tags: list[str],
+    ) -> list[Guideline]:
+        """Parse a generic agent markdown instruction file."""
+        try:
+            content = file_path.read_text(encoding="utf-8")
+        except Exception as e:
+            logger.warning(f"Failed to read {file_path}: {e}")
+            return []
+
+        body = self._extract_body(content)
+        frontmatter = self._parse_frontmatter(content)
+        file_pattern = self._normalize_patterns(
+            frontmatter.get("applyTo") or frontmatter.get("globs")
+        )
+
+        guidelines = self._parse_markdown_sections(body, str(file_path), source_type, base_tags)
+        for guideline in guidelines:
+            if file_pattern:
+                guideline.file_pattern = file_pattern
+            if frontmatter.get("description"):
+                guideline.tags.append("described")
+        return guidelines
+
+    def parse_skill(
+        self,
+        file_path: Path,
+        source_type: SourceType,
+        base_tags: list[str],
+    ) -> list[Guideline]:
+        """Parse an agent skill document as procedural memory."""
+        try:
+            content = file_path.read_text(encoding="utf-8")
+        except Exception as e:
+            logger.warning(f"Failed to read {file_path}: {e}")
+            return []
+
+        frontmatter = self._parse_frontmatter(content)
+        body = self._extract_body(content)
+        title = str(
+            frontmatter.get("name") or file_path.parent.name or self._extract_title(body, file_path)
+        )
+        description = frontmatter.get("description")
+        text = body
+        if description:
+            text = f"{description}\n\n{text}".strip()
+
+        tags = [*base_tags, file_path.parent.name]
+        if frontmatter.get("license"):
+            tags.append("licensed")
+
+        return [
+            Guideline(
+                id=Guideline.generate_id(str(file_path), title),
+                title=title,
+                content=text,
+                source_type=source_type,
+                source_file=str(file_path),
+                tags=tags,
+            )
+        ]
 
     def _parse_markdown_sections(
         self,
@@ -242,6 +342,23 @@ class GuidelinesParser:
                 sections.append(current_section)
 
         return sections
+
+    @staticmethod
+    def _normalize_patterns(value: Any) -> str | None:
+        """Normalize a frontmatter glob value to a comma-separated pattern string.
+
+        Accepts a YAML list (``["*.py", "*.ts"]``), a comma-separated string
+        (``"*.py, *.ts"``), or a single pattern, and returns a single
+        comma-separated string (or ``None`` if empty).
+        """
+        if value is None:
+            return None
+        if isinstance(value, (list, tuple)):
+            parts = [str(v).strip() for v in value]
+        else:
+            parts = [p.strip() for p in str(value).split(",")]
+        parts = [p for p in parts if p]
+        return ",".join(parts) if parts else None
 
     def _parse_frontmatter(self, content: str) -> dict[str, Any]:
         """Extract YAML frontmatter from content.

@@ -1,295 +1,166 @@
 # Memory Bank
 
-The Memory Bank manages specification storage and retrieval using vector embeddings.
+The Memory Bank coordinates chunking, embedding generation, vector storage, and
+retrieval for `SpecBlock` objects.
 
 ## Import
 
 ```python
-from specmem.core import MemoryBank
+from specmem.core.memory_bank import MemoryBank
 ```
 
 ## Constructor
 
 ```python
 MemoryBank(
-    vectordb: VectorStore,
+    vector_store: VectorStore,
     embedding_provider: EmbeddingProvider,
+    chunk_size: int = 1000,
 )
 ```
-
-### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `vectordb` | `VectorStore` | Vector database backend |
+| `vector_store` | `VectorStore` | Vector database backend |
 | `embedding_provider` | `EmbeddingProvider` | Embedding generator |
+| `chunk_size` | `int` | Maximum characters per stored chunk |
 
-### Example
-
-```python
-from specmem.vectordb import LanceDBStore
-from specmem.vectordb.embeddings import LocalEmbeddingProvider
-
-vectordb = LanceDBStore(db_path=".specmem/vectordb")
-embeddings = LocalEmbeddingProvider(model_name="all-MiniLM-L6-v2")
-
-memory = MemoryBank(vector_store=vectordb, embedding_provider=embeddings)
-```
-
-## Methods
-
-### add
-
-Add a specification to the memory bank.
+## Example
 
 ```python
-def add(spec: SpecBlock) -> str
-```
+from specmem.core.memory_bank import MemoryBank
+from specmem.core.specir import SpecBlock, SpecStatus, SpecType
+from specmem.vectordb import LanceDBStore, get_embedding_provider
 
-#### Returns
-
-The ID of the added specification.
-
-#### Example
-
-```python
-spec = SpecBlock(
-    id="auth-001",
-    path="auth/requirements.md",
-    framework="kiro",
-    spec_type=SpecType.REQUIREMENT,
-    title="User Authentication",
-    content="...",
-    summary="JWT-based auth",
+vector_store = LanceDBStore(db_path=".specmem/vectordb")
+embedding_provider = get_embedding_provider(
+    provider="local",
+    model="all-MiniLM-L6-v2",
 )
 
-spec_id = memory.add(spec)
+memory = MemoryBank(vector_store=vector_store, embedding_provider=embedding_provider)
+memory.initialize()
+
+blocks = [
+    SpecBlock(
+        id="auth-001",
+        type=SpecType.REQUIREMENT,
+        text="Users must authenticate with short-lived access tokens.",
+        source=".kiro/specs/auth/requirements.md",
+        status=SpecStatus.ACTIVE,
+        tags=["auth", "security"],
+        pinned=True,
+    )
+]
+
+added = memory.add_blocks(blocks)
+results = memory.query("How should authentication work?", top_k=5)
 ```
 
----
+## from_config
 
-### add_batch
-
-Add multiple specifications efficiently.
+Create a memory bank from `SpecMemConfig`.
 
 ```python
-def add_batch(specs: list[SpecBlock]) -> list[str]
+from specmem.core.config import SpecMemConfig
+from specmem.core.memory_bank import MemoryBank
+
+config = SpecMemConfig.load()
+memory = MemoryBank.from_config(config)
+memory.initialize()
 ```
 
-#### Example
+`from_config` honors the configured vector backend, including LanceDB, Chroma,
+Qdrant, and AgentVectorDB when the corresponding extra is installed.
+
+## initialize
+
+Initialize the underlying vector store.
 
 ```python
-specs = [spec1, spec2, spec3]
-ids = memory.add_batch(specs)
+memory.initialize()
 ```
 
----
+## add_blocks
 
-### search
-
-Search for similar specifications.
+Add one or more `SpecBlock` objects to memory.
 
 ```python
-def search(
-    query: str,
-    top_k: int = 5,
-    filters: dict | None = None,
-    threshold: float = 0.0,
-) -> list[SearchResult]
+count = memory.add_blocks(blocks)
 ```
 
-#### Parameters
+Large blocks are split into overlapping chunks before embedding. The return
+value is the number of stored blocks after chunking.
 
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `query` | `str` | Search query | required |
-| `top_k` | `int` | Number of results | `5` |
-| `filters` | `dict \| None` | Metadata filters | `None` |
-| `threshold` | `float` | Minimum score | `0.0` |
+## query
 
-#### Example
+Query memory using natural language.
 
 ```python
-results = memory.search(
-    query="authentication",
+results = memory.query(
+    query_text="What are the auth requirements?",
     top_k=10,
-    filters={"spec_type": "requirement"},
-    threshold=0.5
+    include_legacy=False,
+    include_pinned=True,
 )
+```
 
+Returns `list[QueryResult]`, sorted by descending score.
+
+```python
 for result in results:
-    print(f"{result.spec.path}: {result.score}")
+    print(result.score, result.block.source, result.block.text[:120])
 ```
 
----
+Pinned blocks can be included automatically so critical project rules and
+architectural constraints are not lost to vector ranking.
 
-### get
+## get_statistics
 
-Get a specification by ID.
+Return counts by type, status, source, and pinned status.
 
 ```python
-def get(spec_id: str) -> SpecBlock | None
+stats = memory.get_statistics()
+print(stats.to_dict())
 ```
 
-#### Example
+## update_status
+
+Update a block lifecycle status.
 
 ```python
-spec = memory.get("auth-001")
+memory.update_status("auth-001", SpecStatus.DEPRECATED)
 ```
 
----
+The vector store validates lifecycle transitions and can move obsolete blocks to
+an audit log when the backend supports it.
 
-### update
+## clear
 
-Update an existing specification.
-
-```python
-def update(spec: SpecBlock) -> bool
-```
-
-#### Returns
-
-`True` if updated, `False` if not found.
-
-#### Example
+Clear all indexed memory from the configured vector store.
 
 ```python
-spec.summary = "Updated summary"
-memory.update(spec)
-```
-
----
-
-### delete
-
-Delete a specification.
-
-```python
-def delete(spec_id: str) -> bool
-```
-
-#### Example
-
-```python
-memory.delete("auth-001")
-```
-
----
-
-### pin
-
-Pin a specification for guaranteed recall.
-
-```python
-def pin(spec_id: str) -> None
-```
-
-Pinned specifications are always included in context bundles.
-
-#### Example
-
-```python
-memory.pin("security-requirements")
-```
-
----
-
-### unpin
-
-Unpin a specification.
-
-```python
-def unpin(spec_id: str) -> None
-```
-
----
-
-### get_pinned
-
-Get all pinned specifications.
-
-```python
-def get_pinned() -> list[SpecBlock]
-```
-
-#### Example
-
-```python
-pinned = memory.get_pinned()
-for spec in pinned:
-    print(f"Pinned: {spec.path}")
-```
-
----
-
-### get_all
-
-Get all specifications.
-
-```python
-def get_all(
-    filters: dict | None = None,
-) -> list[SpecBlock]
-```
-
-#### Example
-
-```python
-# All specs
-all_specs = memory.get_all()
-
-# Filtered
-requirements = memory.get_all(filters={"spec_type": "requirement"})
-```
-
----
-
-### count
-
-Get the number of specifications.
-
-```python
-def count(filters: dict | None = None) -> int
-```
-
-#### Example
-
-```python
-total = memory.count()
-requirements = memory.count(filters={"spec_type": "requirement"})
-```
-
----
-
-### clear
-
-Clear all specifications.
-
-```python
-def clear() -> None
+memory.clear()
 ```
 
 !!! warning
-    This permanently deletes all indexed specifications.
+    This deletes the indexed memory store. Source specification files are not
+    deleted.
 
----
+## Related Types
 
-### rebuild_index
-
-Rebuild the vector index.
-
-```python
-def rebuild_index() -> None
-```
-
-Use after bulk updates or when the index becomes corrupted.
-
-## SearchResult
+`QueryResult` comes from `specmem.vectordb.base`:
 
 ```python
-@dataclass
-class SearchResult:
-    spec: SpecBlock      # The matched specification
-    score: float         # Similarity score (0-1)
-    highlights: list[str] # Matching text snippets
+from specmem.vectordb.base import QueryResult
 ```
+
+It contains:
+
+| Field | Description |
+|-------|-------------|
+| `block` | Matched `SpecBlock` |
+| `score` | Similarity score |
+| `distance` | Distance metric when provided by the backend |
+| `deprecation_warning` | Warning for deprecated memory |
+| `importance_score` | Optional backend-specific importance score |

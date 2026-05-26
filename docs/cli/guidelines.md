@@ -12,6 +12,7 @@ specmem guidelines [OPTIONS] [COMMAND]
 
 | Command | Description |
 |---------|-------------|
+| `context` | Show the layered memory context an agent should load for a task |
 | `show` | Show full content of a specific guideline |
 | `convert` | Convert a guideline to another format |
 | `convert-all` | Convert all guidelines to a target format |
@@ -20,12 +21,15 @@ specmem guidelines [OPTIONS] [COMMAND]
 
 | Option | Description |
 |--------|-------------|
-| `--source`, `-s` | Filter by source type (claude, cursor, steering, agents) |
+| `--source`, `-s` | Filter by source type |
 | `--search`, `-q` | Search in title and content |
 | `--file`, `-f` | Show guidelines that apply to a specific file |
 | `--path`, `-p` | Workspace path (default: current directory) |
 | `--robot`, `-r` | Output JSON for AI agents |
 | `--no-samples` | Exclude sample guidelines |
+
+Valid source types include `agents`, `claude`, `codex_skill`, `claude_skill`,
+`copilot`, `cursor`, `gemini`, `opencode`, `qwen`, and `steering`.
 
 ## Examples
 
@@ -40,6 +44,8 @@ specmem guidelines --source claude
 specmem guidelines --source cursor
 specmem guidelines --source steering
 specmem guidelines --source agents
+specmem guidelines --source codex_skill
+specmem guidelines --source copilot
 
 # Search guidelines
 specmem guidelines --search "testing"
@@ -50,6 +56,34 @@ specmem guidelines --file src/auth.py
 
 # JSON output
 specmem guidelines --robot
+```
+
+### Build Agent Context
+
+Use `context` to preview the memory layers an agent should load before editing
+code. This is deterministic routing before semantic vector search.
+
+```bash
+specmem guidelines context \
+  --file src/auth.py \
+  --task "change authentication flow and update tests"
+```
+
+The command returns three layers:
+
+| Layer | Description |
+|-------|-------------|
+| Always-on Project Guidance | Repository instructions that apply to all changes |
+| File-scoped Guidance | Rules whose glob patterns match the supplied files |
+| Candidate Skills | Procedural skills matched to the task intent |
+
+Use `--robot` for JSON output:
+
+```bash
+specmem guidelines context \
+  --file src/auth.py \
+  --task "change authentication flow" \
+  --robot
 ```
 
 ### Show Guideline
@@ -126,6 +160,25 @@ Guidelines by Source:
 ```
 
 ## Supported Formats
+
+SpecMem reads these agent guidance sources:
+
+| Source | Files |
+|--------|-------|
+| Generic agents | `AGENTS.md`, `AGENT.md` |
+| Codex skills | `.codex/skills/*/SKILL.md` |
+| Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| OpenCode | `OPENCODE.md` |
+| Qwen Code | `QWEN.md` |
+| Kiro | `.kiro/steering/*.md` |
+
+Instruction files are pinned by default when converted into memory blocks.
+Skill files are indexed as procedural memory and are selected by task intent.
+
+## Conversion Targets
 
 | Format | Output | Description |
 |--------|--------|-------------|

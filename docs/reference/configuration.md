@@ -27,24 +27,21 @@ batch_size = 32
 
 | Provider | Models | Status |
 |----------|--------|--------|
-| local | all-MiniLM-L6-v2, all-mpnet-base-v2 | ✅ Supported |
-| openai | text-embedding-3-small, text-embedding-3-large | ✅ Supported |
-| google | (planned) | 🔜 Coming soon |
-| together | (planned) | 🔜 Coming soon |
+| local | all-MiniLM-L6-v2, all-mpnet-base-v2 | Supported |
+| openai | text-embedding-3-small, text-embedding-3-large | Supported |
+| google | Planned | Coming soon |
+| together | Planned | Coming soon |
 
 ## Vector Database
 
 ```toml
 [vectordb]
 # Backend type
-# Options: "lancedb", "chroma", "qdrant"
+# Options: "lancedb", "agentvectordb", "chroma", "qdrant"
 backend = "lancedb"
 
 # Storage path (relative to project root)
 path = ".specmem/vectordb"
-
-# Collection/table name
-collection = "specs"
 ```
 
 ### LanceDB Options
@@ -73,16 +70,36 @@ mode = "local"
 ### Qdrant Options
 
 ```toml
-[vectordb.qdrant]
-collection = "specs"
+[vectordb]
+backend = "qdrant"
+path = ".specmem/qdrant"
 # Local mode:
 # path = ".specmem/qdrant"
 # Server mode:
-# url = "http://localhost:6333"
+# qdrant_url = "http://localhost:6333"
 # Cloud mode:
-# url = "https://your-cluster.qdrant.io"
-# api_key = "..."
+# qdrant_url = "https://your-cluster.qdrant.io"
+# qdrant_api_key = "..."
+# Optional collection override:
+# qdrant_collection = "specmem"
 ```
+
+### Agent Guidance Sources
+
+Agent guidance is discovered automatically. It is not configured through a
+separate `[guidance]` section.
+
+| Source | Files |
+|--------|-------|
+| Generic agents | `AGENTS.md`, `AGENT.md` |
+| Codex skills | `.codex/skills/*/SKILL.md` |
+| Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| OpenCode | `OPENCODE.md` |
+| Qwen Code | `QWEN.md` |
+| Kiro | `.kiro/steering/*.md` |
 
 ## Adapters
 

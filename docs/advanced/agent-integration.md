@@ -1,19 +1,20 @@
-# 🔗 Agent Integration
+# Agent Integration
 
 Integrate SpecMem with AI coding agents for enhanced context awareness.
 
 ## Overview
 
-SpecMem provides context to AI agents through:
+SpecMem provides context to AI agents through several integration paths:
 
-1. **Agent Experience Pack** - Pre-built context files
-2. **Python API** - Direct integration
-3. **REST API** - HTTP-based integration
-4. **MCP Server** - Model Context Protocol
+1. **Agent Experience Pack**: Pre-built context files under `.specmem/`
+2. **Guidance routing**: Deterministic context selection from agent instruction files
+3. **Python API**: Direct integration for custom tools and agents
+4. **REST API**: HTTP-based integration
+5. **MCP Server**: Model Context Protocol integration
 
 ## Agent Experience Pack
 
-The simplest integration - agents read from `.specmem/` directory.
+The simplest integration is to let agents read from the `.specmem/` directory.
 
 ### Build the Pack
 
@@ -31,6 +32,54 @@ specmem build
 ├── impact_graph.json      # Relationships
 └── vectordb/              # Vector embeddings
 ```
+
+### Agent Guidance Sources
+
+SpecMem indexes repository-level agent guidance as first-class memory blocks
+during `specmem scan` and `specmem build`. Supported sources include:
+
+| Source | Files |
+|--------|-------|
+| Generic agents | `AGENTS.md`, `AGENT.md` |
+| Codex skills | `.codex/skills/*/SKILL.md` |
+| Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| OpenCode | `OPENCODE.md` |
+| Qwen Code | `QWEN.md` |
+| Kiro | `.kiro/steering/*.md` |
+
+Instruction files are pinned by default so core architectural intent survives
+ordinary vector ranking. Skills are indexed as procedural memory but are not
+pinned, because agents should retrieve them when the task matches the skill.
+
+### Preview Agent Context
+
+Use `specmem guidelines context` to show what an agent should load for a task
+before semantic vector search runs:
+
+```bash
+specmem guidelines context \
+  --file src/auth.py \
+  --task "change authentication flow and update tests"
+```
+
+The command groups memory into always-on guidance, file-scoped guidance, and
+candidate skills. Add `--robot` to return JSON for agent tooling.
+
+### Trace Query Results
+
+Use `--trace` on `specmem query` to explain memory routing and result metadata:
+
+```bash
+specmem query "What constraints apply before changing authentication?" \
+  --file src/auth.py \
+  --trace
+```
+
+The trace shows deterministic guidance layers and the semantic vector results
+used for recall.
 
 ### Agent Instructions
 
@@ -139,8 +188,8 @@ This project uses SpecMem for specification management.
 
 ## Context Files
 
-- `.specmem/agent_context.md` - Project overview
-- `.specmem/agent_memory.json` - All specifications
+- `.specmem/agent_context.md`: Project overview
+- `.specmem/agent_memory.json`: All specifications
 ```
 
 ## REST API Integration

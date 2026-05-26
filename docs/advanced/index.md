@@ -1,4 +1,4 @@
-# 🔧 Advanced
+# Advanced
 
 Advanced topics for power users and contributors.
 
@@ -6,24 +6,29 @@ Advanced topics for power users and contributors.
 
 <div class="feature-grid">
   <div class="feature-card">
-    <h3><span class="emoji">✍️</span> Writing Adapters</h3>
+    <h3>Writing Adapters</h3>
     <p>Create custom adapters for new frameworks.</p>
-    <a href="writing-adapters/" class="md-button">Learn →</a>
+    <a href="writing-adapters/" class="md-button">Learn</a>
   </div>
   <div class="feature-card">
-    <h3><span class="emoji">🗄️</span> Vector Backends</h3>
+    <h3>Vector Backends</h3>
     <p>Configure and optimize vector databases.</p>
-    <a href="vector-backends/" class="md-button">Configure →</a>
+    <a href="vector-backends/" class="md-button">Configure</a>
   </div>
   <div class="feature-card">
-    <h3><span class="emoji">☁️</span> Cloud Embeddings</h3>
+    <h3>Cloud Embeddings</h3>
     <p>Use cloud embedding providers.</p>
-    <a href="cloud-embeddings/" class="md-button">Setup →</a>
+    <a href="cloud-embeddings/" class="md-button">Set up</a>
   </div>
   <div class="feature-card">
-    <h3><span class="emoji">🔗</span> Agent Integration</h3>
+    <h3>Agent Integration</h3>
     <p>Integrate SpecMem with AI agents.</p>
-    <a href="agent-integration/" class="md-button">Integrate →</a>
+    <a href="agent-integration/" class="md-button">Integrate</a>
+  </div>
+  <div class="feature-card">
+    <h3>Agent Memory Patterns</h3>
+    <p>Design layered memory for coding agents.</p>
+    <a href="agent-memory-patterns/" class="md-button">Review patterns</a>
   </div>
 </div>
 
@@ -36,9 +41,9 @@ Advanced topics for power users and contributors.
 graph TB
     subgraph Input
         A1[Kiro Specs]
-        A2[Cursor Config]
+        A2[Agent Guidance]
         A3[Claude.md]
-        A4[Custom]
+        A4[Custom Specs]
     end
 
     subgraph Adapters

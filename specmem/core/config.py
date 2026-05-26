@@ -5,6 +5,9 @@ Handles loading and validation of SpecMem configuration from
 """
 
 import json
+
+# tomllib is in the standard library on Python 3.11+ (see requires-python).
+import tomllib
 from pathlib import Path
 from typing import Literal
 
@@ -12,12 +15,16 @@ from pydantic import BaseModel, Field
 
 
 try:
-    import tomli
     import tomli_w
-
-    TOML_AVAILABLE = True
 except ImportError:
-    TOML_AVAILABLE = False
+    tomli_w = None  # type: ignore[assignment]
+
+try:
+    import toml
+except ImportError:
+    toml = None  # type: ignore[assignment]
+
+TOML_AVAILABLE = True
 
 from specmem.core.exceptions import ConfigurationError
 
@@ -69,19 +76,24 @@ class VectorDBConfig(BaseModel):
         - agentvectordb: Agent-optimized memory from Superagentic AI
         - chroma: ChromaDB for simple use cases
         - qdrant: Qdrant for distributed deployments
-        - sqlite-vec: SQLite-based for minimal dependencies
 
     Attributes:
         backend: Vector database backend to use
         path: Path to store vector database files
         agentvectordb_api_key: API key for AgentVectorDB (optional)
         agentvectordb_endpoint: Custom endpoint for AgentVectorDB (optional)
+        qdrant_url: Qdrant server or cloud URL (optional; local path used if unset)
+        qdrant_api_key: Qdrant Cloud API key (optional)
+        qdrant_collection: Override the Qdrant collection name (optional)
     """
 
-    backend: Literal["lancedb", "agentvectordb", "chroma", "qdrant", "sqlite-vec"] = "lancedb"
+    backend: Literal["lancedb", "agentvectordb", "chroma", "qdrant"] = "lancedb"
     path: str = ".specmem/vectordb"
     agentvectordb_api_key: str | None = None
     agentvectordb_endpoint: str | None = None
+    qdrant_url: str | None = None
+    qdrant_api_key: str | None = None
+    qdrant_collection: str | None = None
 
 
 class SpecMemConfig(BaseModel):
@@ -148,7 +160,7 @@ class SpecMemConfig(BaseModel):
                         "TOML support not available. Install tomli and tomli-w.",
                         code="TOML_NOT_AVAILABLE",
                     )
-                data = tomli.loads(content)
+                data = tomllib.loads(content)
             elif path.suffix == ".json":
                 data = json.loads(content)
             else:
@@ -190,10 +202,18 @@ class SpecMemConfig(BaseModel):
             if path.suffix == ".toml":
                 if not TOML_AVAILABLE:
                     raise ConfigurationError(
-                        "TOML support not available. Install tomli and tomli-w.",
+                        "TOML support not available. Install tomli.",
                         code="TOML_NOT_AVAILABLE",
                     )
-                content = tomli_w.dumps(data)
+                if tomli_w is not None:
+                    content = tomli_w.dumps(data)
+                elif toml is not None:
+                    content = toml.dumps(data)
+                else:
+                    raise ConfigurationError(
+                        "TOML writing support not available. Install tomli-w or toml.",
+                        code="TOML_WRITE_NOT_AVAILABLE",
+                    )
             elif path.suffix == ".json":
                 content = json.dumps(data, indent=2)
             else:

@@ -15,7 +15,7 @@ embedding_provider_strategy = st.sampled_from(
     ["local", "openai", "anthropic", "gemini", "together"]
 )
 vectordb_backend_strategy = st.sampled_from(
-    ["lancedb", "agentvectordb", "chroma", "qdrant", "sqlite-vec"]
+    ["lancedb", "agentvectordb", "chroma", "qdrant"]
 )
 
 # Model names (non-empty strings)

@@ -272,11 +272,12 @@ class LanceDBStore(VectorStore):
     def update_status(
         self,
         block_id: str,
-        status: SpecStatus,
+        status: SpecStatus | str,
         reason: str = "",
     ) -> bool:
         """Update status with transition validation and audit logging."""
         self._ensure_initialized()
+        target_status = status if isinstance(status, SpecStatus) else SpecStatus(status)
 
         if self.table is None:
             return False
@@ -289,26 +290,31 @@ class LanceDBStore(VectorStore):
 
             row = results[0]
             current_status = SpecStatus(row["status"])
+            if current_status == target_status:
+                return True
 
             # Validate transition
-            if not validate_transition(current_status, status):
+            if not validate_transition(current_status, target_status):
                 valid = [s.value for s in VALID_TRANSITIONS.get(current_status, set())]
                 raise LifecycleError(
-                    f"Cannot transition from {current_status.value} to {status.value}",
+                    f"Cannot transition from {current_status.value} to {target_status.value}",
                     from_status=current_status.value,
-                    to_status=status.value,
+                    to_status=target_status.value,
                     block_id=block_id,
                     valid_transitions=valid,
                 )
 
             # If transitioning to obsolete, move to audit log
-            if status == SpecStatus.OBSOLETE:
+            if target_status == SpecStatus.OBSOLETE:
                 self._move_to_audit(row, current_status, reason)
                 self.table.delete(f"id = '{block_id}'")
             else:
                 self.table.update(
                     where=f"id = '{block_id}'",
-                    values={"status": status.value, "updated_at": datetime.now().timestamp()},
+                    values={
+                        "status": target_status.value,
+                        "updated_at": datetime.now().timestamp(),
+                    },
                 )
 
             return True

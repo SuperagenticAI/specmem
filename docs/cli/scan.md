@@ -1,120 +1,81 @@
 # specmem scan
 
-Scan and index specifications from your project.
+Scan a repository for specs and agent guidance.
 
 ## Usage
 
 ```bash
-specmem scan [OPTIONS]
+specmem scan [OPTIONS] [PATH]
 ```
 
 ## Description
 
-Scans your project for specification files from all enabled adapters and indexes them in the vector database.
+`specmem scan` detects supported specification frameworks and agent guidance
+files in a repository. It reports how many memory blocks SpecMem can load, but
+it does not write the vector index. Use `specmem build` to create the Agent
+Experience Pack and embeddings.
 
-## Options
+## Arguments
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--path, -p PATH` | Path to scan | `.` |
-| `--adapter ADAPTER` | Only use specific adapter | all enabled |
-| `--force, -f` | Force re-index all specs | `false` |
-| `--dry-run` | Show what would be indexed | `false` |
-| `--verbose, -v` | Show detailed output | `false` |
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `PATH` | Repository path to scan | `.` |
+
+## Supported Specification Sources
+
+| Source | Files |
+|--------|-------|
+| Kiro | `.kiro/specs/**/*.md` |
+| Cursor specs | `cursor.json`, `.cursorrules` |
+| Claude context | `Claude.md`, `CLAUDE.md` |
+| Spec Kit | `.speckit` files |
+| Tessl | `.tessl` files |
+
+## Supported Agent Guidance Sources
+
+| Source | Files |
+|--------|-------|
+| Generic agents | `AGENTS.md`, `AGENT.md` |
+| Codex skills | `.codex/skills/*/SKILL.md` |
+| Claude skills | `.claude/skills/*/SKILL.md` |
+| Cursor rules | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| OpenCode | `OPENCODE.md` |
+| Qwen Code | `QWEN.md` |
+| Kiro steering | `.kiro/steering/*.md` |
 
 ## Examples
 
-### Basic Scan
+### Scan Current Repository
 
 ```bash
 specmem scan
 ```
 
-Output:
-
-```
-🔍 Scanning for specifications...
-
-Adapters:
-  ✅ kiro: .kiro/specs/
-  ✅ cursor: cursor.json, .cursorrules
-  ✅ claude: Claude.md
-
-Found:
-  📄 .kiro/specs/auth/requirements.md
-  📄 .kiro/specs/auth/design.md
-  📄 .kiro/specs/auth/tasks.md
-  📄 .kiro/specs/api/requirements.md
-  📄 cursor.json (3 rules)
-  📄 Claude.md (1 context)
-
-📊 Total: 8 specifications indexed
-⏱️  Time: 1.2s
-```
-
-### Scan Specific Path
+### Scan Another Repository
 
 ```bash
-specmem scan --path ./features
+specmem scan ../service-api
 ```
 
-### Use Specific Adapter
+### Guidance-only Repository
+
+`specmem scan` works even when no structured spec framework is present, as long
+as the repository contains supported agent guidance files.
 
 ```bash
-specmem scan --adapter kiro
+specmem scan ./agent-guidance-repo
 ```
 
-### Force Re-index
+## Output
 
-```bash
-specmem scan --force
-```
-
-### Dry Run
-
-```bash
-specmem scan --dry-run
-```
-
-Output:
-
-```
-🔍 Dry run - no changes will be made
-
-Would index:
-  📄 .kiro/specs/auth/requirements.md (new)
-  📄 .kiro/specs/auth/design.md (modified)
-  📄 .kiro/specs/api/requirements.md (unchanged)
-
-Summary:
-  • New: 1
-  • Modified: 1
-  • Unchanged: 1
-```
-
-## Incremental Scanning
-
-By default, SpecMem only re-indexes specs that have changed since the last scan. Use `--force` to re-index everything.
-
-## Supported Adapters
-
-| Adapter | Files |
-|---------|-------|
-| `kiro` | `.kiro/specs/**/*.md` |
-| `cursor` | `cursor.json`, `.cursorrules` |
-| `claude` | `Claude.md`, `CLAUDE.md` |
-| `speckit` | `.speckit/**/*.yaml` |
-| `tessl` | `.tessl/**/*.md` |
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Error during scan |
-| 4 | No specs found |
+The command prints detected adapters, detected agent guidance, and a count of
+memory blocks by type. If no specs or guidance files are found, it exits with a
+non-zero status and lists supported inputs.
 
 ## See Also
 
-- [Adapters](../user-guide/adapters.md)
 - [specmem build](build.md)
+- [specmem guidelines](guidelines.md)
+- [Agent Integration](../advanced/agent-integration.md)
