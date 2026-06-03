@@ -228,7 +228,7 @@ For monorepos, specify the working directory:
 
 ### Basic Deployment
 
-```yaml
+```yaml title="dashboard.yml"
 name: Deploy SpecMem Dashboard
 on:
   push:
@@ -253,7 +253,7 @@ jobs:
 
 Combine with the analysis action for PR comments AND dashboard:
 
-```yaml
+```yaml title="analysis-dashboard.yml"
 name: Spec Analysis
 on:
   pull_request:

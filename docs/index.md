@@ -92,7 +92,7 @@ print(bundle.tldr)
   </div>
   <div class="feature-card">
     <h3><span class="emoji">🧠</span> Intelligent Memory</h3>
-    <p>Vector-based semantic search with LanceDB, ChromaDB, or Qdrant. Pinned memory ensures critical constraints are never forgotten.</p>
+    <p>Vector-based semantic search with LanceDB, ChromaDB, or Qdrant. Pinned memory, session search, and token-aware context optimization keep critical intent available.</p>
   </div>
   <div class="feature-card">
     <h3><span class="emoji">📊</span> SpecImpact Graph</h3>
@@ -124,6 +124,10 @@ SpecMem was built during **Kiroween 2025** with first-class Kiro support. Your `
   <div class="feature-card">
     <h3><span class="emoji">🔗</span> MCP Server</h3>
     <p>Full Model Context Protocol support. Kiro's agent can query your specs, analyze impact, and get optimized context automatically via MCP tools.</p>
+  </div>
+  <div class="feature-card">
+    <h3><span class="emoji">🔍</span> Session Memory</h3>
+    <p>Index and search Kiro coding sessions to recover prior decisions, debugging history, and architectural context across long-running work.</p>
   </div>
   <div class="feature-card">
     <h3><span class="emoji">📄</span> Native Kiro Adapter</h3>
@@ -205,8 +209,11 @@ This launches the Web UI with SpecMem's own specifications - the best way to exp
     # Query your specs
     specmem query "What are the authentication requirements?"
 
+    # Search previous Kiro sessions
+    specmem sessions search "architecture decision"
+
     # Analyze impact of code changes
-    specmem impact --files src/auth/service.py
+    specmem graph impact src/auth/service.py
 
     # Launch Web UI
     specmem serve
@@ -250,5 +257,3 @@ SpecMem generates a `.specmem/` directory containing everything your agents need
 ## 🏢 About
 
 **SpecMem** is developed by [Superagentic AI](https://super-agentic.ai) as part of the Kiroween Hackathon, December 2025.
-
-

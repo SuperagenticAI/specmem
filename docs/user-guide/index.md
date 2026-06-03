@@ -6,6 +6,8 @@ Learn how to use SpecMem effectively in your projects.
 
 SpecMem provides a comprehensive toolkit for managing specifications and context for AI coding agents. This guide covers all major features.
 
+For an end-to-end view of SpecMem as an external memory layer for coding agents, see [Building a Memory Layer for Coding Agents](memory-layer.md).
+
 ## Core Features
 
 <div class="feature-grid">

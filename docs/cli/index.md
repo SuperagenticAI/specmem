@@ -33,6 +33,7 @@ Options:
 | [`validate`](validate.md) | Validate specifications |
 | [`cov`](cov.md) | Analyze spec coverage |
 | [`guidelines`](guidelines.md) | Manage coding guidelines |
+| [`sessions`](sessions.md) | Search and manage Kiro coding sessions |
 | [`serve`](serve.md) | Start the web UI |
 | [`demo`](demo.md) | Launch demo with SpecMem's own specs |
 
@@ -61,7 +62,7 @@ specmem build
 specmem query "authentication"
 
 # Impact analysis
-specmem impact --files src/auth.py
+specmem graph impact src/auth.py
 
 # Validate
 specmem validate
@@ -73,6 +74,11 @@ specmem cov
 specmem guidelines                # List all guidelines
 specmem guidelines --source claude  # Filter by source
 specmem guidelines convert <id> steering  # Convert format
+
+# Kiro session memory
+specmem sessions config --auto --workspace-only
+specmem sessions index --workspace-only
+specmem sessions search "architecture decision" --days 30
 
 # Web UI
 specmem serve

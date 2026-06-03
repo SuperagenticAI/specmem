@@ -43,6 +43,11 @@ issues = sm.validate()
     <a href="memory-bank/" class="md-button">Reference →</a>
   </div>
   <div class="feature-card">
+    <h3><span class="emoji">🌊</span> Context API</h3>
+    <p>Token-aware synchronous and streaming context retrieval.</p>
+    <a href="context/" class="md-button">Reference →</a>
+  </div>
+  <div class="feature-card">
     <h3><span class="emoji">🗄️</span> Vector Stores</h3>
     <p>Backend storage implementations.</p>
     <a href="vectordb/" class="md-button">Reference →</a>

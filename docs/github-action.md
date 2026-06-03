@@ -346,7 +346,7 @@ For stability, pin to a specific version:
 
 Run SpecMem alongside your test suite:
 
-```yaml
+```yaml title="workflow.yml"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -367,7 +367,7 @@ jobs:
 
 Auto-merge Dependabot PRs that pass spec analysis:
 
-```yaml
+```yaml title="dependabot.yml"
 name: Dependabot Auto-Merge
 
 on: pull_request

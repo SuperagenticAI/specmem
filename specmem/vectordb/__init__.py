@@ -49,12 +49,18 @@ def get_embedding_provider():
 
 # Try to import for backwards compatibility, but don't fail
 try:
+    from specmem.vectordb.factory import SUPPORTED_BACKENDS, get_vector_store, list_backends
+except ImportError:
+    SUPPORTED_BACKENDS = {}
+    get_vector_store = None  # type: ignore
+    list_backends = None  # type: ignore
+
+try:
     from specmem.vectordb.embeddings import (
         EmbeddingProvider,
         LocalEmbeddingProvider,
         get_embedding_provider,
     )
-    from specmem.vectordb.factory import SUPPORTED_BACKENDS, get_vector_store, list_backends
     from specmem.vectordb.lancedb_store import LanceDBStore
 
     _HAS_LOCAL = True
@@ -63,9 +69,6 @@ except ImportError:
     LanceDBStore = None  # type: ignore
     EmbeddingProvider = None  # type: ignore
     LocalEmbeddingProvider = None  # type: ignore
-    SUPPORTED_BACKENDS = {}
-    get_vector_store = None  # type: ignore
-    list_backends = None  # type: ignore
 
 
 __all__ = [

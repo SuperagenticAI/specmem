@@ -81,13 +81,11 @@ from specmem.vectordb.qdrant_store import QdrantStore
 # Local (embedded)
 store = QdrantStore(
     path=".specmem/qdrant",
-    collection_name="specs",
 )
 
 # Remote server
 store = QdrantStore(
     url="http://localhost:6333",
-    collection_name="specs",
 )
 ```
 
@@ -104,6 +102,7 @@ pip install "specmem[qdrant]"
 - ✅ Advanced filtering
 - ✅ High scalability
 - ✅ HNSW indexing
+- ✅ Audit collection for obsolete memory
 
 ## Factory
 
