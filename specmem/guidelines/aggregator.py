@@ -143,7 +143,9 @@ class GuidelinesAggregator:
                 continue
 
             if guideline.file_pattern:
-                if any(self._matches_pattern(file_path, guideline.file_pattern) for file_path in files):
+                if any(
+                    self._matches_pattern(file_path, guideline.file_pattern) for file_path in files
+                ):
                     file_scoped.append(guideline)
             else:
                 always_on.append(guideline)
@@ -240,11 +242,7 @@ class GuidelinesAggregator:
         return guideline.source_type in {SourceType.CODEX_SKILL, SourceType.CLAUDE_SKILL}
 
     def _matches_task(self, guideline: Guideline, task: str) -> bool:
-        tokens = {
-            token
-            for token in re_split_words(task)
-            if len(token) >= 3
-        }
+        tokens = {token for token in re_split_words(task) if len(token) >= 3}
         if not tokens:
             return False
 

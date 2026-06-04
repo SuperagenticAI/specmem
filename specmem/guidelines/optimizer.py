@@ -334,11 +334,18 @@ class OptimizedSkillStore:
             and sha256_text(source_content) != sha256_text(candidate_content)
             and not any("merge conflict" in issue for issue in candidate_issues)
             and static_after > 0.0
-            and (not allow_static_non_regression or explicit_scores or static_after >= static_before)
+            and (
+                not allow_static_non_regression or explicit_scores or static_after >= static_before
+            )
         )
         report_before = before
         report_after = after
-        if accepted and allow_static_non_regression and not explicit_scores and report_after <= report_before:
+        if (
+            accepted
+            and allow_static_non_regression
+            and not explicit_scores
+            and report_after <= report_before
+        ):
             report_after = round(report_before + 0.0001, 4)
 
         artifact_dir = self.artifact_dir_for(source_path)

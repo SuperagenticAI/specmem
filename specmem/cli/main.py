@@ -431,7 +431,10 @@ def query(
     )
 
     memory_bank = MemoryBank(vector_store, embedding_provider)
-    results = memory_bank.query(question, top_k=top_k)
+    # include_pinned=False: this is a relevance search, so rank purely by semantic
+    # similarity. (Pinned blocks are still returned when they are genuinely
+    # similar; we just don't force them to the top with a synthetic score.)
+    results = memory_bank.query(question, top_k=top_k, include_pinned=False)
 
     if not results:
         console.print("[yellow]No matching specifications found.[/yellow]")
@@ -1270,10 +1273,19 @@ def validate(
 
     console.print(f"Validating {len(all_blocks)} specifications...")
 
-    # Load config
+    # Load validation rules from .specmem.toml / .specmem.json in the repo, if present.
+    validation_config = ValidationConfig()
     try:
-        config = SpecMemConfig.load()
-        validation_config = ValidationConfig.from_toml(config.to_dict())
+        toml_path = repo_path / ".specmem.toml"
+        json_path = repo_path / ".specmem.json"
+        if toml_path.exists():
+            import tomllib
+
+            validation_config = ValidationConfig.from_toml(tomllib.loads(toml_path.read_text()))
+        elif json_path.exists():
+            import json
+
+            validation_config = ValidationConfig.from_toml(json.loads(json_path.read_text()))
     except Exception:
         validation_config = ValidationConfig()
 

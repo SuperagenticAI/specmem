@@ -25,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - N/A
 
+## [0.2.1] - 2026-06-04
+
+### Fixed
+- `specmem build` and `specmem query` raised a `TypeError` when using a cloud
+  embedding provider or an alternative vector store (Qdrant, Chroma) without the
+  `local` extra installed. The embedding provider factory is now always exported,
+  so these commands work without `specmem[local]`.
+- `specmem graph impact` crashed with `AttributeError: 'SpecBlock' object has no
+  attribute 'title'`. Impact analysis now derives a title from the spec text and
+  works again.
+- `specmem query` ranking: pinned spec blocks were injected with an artificial
+  perfect score and pushed the most relevant results out of the list. Query
+  results are now ranked purely by semantic similarity.
+- `specmem validate` ignored the validation settings in `.specmem.toml` because it
+  read a non-existent attribute. Validation rules from the config file are now
+  applied.
+
 ## [0.2.0] - 2026-05-26
 
 ### Added

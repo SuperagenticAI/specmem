@@ -13,10 +13,20 @@ from specmem.vectordb.base import (
     validate_transition,
 )
 
+# Embedding providers. The factory and provider classes import lightly; the
+# heavy local dependency (sentence-transformers) is imported lazily inside
+# LocalEmbeddingProvider only when a local provider is actually instantiated.
+# This means get_embedding_provider() works for cloud providers and alternative
+# vector stores (Qdrant, Chroma) without requiring the 'local' extra.
+from specmem.vectordb.embeddings import (
+    EmbeddingProvider,
+    LocalEmbeddingProvider,
+    get_embedding_provider,
+)
 
-# Lazy imports for optional dependencies
+
+# Lazy import for the optional LanceDB store class (requires specmem[local]).
 _lancedb_store = None
-_embedding_provider = None
 
 
 def get_lancedb_store():
@@ -34,20 +44,7 @@ def get_lancedb_store():
     return _lancedb_store
 
 
-def get_embedding_provider():
-    """Get embedding provider (requires specmem[local])."""
-    global _embedding_provider
-    if _embedding_provider is None:
-        try:
-            from specmem.vectordb.embeddings import get_embedding_provider as _get_provider
-
-            _embedding_provider = _get_provider
-        except ImportError as e:
-            raise ImportError("Embedding providers require: pip install specmem[local]") from e
-    return _embedding_provider()
-
-
-# Try to import for backwards compatibility, but don't fail
+# Vector store factory (optional backends fail gracefully).
 try:
     from specmem.vectordb.factory import SUPPORTED_BACKENDS, get_vector_store, list_backends
 except ImportError:
@@ -55,20 +52,14 @@ except ImportError:
     get_vector_store = None  # type: ignore
     list_backends = None  # type: ignore
 
+# LanceDB store class (optional, requires specmem[local]).
 try:
-    from specmem.vectordb.embeddings import (
-        EmbeddingProvider,
-        LocalEmbeddingProvider,
-        get_embedding_provider,
-    )
     from specmem.vectordb.lancedb_store import LanceDBStore
 
     _HAS_LOCAL = True
 except ImportError:
     _HAS_LOCAL = False
     LanceDBStore = None  # type: ignore
-    EmbeddingProvider = None  # type: ignore
-    LocalEmbeddingProvider = None  # type: ignore
 
 
 __all__ = [

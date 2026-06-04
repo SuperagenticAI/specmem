@@ -27,6 +27,20 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _spec_title(spec: SpecBlock) -> str:
+    """Derive a short, human-readable title from a SpecBlock.
+
+    SpecBlocks store free-form ``text`` rather than a separate title, so use the
+    first non-empty line (stripped of Markdown heading markers) as the title and
+    fall back to the block id.
+    """
+    for line in spec.text.splitlines():
+        cleaned = line.strip().lstrip("#").strip()
+        if cleaned:
+            return cleaned[:80]
+    return spec.id
+
+
 class GraphBuilder:
     """Builds SpecImpact graph from specs and code analysis."""
 
@@ -68,7 +82,7 @@ class GraphBuilder:
                 id=f"spec:{spec.id}",
                 type=NodeType.SPEC,
                 data={
-                    "title": spec.title,
+                    "title": _spec_title(spec),
                     "source": spec.source,
                     "tags": spec.tags,
                 },
@@ -111,8 +125,9 @@ class GraphBuilder:
                     spec_names[part.lower()] = spec.id
 
             # Index by title words
-            if spec.title:
-                for word in spec.title.lower().split():
+            title = _spec_title(spec)
+            if title:
+                for word in title.lower().split():
                     if len(word) > 3 and word not in spec_names:
                         spec_names[word] = spec.id
 
