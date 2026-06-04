@@ -20,7 +20,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+" />
-  <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License" />
+  <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License" />
   <img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Status" />
 </p>
 
@@ -565,7 +565,7 @@ uv add <package>
 
 ## 📄 License
 
-AGPL-3.0 - see [LICENSE](LICENSE) for details.
+Apache-2.0 - see [LICENSE](LICENSE) for details.
 
 For commercial licensing options, contact team@super-agentic.ai
 

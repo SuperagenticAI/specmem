@@ -8,10 +8,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "specmem"
-version = "0.2.1"
+version = "0.2.2"
 description = "Unified, embeddable memory layer for AI coding agents built on Spec-Driven Development metadata"
 readme = "README.md"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 requires-python = ">=3.11"
 keywords = [
     "ai",
@@ -40,7 +40,7 @@ classifiers = [
     "Environment :: Console",
     "Framework :: Pytest",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",

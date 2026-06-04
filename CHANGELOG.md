@@ -25,6 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - N/A
 
+## [0.2.2] - 2026-06-04
+
+### Changed
+- Relicensed from AGPL-3.0-or-later to Apache-2.0.
+
+### Fixed
+- `specmem version` and `specmem.__version__` reported `0.2.0` regardless of the
+  installed release. `__version__` is now derived from the installed package
+  metadata, so it always matches the released version and cannot drift from
+  `pyproject.toml`.
+
 ## [0.2.1] - 2026-06-04
 
 ### Fixed
