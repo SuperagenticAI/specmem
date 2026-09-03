@@ -34,6 +34,21 @@ if adapter.can_parse(Path(".kiro/specs/auth/requirements.md")):
 specs = adapter.parse_directory(Path(".kiro/specs"))
 ```
 
+### AGENTS.md Adapter
+
+```python
+from specmem.adapters.agents import AgentsAdapter
+
+adapter = AgentsAdapter()
+
+# Detect AGENTS.md at the repo root or nested
+if adapter.detect("."):
+    specs = adapter.load(".")
+```
+
+Parses `AGENTS.md` / `AGENT.md` (AAIF standard). Codex, Factory, Warp, and
+other tools that consume AGENTS.md are covered by this adapter.
+
 ### Cursor Adapter
 
 ```python

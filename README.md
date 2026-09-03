@@ -98,7 +98,7 @@ print(bundle.tldr)
 
 | Feature | Description |
 |---------|-------------|
-| **🔌 Multi-Framework Adapters** | Parse specs from Kiro, SpecKit, Tessl, Claude Code, Cursor, Codex, Factory, Warp, Gemini CLI |
+| **🔌 Multi-Framework Adapters** | Parse specs from Kiro, SpecKit, Tessl, Claude Code, Cursor, and AGENTS.md (AAIF standard used by Codex, Factory, Warp, and others) |
 | **🧠 Intelligent Memory** | Vector-based semantic search with LanceDB, ChromaDB, Qdrant, or AgentVectorDB |
 | **📊 SpecImpact Graph** | Bidirectional relationships between specs, code, and tests |
 | **⏱️ SpecDiff Timeline** | Track spec evolution, detect drift, find contradictions |
@@ -113,7 +113,7 @@ print(bundle.tldr)
 | Feature | Description |
 |---------|-------------|
 | **☁️ Cloud Embeddings** | Support for OpenAI, Google, Together AI embedding providers |
-| **📜 Coding Guidelines** | Aggregate and view guidelines from Kiro steering, CLAUDE.md, .cursorrules |
+| **📜 Coding Guidelines** | Aggregate and view guidelines from Kiro steering, CLAUDE.md, AGENTS.md, .cursorrules |
 | **🔄 Spec Lifecycle** | Prune stale specs, generate specs from code, compress verbose specs |
 | **🔍 Kiro Session Search** | Index and search Kiro chat sessions for context |
 | **⚙️ Kiro Config Indexer** | Index hooks, steering files, and MCP configurations |
@@ -444,12 +444,15 @@ Or deploy to GitHub Pages with the dashboard action:
 
 | Framework | Adapter | File Patterns |
 |-----------|---------|---------------|
+| **AGENTS.md** (AAIF) | `agents.md` | `**/AGENTS.md`, `**/AGENT.md` |
 | Claude Code | `claude` | `Claude.md`, `CLAUDE.md` |
 | Cursor | `cursor` | `cursor.json`, `.cursorrules` |
-| Codex | `codex` | `.codex/**/*.md` |
-| Factory | `factory` | `.factory/**/*.yaml` |
-| Warp | `warp` | `.warp/**/*.md` |
-| Gemini CLI | `gemini` | `GEMINI.md`, `.gemini/**/*.md` |
+
+Codex, Factory, Warp, Cursor, OpenCode, Amp, and Aider consume **AGENTS.md**
+(the AAIF / Linux Foundation standard). SpecMem indexes those files through the
+AGENTS.md adapter rather than invented vendor trees such as `.codex/**/*.md`,
+`.factory/**/*.yaml`, or `.warp/**`. Gemini CLI's `GEMINI.md` is picked up by
+the guidelines scanner, not a separate SpecAdapter.
 
 ---
 
