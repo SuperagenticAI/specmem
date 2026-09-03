@@ -16,12 +16,14 @@ SpecMem adapters parse specifications from various AI coding agent frameworks.
 
 | Framework | Adapter | File Patterns |
 |-----------|---------|---------------|
+| **AGENTS.md** (AAIF) | `agents.md` | `**/AGENTS.md`, `**/AGENT.md` |
 | Claude Code | `claude` | `Claude.md`, `CLAUDE.md` |
 | Cursor | `cursor` | `cursor.json`, `.cursorrules` |
-| Codex | `codex` | `.codex/**/*.md` |
-| Factory | `factory` | `.factory/**/*.yaml` |
-| Warp | `warp` | `.warp/**/*.md` |
-| Gemini CLI | `gemini` | `GEMINI.md`, `.gemini/**/*.md` |
+
+Codex, Factory, Warp, Cursor, OpenCode, Amp, and Aider consume **AGENTS.md**.
+SpecMem indexes those files through the AGENTS.md adapter rather than invented
+vendor trees (`.codex/**/*.md`, `.factory/**/*.yaml`, `.warp/**`). Gemini CLI's
+`GEMINI.md` is found by the guidelines scanner, not a separate SpecAdapter.
 
 ---
 
@@ -256,100 +258,48 @@ rules_file = ".cursorrules"
 
 ---
 
-## Codex Adapter
+## AGENTS.md Adapter
 
-Parses OpenAI Codex specifications.
-
-### Structure
-
-```
-.codex/
-├── specs/
-│   └── feature.md
-└── config.json
-```
-
-### Configuration
-
-```toml
-[adapters]
-codex = true
-
-[adapters.codex]
-spec_dir = ".codex"
-```
-
----
-
-## Factory Adapter
-
-Parses Factory's YAML-based workflow specifications.
-
-### Structure
-
-```
-.factory/
-├── workflows/
-│   └── build.yaml
-└── config.yaml
-```
-
-### Configuration
-
-```toml
-[adapters]
-factory = true
-
-[adapters.factory]
-spec_dir = ".factory"
-```
-
----
-
-## Warp Adapter
-
-Parses Warp terminal's markdown specifications.
-
-### Structure
-
-```
-.warp/
-├── specs/
-│   └── commands.md
-└── config.toml
-```
-
-### Configuration
-
-```toml
-[adapters]
-warp = true
-
-[adapters.warp]
-spec_dir = ".warp"
-```
-
----
-
-## Gemini CLI Adapter
-
-Parses Google Gemini CLI specifications.
+Parses the AAIF / Linux Foundation `AGENTS.md` standard. This is a **stable**
+adapter (not experimental). Codex, Factory, Warp, Cursor, OpenCode, Amp, and
+Aider all consume these files.
 
 ### Files
 
-- `GEMINI.md` - Project context and rules
-- `.gemini/**/*.md` - Additional specifications
+- `AGENTS.md` or `Agents.md` — official filename (repo root or nested)
+- `AGENT.md` or `Agent.md` — aliases also accepted by the guidelines scanner
+
+Closest-file-wins: a nested `AGENTS.md` applies to that subtree.
+
+### Example
+
+```markdown
+# Project Rules
+
+Keep pull requests focused and scoped to one change.
+
+## Testing
+
+Run unit tests before opening a PR.
+
+## Style
+
+Prefer typed Python.
+```
+
+Heading sections become knowledge SpecBlocks tagged `agents` / `agents.md`
+plus a slug of the heading. A file with no headings becomes one pinned block.
 
 ### Configuration
 
 ```toml
 [adapters]
-gemini = true
-
-[adapters.gemini]
-files = ["GEMINI.md"]
-spec_dir = ".gemini"
+# Auto-discovered; no extra config required
 ```
+
+There are no first-class Codex, Factory, Warp, or Gemini SpecAdapters. Those
+tools are covered by AGENTS.md (and, for Gemini CLI, the guidelines scanner's
+`GEMINI.md` support). Do not invent `.codex/`, `.factory/`, or `.warp/` trees.
 
 ---
 
@@ -367,10 +317,6 @@ tessl = true
 # Commercial agents
 claude = true
 cursor = true
-codex = false
-factory = false
-warp = false
-gemini = false
 ```
 
 When scanning, SpecMem merges specs from all enabled adapters:
@@ -401,7 +347,7 @@ When specs conflict, priority is determined by:
 [adapters]
 # Framework priority (first = highest)
 # Spec-Driven Development frameworks take precedence
-priority = ["kiro", "speckit", "tessl", "claude", "cursor", "codex", "factory", "warp", "gemini"]
+priority = ["kiro", "speckit", "tessl", "agents.md", "claude", "cursor"]
 ```
 
 ## Custom Adapters

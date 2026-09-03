@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- N/A
+- First-class AGENTS.md SpecAdapter (AAIF / Linux Foundation standard). Detects
+  `AGENTS.md` / `AGENT.md` at the repo root or nested, splits on markdown
+  headings into knowledge SpecBlocks, and is marked stable (not experimental).
 
 ### Changed
 - N/A

@@ -965,6 +965,7 @@ class TestAdapterRegistration:
         assert "speckit" in adapter_names
         assert "cursor" in adapter_names
         assert "claude" in adapter_names
+        assert "agents.md" in adapter_names
 
     def test_experimental_adapters_marked(self) -> None:
         """Experimental adapters should be properly marked."""
@@ -979,8 +980,9 @@ class TestAdapterRegistration:
         assert "cursor" in experimental_names
         assert "claude" in experimental_names
 
-        # Kiro should NOT be experimental
+        # Kiro and AGENTS.md should NOT be experimental
         assert "kiro" not in experimental_names
+        assert "agents.md" not in experimental_names
 
     def test_get_adapter_by_name(self) -> None:
         """Should be able to get adapter by name."""
@@ -996,6 +998,11 @@ class TestAdapterRegistration:
         assert kiro.name == "Kiro"
         assert kiro.is_experimental() is False
 
+        agents = get_adapter("agents.md")
+        assert agents is not None
+        assert agents.name == "AGENTS.md"
+        assert agents.is_experimental() is False
+
     def test_get_adapter_case_insensitive(self) -> None:
         """Adapter lookup should be case-insensitive."""
         from specmem.adapters import get_adapter
@@ -1003,3 +1010,5 @@ class TestAdapterRegistration:
         assert get_adapter("TESSL") is not None
         assert get_adapter("Tessl") is not None
         assert get_adapter("tessl") is not None
+        assert get_adapter("AGENTS.md") is not None
+        assert get_adapter("agents.md") is not None
