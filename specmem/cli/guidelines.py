@@ -16,7 +16,7 @@ from rich.table import Table
 
 from specmem.guidelines.aggregator import GuidelinesAggregator
 from specmem.guidelines.converter import GuidelinesConverter
-from specmem.guidelines.models import Guideline, SourceType
+from specmem.guidelines.models import SKILL_SOURCE_TYPES, Guideline, SourceType
 from specmem.guidelines.optimizer import (
     OptimizedSkillStore,
     rewrite_skill_with_openai,
@@ -190,7 +190,7 @@ def optimized_status(
     skills = [
         guideline
         for guideline in response.guidelines
-        if guideline.source_type in {SourceType.CODEX_SKILL, SourceType.CLAUDE_SKILL}
+        if guideline.source_type in SKILL_SOURCE_TYPES
     ]
     store = OptimizedSkillStore(workspace_path)
     rows = [(guideline, store.status(Path(guideline.source_file))) for guideline in skills]

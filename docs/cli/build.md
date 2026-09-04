@@ -35,7 +35,7 @@ The command uses `.specmem.toml` from the target repository when present.
 
 - Structured specifications from enabled adapters, such as Kiro, Spec Kit, and Tessl
 - Agent instruction files, such as `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions
-- Agent skills from `.codex/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`
+- Agent Skills from `.agents/skills/*/SKILL.md` (primary), `.factory/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, and legacy `.codex/skills/*/SKILL.md`
 
 Instruction files are pinned in memory by default. Skill files are indexed as
 procedural memory and selected by task intent.

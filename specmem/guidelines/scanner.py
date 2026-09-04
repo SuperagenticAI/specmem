@@ -17,8 +17,10 @@ class GuidelinesScanner:
     - AGENTS.md (Generic agent instructions)
     - .cursorrules (Cursor)
     - .cursor/rules/*.mdc (Cursor project rules)
-    - .codex/skills/*/SKILL.md (Codex skills)
+    - .agents/skills/*/SKILL.md (Agent Skills primary root / agentskills.io)
+    - .factory/skills/*/SKILL.md (Factory Agent Skills)
     - .claude/skills/*/SKILL.md (Claude skills)
+    - .codex/skills/*/SKILL.md (legacy Codex skills alias)
     - .github/copilot-instructions.md and .github/instructions/*.instructions.md
     - GEMINI.md, OPENCODE.md, QWEN.md
     - .kiro/steering/*.md (Kiro steering files)
@@ -29,8 +31,13 @@ class GuidelinesScanner:
         "agents": ["**/AGENTS.md", "**/Agents.md", "**/AGENT.md", "**/Agent.md"],
         "cursor": ["**/.cursorrules", "**/cursor.rules", "**/.cursor/rules/*.mdc"],
         "steering": [".kiro/steering/*.md"],
-        "codex_skill": ["**/.codex/skills/*/SKILL.md"],
+        # Agent Skills (https://agentskills.io/specification) — primary Codex /
+        # OpenSpec / Gemini path is .agents/skills; Factory uses .factory/skills
+        # (+ .agents/skills compat). .codex/skills remains a legacy alias only.
+        "agents_skill": ["**/.agents/skills/*/SKILL.md"],
+        "factory_skill": ["**/.factory/skills/*/SKILL.md"],
         "claude_skill": ["**/.claude/skills/*/SKILL.md"],
+        "codex_skill": ["**/.codex/skills/*/SKILL.md"],  # legacy alias
         "copilot": [
             "**/.github/copilot-instructions.md",
             "**/.github/instructions/*.instructions.md",
