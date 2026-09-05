@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "specmem"
-version = "0.2.2"
+version = "0.2.3"
 description = "Unified, embeddable memory layer for AI coding agents built on Spec-Driven Development metadata"
 readme = "README.md"
 license = "Apache-2.0"

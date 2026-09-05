@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- N/A
+
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
+---
+
+## [0.2.3] - 2026-09-05
+
+### Added
 - Universal Agent Skills indexer for `.agents/skills/*/SKILL.md` (primary agentskills.io root used by Codex, OpenSpec, and Gemini) and `.factory/skills/*/SKILL.md`, alongside existing `.claude/skills`. Legacy `.codex/skills` remains supported as an alias.
 - First-class AGENTS.md SpecAdapter (AAIF / Linux Foundation standard). Detects
   `AGENTS.md` / `AGENT.md` at the repo root or nested, splits on markdown
@@ -15,9 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Agent Skills primary discovery path is now `.agents/skills`; `.codex/skills` is documented as a legacy alias.
-
-### Fixed
-- N/A
 
 ---
 
