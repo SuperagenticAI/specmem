@@ -190,7 +190,7 @@ source once a skill consistently improves agent behavior.
 
 ## Recommended Workflow
 
-1. Keep original skills in `.codex/skills/*/SKILL.md` or `.claude/skills/*/SKILL.md`.
+1. Keep original skills in `.agents/skills/*/SKILL.md` (primary), `.factory/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, or legacy `.codex/skills/*/SKILL.md`.
 2. Use `specmem guidelines optimize --instruction` for small improvements.
 3. Review `.specmem/skillopt/<skill>/candidate_skill.md` when the change is important.
 4. Build with `specmem build --optimize-skills`.

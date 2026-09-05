@@ -1,6 +1,7 @@
 """Guidelines module for coding standards and rules management."""
 
 from specmem.guidelines.models import (
+    SKILL_SOURCE_TYPES,
     ConversionResult,
     Guideline,
     GuidelinesResponse,
@@ -17,6 +18,7 @@ from specmem.guidelines.optimizer import (
 
 
 __all__ = [
+    "SKILL_SOURCE_TYPES",
     "ConversionResult",
     "Guideline",
     "GuidelinesResponse",

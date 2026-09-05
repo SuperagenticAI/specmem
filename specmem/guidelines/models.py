@@ -15,13 +15,26 @@ class SourceType(StrEnum):
     CURSOR = "cursor"
     STEERING = "steering"
     AGENTS = "agents"
-    CODEX_SKILL = "codex_skill"
+    AGENTS_SKILL = "agents_skill"
+    FACTORY_SKILL = "factory_skill"
     CLAUDE_SKILL = "claude_skill"
+    CODEX_SKILL = "codex_skill"  # legacy alias for .codex/skills
     COPILOT = "copilot"
     GEMINI = "gemini"
     OPENCODE = "opencode"
     QWEN = "qwen"
     SAMPLE = "sample"
+
+
+# Procedural Agent Skills (SKILL.md) sources used by scanner/parser/aggregator.
+SKILL_SOURCE_TYPES: frozenset[SourceType] = frozenset(
+    {
+        SourceType.AGENTS_SKILL,
+        SourceType.FACTORY_SKILL,
+        SourceType.CLAUDE_SKILL,
+        SourceType.CODEX_SKILL,  # legacy .codex/skills alias
+    }
+)
 
 
 @dataclass

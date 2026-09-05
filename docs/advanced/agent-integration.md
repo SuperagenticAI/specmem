@@ -41,8 +41,10 @@ during `specmem scan` and `specmem build`. Supported sources include:
 | Source | Files |
 |--------|-------|
 | Generic agents | `AGENTS.md`, `AGENT.md` |
-| Codex skills | `.codex/skills/*/SKILL.md` |
+| Agent Skills | `.agents/skills/*/SKILL.md` (primary; [agentskills.io](https://agentskills.io/specification)) |
+| Factory skills | `.factory/skills/*/SKILL.md` |
 | Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Codex skills (legacy) | `.codex/skills/*/SKILL.md` |
 | Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
 | Gemini CLI | `GEMINI.md` |

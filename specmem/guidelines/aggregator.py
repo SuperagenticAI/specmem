@@ -7,7 +7,12 @@ import logging
 from pathlib import Path
 
 from specmem.core.specir import SpecBlock, SpecStatus, SpecType
-from specmem.guidelines.models import Guideline, GuidelinesResponse, SourceType
+from specmem.guidelines.models import (
+    SKILL_SOURCE_TYPES,
+    Guideline,
+    GuidelinesResponse,
+    SourceType,
+)
 from specmem.guidelines.optimizer import OptimizedSkillStore
 from specmem.guidelines.parser import GuidelinesParser
 from specmem.guidelines.scanner import GuidelinesScanner
@@ -189,8 +194,7 @@ class GuidelinesAggregator:
                     status=SpecStatus.ACTIVE,
                     tags=list(dict.fromkeys(tags)),
                     links=[],
-                    pinned=guideline.source_type
-                    not in {SourceType.CODEX_SKILL, SourceType.CLAUDE_SKILL},
+                    pinned=guideline.source_type not in SKILL_SOURCE_TYPES,
                 )
             )
 
@@ -239,7 +243,7 @@ class GuidelinesAggregator:
         return False
 
     def _is_skill(self, guideline: Guideline) -> bool:
-        return guideline.source_type in {SourceType.CODEX_SKILL, SourceType.CLAUDE_SKILL}
+        return guideline.source_type in SKILL_SOURCE_TYPES
 
     def _matches_task(self, guideline: Guideline, task: str) -> bool:
         tokens = {token for token in re_split_words(task) if len(token) >= 3}

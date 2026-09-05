@@ -31,8 +31,9 @@ specmem guidelines [OPTIONS] [COMMAND]
 | `--robot`, `-r` | Output JSON for AI agents |
 | `--no-samples` | Exclude sample guidelines |
 
-Valid source types include `agents`, `claude`, `codex_skill`, `claude_skill`,
-`copilot`, `cursor`, `gemini`, `opencode`, `qwen`, and `steering`.
+Valid source types include `agents`, `agents_skill`, `factory_skill`, `claude`,
+`claude_skill`, `codex_skill` (legacy), `copilot`, `cursor`, `gemini`, `opencode`,
+`qwen`, and `steering`.
 
 ## Examples
 
@@ -47,6 +48,7 @@ specmem guidelines --source claude
 specmem guidelines --source cursor
 specmem guidelines --source steering
 specmem guidelines --source agents
+specmem guidelines --source agents_skill
 specmem guidelines --source codex_skill
 specmem guidelines --source copilot
 
@@ -222,8 +224,10 @@ SpecMem reads these agent guidance sources:
 | Source | Files |
 |--------|-------|
 | Generic agents | `AGENTS.md`, `AGENT.md` |
-| Codex skills | `.codex/skills/*/SKILL.md` |
+| Agent Skills | `.agents/skills/*/SKILL.md` (primary; [agentskills.io](https://agentskills.io/specification)) |
+| Factory skills | `.factory/skills/*/SKILL.md` |
 | Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
+| Codex skills (legacy) | `.codex/skills/*/SKILL.md` |
 | Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
 | Gemini CLI | `GEMINI.md` |

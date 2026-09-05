@@ -12,8 +12,10 @@ SpecMem detects and parses guidelines from:
 | **Cursor** | `.cursorrules` | Cursor AI rules file |
 | **Kiro** | `.kiro/steering/*.md` | Kiro steering files |
 | **Agents** | `AGENTS.md` | Generic agent instructions |
-| **Codex skills** | `.codex/skills/*/SKILL.md` | Task-routed procedural skills |
-| **Claude skills** | `.claude/skills/*/SKILL.md` | Task-routed procedural skills |
+| **Agent Skills** | `.agents/skills/*/SKILL.md` | Primary Agent Skills root ([agentskills.io](https://agentskills.io/specification)); Codex / OpenSpec / Gemini |
+| **Factory skills** | `.factory/skills/*/SKILL.md` | Factory Agent Skills (+ `.agents/skills` compat) |
+| **Claude skills** | `.claude/skills/*/SKILL.md` | Claude procedural skills |
+| **Codex skills (legacy)** | `.codex/skills/*/SKILL.md` | Legacy Codex path; prefer `.agents/skills` |
 
 ## Viewing Guidelines
 

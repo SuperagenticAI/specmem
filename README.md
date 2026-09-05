@@ -113,7 +113,7 @@ print(bundle.tldr)
 | Feature | Description |
 |---------|-------------|
 | **☁️ Cloud Embeddings** | Support for OpenAI, Google, Together AI embedding providers |
-| **📜 Coding Guidelines** | Aggregate and view guidelines from Kiro steering, CLAUDE.md, AGENTS.md, .cursorrules |
+| **📜 Coding Guidelines** | Aggregate guidelines from Kiro steering, CLAUDE.md, AGENTS.md, .cursorrules, and Agent Skills (`.agents/skills`) |
 | **🔄 Spec Lifecycle** | Prune stale specs, generate specs from code, compress verbose specs |
 | **🔍 Kiro Session Search** | Index and search Kiro chat sessions for context |
 | **⚙️ Kiro Config Indexer** | Index hooks, steering files, and MCP configurations |

@@ -39,10 +39,19 @@ class GuidelinesParser:
             return self.parse_steering(file_path)
         elif source_type == "agents":
             return self.parse_agents(file_path)
-        elif source_type == "codex_skill":
-            return self.parse_skill(file_path, SourceType.CODEX_SKILL, ["codex", "skill"])
+        elif source_type == "agents_skill":
+            return self.parse_skill(
+                file_path, SourceType.AGENTS_SKILL, ["agents", "skill", "agentskills"]
+            )
+        elif source_type == "factory_skill":
+            return self.parse_skill(
+                file_path, SourceType.FACTORY_SKILL, ["factory", "skill", "agentskills"]
+            )
         elif source_type == "claude_skill":
             return self.parse_skill(file_path, SourceType.CLAUDE_SKILL, ["claude", "skill"])
+        elif source_type == "codex_skill":
+            # Legacy .codex/skills path; prefer .agents/skills
+            return self.parse_skill(file_path, SourceType.CODEX_SKILL, ["codex", "skill"])
         elif source_type == "copilot":
             return self.parse_markdown_file(
                 file_path, SourceType.COPILOT, ["copilot", "instructions"]

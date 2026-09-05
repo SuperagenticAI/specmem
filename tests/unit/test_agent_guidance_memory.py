@@ -262,3 +262,133 @@ def test_instruction_generated_candidate_accepts_static_non_regression(tmp_path:
 
     assert "Retrieval Notes" in blocks[0].text
     assert any(tag.startswith("skillopt:score:") for tag in blocks[0].tags)
+
+def test_scanner_finds_agents_skills_primary_root(tmp_path: Path) -> None:
+    """A fixture with ONLY .agents/skills discovers Agent Skills."""
+    skill_dir = tmp_path / ".agents" / "skills" / "foo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\n"
+        "name: foo\n"
+        "description: Do the foo workflow\n"
+        "---\n"
+        "# Foo\n\nRun the foo steps carefully."
+    )
+
+    scanned = GuidelinesScanner(tmp_path).scan()
+
+    assert list(scanned.keys()) == ["agents_skill"]
+    assert len(scanned["agents_skill"]) == 1
+    assert scanned["agents_skill"][0].name == "SKILL.md"
+
+
+def test_scanner_finds_factory_skills(tmp_path: Path) -> None:
+    skill_dir = tmp_path / ".factory" / "skills" / "ship"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: ship\ndescription: Ship a change\n---\n# Ship\n\nOpen a PR."
+    )
+
+    scanned = GuidelinesScanner(tmp_path).scan()
+
+    assert "factory_skill" in scanned
+    assert len(scanned["factory_skill"]) == 1
+
+
+def test_scanner_empty_repo_has_no_false_positive_skills(tmp_path: Path) -> None:
+    scanned = GuidelinesScanner(tmp_path).scan()
+
+    assert scanned == {}
+    assert GuidelinesScanner(tmp_path).has_guidelines() is False
+
+
+def test_parser_preserves_agents_skill_frontmatter(tmp_path: Path) -> None:
+    skill_file = tmp_path / ".agents" / "skills" / "foo" / "SKILL.md"
+    skill_file.parent.mkdir(parents=True)
+    skill_file.write_text(
+        "---\n"
+        "name: foo\n"
+        "description: Do the foo workflow\n"
+        "---\n"
+        "# Steps\n\nExecute carefully."
+    )
+
+    guidelines = GuidelinesParser().parse_file(skill_file, "agents_skill")
+
+    assert len(guidelines) == 1
+    assert guidelines[0].source_type == SourceType.AGENTS_SKILL
+    assert guidelines[0].title == "foo"
+    assert guidelines[0].content.startswith("Do the foo workflow")
+    assert "Execute carefully" in guidelines[0].content
+    assert "agentskills" in guidelines[0].tags
+
+
+def test_legacy_codex_skills_still_discovered(tmp_path: Path) -> None:
+    skill_dir = tmp_path / ".codex" / "skills" / "legacy"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: legacy\ndescription: Legacy path\n---\n# Legacy\n\nStill works."
+    )
+
+    scanned = GuidelinesScanner(tmp_path).scan()
+    guidelines = GuidelinesAggregator(tmp_path).get_all(include_samples=False).guidelines
+
+    assert "codex_skill" in scanned
+    assert len(guidelines) == 1
+    assert guidelines[0].source_type == SourceType.CODEX_SKILL
+    assert guidelines[0].title == "legacy"
+
+
+def test_agents_skills_flow_into_context_and_spec_blocks(tmp_path: Path) -> None:
+    skill = tmp_path / ".agents" / "skills" / "qdrant-memory" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\n"
+        "name: qdrant-memory\n"
+        "description: Design Qdrant memory retrieval for coding agents\n"
+        "---\n"
+        "# Workflow\n\nUse payload filters."
+    )
+
+    aggregator = GuidelinesAggregator(tmp_path)
+    context = aggregator.build_context(task="improve qdrant memory retrieval")
+    blocks = aggregator.to_spec_blocks()
+
+    assert [g.source_type for g in context["skills"]] == [SourceType.AGENTS_SKILL]
+    assert len(blocks) == 1
+    assert "agents_skill" in blocks[0].tags
+    assert blocks[0].pinned is False
+
+
+def test_optimize_skills_works_with_agents_skills_root(tmp_path: Path) -> None:
+    skill = tmp_path / ".agents" / "skills" / "review" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\n"
+        "name: review\n"
+        "description: Review code changes\n"
+        "---\n"
+        "# Review\n\nFind regressions."
+    )
+    candidate = tmp_path / "candidate.md"
+    candidate.write_text(
+        "# Review\n\n"
+        "Find regressions.\n\n"
+        "## Evidence\n\n"
+        "Check failing tests, changed call sites, and backwards compatibility notes."
+    )
+
+    result = OptimizedSkillStore(tmp_path).promote_candidate(
+        skill,
+        candidate,
+        score_before=0.2,
+        score_after=0.9,
+        evaluator="unit",
+    )
+    assert result.accepted
+
+    blocks = GuidelinesAggregator(tmp_path).to_spec_blocks(optimize_skills=True)
+
+    assert "backwards compatibility notes" in blocks[0].text
+    assert "optimized-skill" in blocks[0].tags
+
