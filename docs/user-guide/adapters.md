@@ -9,6 +9,7 @@ SpecMem adapters parse specifications from various AI coding agent frameworks.
 | Framework | Adapter | File Patterns |
 |-----------|---------|---------------|
 | Kiro | `kiro` | `.kiro/specs/**/*.md` |
+| OpenSpec | `openspec` | `openspec/specs/**`, `openspec/changes/**`, `openspec/config.yaml` |
 | SpecKit | `speckit` | `.speckit/**/*.yaml` |
 | Tessl | `tessl` | `.tessl/**/*.md` |
 
@@ -78,6 +79,55 @@ spec_dir = ".kiro/specs"
 
 ---
 
+
+## OpenSpec Adapter
+
+Parses [Fission-AI OpenSpec](https://github.com/Fission-AI/OpenSpec) on-disk
+layout. This adapter is **stable** (not experimental): the official directory
+structure and artifact filenames are documented and clear.
+
+### Structure
+
+```
+openspec/
+├── specs/                 # Source of truth (often <domain>/spec.md)
+│   └── <domain>/
+│       └── spec.md
+├── changes/               # Active (and archived) change folders
+│   └── <change-name>/
+│       ├── proposal.md
+│       ├── design.md
+│       ├── tasks.md
+│       └── specs/         # Delta specs
+│           └── <domain>/
+│               └── spec.md
+└── config.yaml            # Optional planning context / rules
+```
+
+### Type mapping
+
+| Path / filename | SpecType |
+|-----------------|----------|
+| `specs/**/spec.md`, change delta `specs/**` | `requirement` |
+| `design.md` | `design` |
+| `tasks.md` | `task` |
+| `proposal.md`, other markdown | `knowledge` |
+| `config.yaml` (`context`, `rules`, …) | `knowledge` |
+
+Markdown is split on `#` / `##` / `###` headings (same approach as AGENTS.md /
+Cursor). Blocks are tagged `openspec` plus path-derived slugs. Files under
+`changes/archive/` are loaded as `legacy`. Junk directories and
+`openspec/schemas/` are skipped.
+
+### Configuration
+
+```toml
+[adapters]
+# Auto-discovered; no extra config required
+openspec = true
+```
+
+---
 ## SpecKit Adapter
 
 Parses SpecKit's YAML-based specifications. SpecKit provides structured, machine-readable specs.
@@ -316,6 +366,7 @@ SpecMem can use multiple adapters simultaneously:
 [adapters]
 # Spec-Driven Development (recommended)
 kiro = true
+openspec = true
 speckit = true
 tessl = true
 
@@ -352,7 +403,7 @@ When specs conflict, priority is determined by:
 [adapters]
 # Framework priority (first = highest)
 # Spec-Driven Development frameworks take precedence
-priority = ["kiro", "speckit", "tessl", "agents.md", "claude", "cursor"]
+priority = ["kiro", "openspec", "speckit", "tessl", "agents.md", "claude", "cursor"]
 ```
 
 ## Custom Adapters
