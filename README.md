@@ -446,7 +446,7 @@ Or deploy to GitHub Pages with the dashboard action:
 |-----------|---------|---------------|
 | **AGENTS.md** (AAIF) | `agents.md` | `**/AGENTS.md`, `**/AGENT.md` |
 | Claude Code | `claude` | `Claude.md`, `CLAUDE.md` |
-| Cursor | `cursor` | `cursor.json`, `.cursorrules` |
+| Cursor | `cursor` | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
 
 Codex, Factory, Warp, Cursor, OpenCode, Amp, and Aider consume **AGENTS.md**
 (the AAIF / Linux Foundation standard). SpecMem indexes those files through the
