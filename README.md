@@ -98,7 +98,7 @@ print(bundle.tldr)
 
 | Feature | Description |
 |---------|-------------|
-| **🔌 Multi-Framework Adapters** | Parse specs from Kiro, SpecKit, Tessl, Claude Code, Cursor, and AGENTS.md (AAIF standard used by Codex, Factory, Warp, and others) |
+| **🔌 Multi-Framework Adapters** | Parse specs from Kiro, OpenSpec, SpecKit, Tessl, Claude Code, Cursor, and AGENTS.md (AAIF standard used by Codex, Factory, Warp, and others) |
 | **🧠 Intelligent Memory** | Vector-based semantic search with LanceDB, ChromaDB, Qdrant, or AgentVectorDB |
 | **📊 SpecImpact Graph** | Bidirectional relationships between specs, code, and tests |
 | **⏱️ SpecDiff Timeline** | Track spec evolution, detect drift, find contradictions |
@@ -437,6 +437,7 @@ Or deploy to GitHub Pages with the dashboard action:
 | Framework | Adapter | File Patterns |
 |-----------|---------|---------------|
 | **Kiro** | `kiro` | `.kiro/specs/**/*.md` |
+| **OpenSpec** | `openspec` | `openspec/specs/**`, `openspec/changes/**`, `openspec/config.yaml` |
 | **SpecKit** | `speckit` | `.speckit/**/*.yaml` |
 | **Tessl** | `tessl` | `.tessl/**/*.md` |
 
