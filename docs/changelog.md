@@ -8,16 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- OpenSpec SpecAdapter for Fission-AI OpenSpec on-disk layout
-  (`openspec/specs/**`, `openspec/changes/**`, optional `openspec/config.yaml`).
-  Stable (not experimental). Markdown heading split into SpecBlocks with
-  path-based type mapping; Towards #11.
+- N/A
 
 ### Changed
 - N/A
 
 ### Fixed
 - N/A
+
+---
+
+## [0.2.5] - 2026-09-08
+
+### Added
+- OpenSpec SpecAdapter for Fission-AI OpenSpec on-disk layout
+  (`openspec/specs/**`, `openspec/changes/**`, optional `openspec/config.yaml`).
+  Stable (not experimental). Markdown heading split into SpecBlocks with
+  path-based type mapping; Towards #11.
 
 ---
 
