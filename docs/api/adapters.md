@@ -56,11 +56,9 @@ from specmem.adapters import CursorAdapter
 
 adapter = CursorAdapter()
 
-# Parse cursor.json
-specs = adapter.parse(Path("cursor.json"))
-
-# Parse .cursorrules
-specs = adapter.parse(Path(".cursorrules"))
+# Detect and load legacy .cursorrules / cursor.rules and .cursor/rules/*.mdc
+if adapter.detect("."):
+    specs = adapter.load(".")
 ```
 
 ### Claude Adapter

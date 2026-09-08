@@ -651,6 +651,19 @@ class TestCursorFileDetection:
         adapter = CursorAdapter()
         assert adapter.detect(str(tmp_path)) is True
 
+    def test_detect_cursor_mdc_files(self, tmp_path: Path) -> None:
+        """Cursor adapter detects .cursor/rules/*.mdc project rules."""
+        from specmem.adapters.cursor import CursorAdapter
+
+        rules_dir = tmp_path / ".cursor" / "rules"
+        rules_dir.mkdir(parents=True)
+        (rules_dir / "style.mdc").write_text(
+            "---\nalwaysApply: true\n---\n\n# Style\n\nUse typed Python.\n"
+        )
+
+        adapter = CursorAdapter()
+        assert adapter.detect(str(tmp_path)) is True
+
     def test_detect_no_cursor_files(self, tmp_path: Path) -> None:
         """Cursor adapter returns False for directories without Cursor files."""
         from specmem.adapters.cursor import CursorAdapter

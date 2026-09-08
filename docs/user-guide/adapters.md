@@ -18,7 +18,7 @@ SpecMem adapters parse specifications from various AI coding agent frameworks.
 |-----------|---------|---------------|
 | **AGENTS.md** (AAIF) | `agents.md` | `**/AGENTS.md`, `**/AGENT.md` |
 | Claude Code | `claude` | `Claude.md`, `CLAUDE.md` |
-| Cursor | `cursor` | `cursor.json`, `.cursorrules` |
+| Cursor | `cursor` | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
 
 Codex, Factory, Warp, Cursor, OpenCode, Amp, and Aider consume **AGENTS.md**.
 SpecMem indexes those files through the AGENTS.md adapter rather than invented
@@ -206,30 +206,39 @@ files = ["Claude.md", "CLAUDE.md"]
 
 ## Cursor Adapter
 
-Parses Cursor's configuration and rules.
+Parses Cursor rules files. This adapter is **experimental**.
 
 ### Files
 
-- `cursor.json` - Project configuration
-- `.cursorrules` - Custom rules and constraints
+- `.cursor/rules/*.mdc` — current Cursor project rules (YAML frontmatter + markdown)
+- `.cursorrules` — legacy single-file rules
+- `cursor.rules` — legacy alternate filename
 
-### Example cursor.json
+### Example `.cursor/rules/*.mdc`
 
-```json
-{
-  "rules": [
-    "Always use TypeScript strict mode",
-    "Follow React best practices",
-    "Use functional components with hooks"
-  ],
-  "context": {
-    "framework": "Next.js",
-    "styling": "Tailwind CSS"
-  }
-}
+```markdown
+---
+description: Frontend component standards
+globs: src/components/**/*.tsx,src/**/*.ts
+alwaysApply: false
+---
+
+# Components
+
+Use the design system.
+
+## Validation
+
+Validate API inputs.
 ```
 
-### Example .cursorrules
+Frontmatter fields mapped onto SpecBlocks (without new SpecIR fields):
+
+- `alwaysApply: true` → tag `always-apply`
+- `description` → tag `described` and text prefix
+- `globs` → truncated `globs:...` tag and a `Globs:` text line
+
+### Example `.cursorrules`
 
 ```
 # Project Rules
@@ -250,10 +259,6 @@ Parses Cursor's configuration and rules.
 ```toml
 [adapters]
 cursor = true
-
-[adapters.cursor]
-config_file = "cursor.json"
-rules_file = ".cursorrules"
 ```
 
 ---
