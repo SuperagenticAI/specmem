@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Cursor SpecAdapter loads modern `.cursor/rules/*.mdc` project rules (YAML frontmatter `description`, `globs`, `alwaysApply`) alongside legacy `.cursorrules` / `cursor.rules`.
+- N/A
 
 ### Changed
 - N/A
@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - N/A
+
+## [0.2.4] - 2026-09-08
+
+### Added
+- Cursor SpecAdapter loads modern `.cursor/rules/*.mdc` project rules (YAML frontmatter `description`, `globs`, `alwaysApply`) alongside legacy `.cursorrules` / `cursor.rules`.
 
 ## [0.2.3] - 2026-09-05
 
