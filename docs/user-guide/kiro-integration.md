@@ -56,6 +56,7 @@ The SpecMem MCP server exposes tools for AI agents to query and analyze specific
       "autoApprove": [
         "specmem_query",
         "specmem_tldr",
+        "specmem_cues",
         "specmem_coverage"
       ]
     }
@@ -69,6 +70,7 @@ The SpecMem MCP server exposes tools for AI agents to query and analyze specific
 |------|-------------|--------------|
 | `specmem_query` | Search specs by natural language | ✅ |
 | `specmem_tldr` | Get summary of key specifications | ✅ |
+| `specmem_cues` | Cue-anchored pinned / path delivery | ✅ |
 | `specmem_coverage` | Analyze spec coverage gaps | ✅ |
 | `specmem_impact` | Find affected specs for file changes | ❌ |
 | `specmem_context` | Get optimized context bundle | ❌ |
@@ -86,7 +88,20 @@ specmem-mcp --workspace . --log-level DEBUG
 
 ## Hooks
 
-Hooks automate spec-related tasks when files change.
+Hooks automate SpecMem delivery and hygiene. Install with
+`specmem init --hooks` (existing `.kiro/hooks/*.json` files are never
+overwritten). Cue-anchored hooks prefer deterministic CLI surfaces over vague
+NL queries; see [Cue-Anchored Delivery](../advanced/cue-anchored-delivery.md).
+
+Generated defaults include:
+
+| Hook | Trigger | Action |
+|------|---------|--------|
+| `specmem-session-context` | `session_start` | `specmem guidelines context` |
+| `specmem-path-context` | `file_save` on `**/*.{py,ts,tsx,js,jsx}` | `specmem guidelines context --file ${file}` |
+| `specmem-validate-on-save` | `file_save` on `.kiro/specs/**/*.md` | `specmem validate` |
+| `specmem-coverage-on-test-save` | `file_save` on `tests/**/*.py` | `specmem cov` |
+| `specmem-context-reminder` | `manual` | `specmem graph impact ${file} --format json` |
 
 ### spec-coverage.json
 

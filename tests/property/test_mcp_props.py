@@ -20,6 +20,7 @@ EXPECTED_TOOLS = [
     "specmem_impact",
     "specmem_context",
     "specmem_tldr",
+    "specmem_cues",
     "specmem_coverage",
     "specmem_validate",
 ]
@@ -29,7 +30,7 @@ class TestMCPToolExposure:
     """**Feature: kiro-powers-integration, Property 1: MCP Tool Exposure**
 
     *For any* initialized SpecMem MCP server, the server SHALL expose all
-    defined tools (query, impact, context, tldr, coverage, validate) with
+    defined tools (query, impact, context, tldr, cues, coverage, validate) with
     valid input schemas.
 
     **Validates: Requirements 1.1**
@@ -143,6 +144,18 @@ class TestToolSchemaValidation:
 
         assert "token_budget" in schema["properties"]
         # No required fields for tldr
+        assert "required" not in schema or len(schema.get("required", [])) == 0
+
+    def test_cues_tool_schema(self):
+        """specmem_cues has optional cue/files and no required fields."""
+        tool = get_tool_by_name("specmem_cues")
+        schema = tool["inputSchema"]
+
+        assert "cue" in schema["properties"]
+        assert "files" in schema["properties"]
+        assert "token_budget" in schema["properties"]
+        assert "session_start" in schema["properties"]["cue"]["enum"]
+        assert "path" in schema["properties"]["cue"]["enum"]
         assert "required" not in schema or len(schema.get("required", [])) == 0
 
     def test_coverage_tool_schema(self):

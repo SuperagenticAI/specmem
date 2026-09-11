@@ -30,6 +30,11 @@ Advanced topics for power users and contributors.
     <p>Design layered memory for coding agents.</p>
     <a href="agent-memory-patterns/" class="md-button">Review patterns</a>
   </div>
+  <div class="feature-card">
+    <h3>Cue-Anchored Delivery</h3>
+    <p>Harness-owned injection on session and path cues.</p>
+    <a href="cue-anchored-delivery/" class="md-button">Read note</a>
+  </div>
 </div>
 
 !!! tip "Kiro Powers"

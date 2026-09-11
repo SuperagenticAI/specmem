@@ -277,10 +277,15 @@ Add to `.kiro/settings/mcp.json`:
 |------|-------------|
 | `specmem_query` | Search specifications by natural language |
 | `specmem_impact` | Analyze change impact on specs and tests |
-| `specmem_context` | Get optimized context bundle for files |
-| `specmem_tldr` | Get TL;DR summary of key specs |
+| `specmem_context` | Get optimized context bundle for files (path cue; voluntary) |
+| `specmem_tldr` | Get TL;DR summary of key specs (session cue; voluntary) |
+| `specmem_cues` | Cue-anchored delivery of pinned / path-matched blocks |
 | `specmem_coverage` | Analyze spec coverage and test gaps |
 | `specmem_validate` | Validate specifications for quality issues |
+
+Harness hooks (`specmem init --hooks`) are the primary delivery path for
+`session_start` and path cues. See
+[Cue-Anchored Delivery](cue-anchored-delivery.md).
 
 ### Usage in Agent
 

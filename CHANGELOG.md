@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- N/A
+- Cue-anchored delivery experiment (Towards #16): stronger `session_start` and
+  path-cue Kiro hooks via `specmem guidelines context`, plus MCP `specmem_cues`
+  for harness-friendly pinned / path-matched injection without inventing a
+  query. Design note: `docs/advanced/cue-anchored-delivery.md`.
 
 ### Changed
-- N/A
+- Kiro hook generator no longer uses a vague NL `specmem query` on
+  `session_start`; path and session hooks prefer deterministic CLI surfaces.
+- MCP `specmem_context` / `specmem_tldr` descriptions note hooks as the primary
+  delivery path.
 
 ### Deprecated
 - N/A

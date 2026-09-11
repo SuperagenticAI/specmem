@@ -55,7 +55,12 @@ TOOLS: list[dict[str, Any]] = [
     },
     {
         "name": "specmem_context",
-        "description": "Get optimized context bundle for files. Returns specs, designs, and tests relevant to the given files within a token budget.",
+        "description": (
+            "Get optimized context bundle for files (path cue). Returns specs, "
+            "designs, and TL;DR within a token budget. Prefer harness hooks or "
+            "specmem_cues for deterministic delivery; this tool remains available "
+            "for voluntary agent lookup."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -75,7 +80,12 @@ TOOLS: list[dict[str, Any]] = [
     },
     {
         "name": "specmem_tldr",
-        "description": "Get TL;DR summary of key specifications. Returns a concise summary prioritizing pinned specs.",
+        "description": (
+            "Get TL;DR summary of key specifications, prioritizing pinned specs. "
+            "Useful as part of session_start / event-cue re-injection after "
+            "compaction. Prefer harness hooks or specmem_cues for automatic "
+            "delivery; this tool remains available for voluntary lookup."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -83,6 +93,53 @@ TOOLS: list[dict[str, Any]] = [
                     "type": "integer",
                     "default": 500,
                     "description": "Maximum tokens for the summary",
+                },
+            },
+        },
+    },
+    {
+        "name": "specmem_cues",
+        "description": (
+            "Cue-anchored delivery: return pinned and path-matched SpecMem "
+            "blocks without inventing a natural-language query. Accepts optional "
+            "cue (session_start|path|event|...) and files. Primary story is "
+            "harness hooks; this MCP tool is the voluntary-compatible twin."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "cue": {
+                    "type": "string",
+                    "enum": [
+                        "session_start",
+                        "path",
+                        "event",
+                        "semantic",
+                        "symbol",
+                        "temporal",
+                    ],
+                    "description": (
+                        "Delivery cue. session_start/event re-deliver always-on "
+                        "guidance and TL;DR. path delivers file-scoped layers "
+                        "plus context for files. semantic/symbol/temporal are "
+                        "accepted for vocabulary alignment and currently fall "
+                        "back to session_start or path when files are provided."
+                    ),
+                },
+                "files": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Optional file paths for path-cue delivery",
+                },
+                "token_budget": {
+                    "type": "integer",
+                    "default": 4000,
+                    "description": "Maximum tokens for path-cue context bundles",
+                },
+                "tldr_budget": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Maximum tokens for session_start TL;DR",
                 },
             },
         },

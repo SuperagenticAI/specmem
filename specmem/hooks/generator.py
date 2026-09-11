@@ -42,10 +42,9 @@ class KiroHook:
 class KiroHooksGenerator:
     """Generates Kiro Hook configurations for SpecMem integration.
 
-    Creates hooks that:
-    - Validate specs on save
-    - Update coverage when tests change
-    - Remind agents about relevant specs
+    Creates harness-owned delivery hooks that inject pinned and
+    path-matched SpecMem context on deterministic cues (session_start,
+    file path) instead of relying on voluntary natural-language queries.
     """
 
     def __init__(self, workspace_path: Path):
@@ -72,7 +71,7 @@ class KiroHooksGenerator:
                 description="Automatically validate specifications when saved",
                 trigger="file_save",
                 file_pattern=".kiro/specs/**/*.md",
-                action="specmem validate --file ${file}",
+                action="specmem validate",
             )
         )
 
@@ -83,27 +82,44 @@ class KiroHooksGenerator:
                 description="Update spec coverage analysis when tests are modified",
                 trigger="file_save",
                 file_pattern="tests/**/*.py",
-                action="specmem cov --quiet",
+                action="specmem cov",
             )
         )
 
-        # Hook 3: Remind agent about relevant specs (manual trigger)
+        # Hook 3: Path cue - deliver file-scoped guidelines/specs for the saved file
+        hooks.append(
+            KiroHook(
+                name="specmem-path-context",
+                description=(
+                    "Path cue: deliver pinned and path-matched SpecMem guidelines "
+                    "for the saved file (deterministic, no agent query required)"
+                ),
+                trigger="file_save",
+                file_pattern="**/*.{py,ts,tsx,js,jsx}",
+                action="specmem guidelines context --file ${file}",
+            )
+        )
+
+        # Hook 4: Manual impact reminder (specs/tests graph)
         hooks.append(
             KiroHook(
                 name="specmem-context-reminder",
-                description="Get relevant specs for the current file",
+                description="Get SpecImpact for the current file (manual path cue)",
                 trigger="manual",
-                action="specmem impact --files ${file} --format markdown",
+                action="specmem graph impact ${file} --format json",
             )
         )
 
-        # Hook 4: Session start - load context
+        # Hook 5: Session start - re-deliver always-on / pinned context (event cue)
         hooks.append(
             KiroHook(
                 name="specmem-session-context",
-                description="Load relevant spec context at session start",
+                description=(
+                    "Event cue (session_start): re-deliver always-on / pinned "
+                    "project guidance after compaction without inventing a query"
+                ),
                 trigger="session_start",
-                action="specmem query 'What are the key requirements and constraints?'",
+                action="specmem guidelines context",
             )
         )
 

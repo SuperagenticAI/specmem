@@ -155,7 +155,8 @@ def init(
     Use --hooks to also install Kiro hooks for:
     - Auto-validate specs on save
     - Update coverage when tests change
-    - Context reminders for agents
+    - Path-cue guidelines context on source file save
+    - Session-start always-on / pinned context re-delivery
     """
     target_path = Path(path)
     config_path = target_path / ".specmem.toml"

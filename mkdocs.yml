@@ -220,6 +220,7 @@ nav:
     - Cloud Embeddings: advanced/cloud-embeddings.md
     - Agent Integration: advanced/agent-integration.md
     - Agent Memory Patterns: advanced/agent-memory-patterns.md
+    - Cue-Anchored Delivery: advanced/cue-anchored-delivery.md
   - CI/CD:
     - GitHub Action: github-action.md
   - Reference:
