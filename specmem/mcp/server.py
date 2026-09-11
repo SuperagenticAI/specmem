@@ -130,6 +130,7 @@ class SpecMemMCPServer:
             "specmem_impact": self._handlers.handle_impact,
             "specmem_context": self._handlers.handle_context,
             "specmem_tldr": self._handlers.handle_tldr,
+            "specmem_cues": self._handlers.handle_cues,
             "specmem_coverage": self._handlers.handle_coverage,
             "specmem_validate": self._handlers.handle_validate,
         }

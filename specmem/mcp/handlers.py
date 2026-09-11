@@ -249,6 +249,141 @@ class ToolHandlers:
                 "message": str(e),
             }
 
+
+    @staticmethod
+    def _summarize_guideline(guideline: Any) -> dict[str, Any]:
+        """Serialize a Guideline for cue delivery responses."""
+        content = guideline.content or ""
+        summary = content[:300] + ("..." if len(content) > 300 else "")
+        return {
+            "id": guideline.id,
+            "title": guideline.title,
+            "source": guideline.source_file,
+            "source_type": (
+                guideline.source_type.value
+                if hasattr(guideline.source_type, "value")
+                else str(guideline.source_type)
+            ),
+            "file_pattern": guideline.file_pattern,
+            "summary": summary,
+        }
+
+    def _resolve_cue(self, cue: str | None, files: list[str]) -> str:
+        """Map optional cue + files to a delivery mode."""
+        if cue in (None, ""):
+            return "path" if files else "session_start"
+        if cue in ("session_start", "event"):
+            return "session_start"
+        if cue == "path":
+            return "path"
+        # semantic / symbol / temporal: align vocabulary; fall back by files
+        if files:
+            return "path"
+        return "session_start"
+
+    async def handle_cues(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        """Handle specmem_cues tool call.
+
+        Deterministic cue-anchored delivery of pinned / path-matched context
+        without requiring the agent to invent a natural-language query.
+
+        Args:
+            arguments: Optional 'cue', 'files', 'token_budget', 'tldr_budget'
+
+        Returns:
+            Dict with cue, layers, and optional context / TL;DR fields
+        """
+        from specmem.guidelines.aggregator import GuidelinesAggregator
+
+        files = arguments.get("files") or []
+        if not isinstance(files, list):
+            return {
+                "error": "invalid_files",
+                "message": "'files' must be a list of path strings",
+            }
+
+        cue_raw = arguments.get("cue")
+        mode = self._resolve_cue(cue_raw, files)
+        token_budget = arguments.get("token_budget", 4000)
+        tldr_budget = arguments.get("tldr_budget", 500)
+
+        if mode == "path" and not files:
+            return {
+                "error": "no_files",
+                "message": "Path cue requires at least one file in 'files'",
+            }
+
+        try:
+            aggregator = GuidelinesAggregator(self.client.path)
+            layers = aggregator.build_context(
+                files=files if mode == "path" else [],
+                task=None,
+            )
+            layer_payload = {
+                name: [self._summarize_guideline(g) for g in guidelines]
+                for name, guidelines in layers.items()
+            }
+
+            if mode == "session_start":
+                tldr = self.client.get_tldr(token_budget=tldr_budget)
+                return {
+                    "cue": cue_raw or "session_start",
+                    "delivery": "cue_anchored",
+                    "mode": "session_start",
+                    "tldr": tldr,
+                    "layers": layer_payload,
+                    "message": (
+                        "Harness-friendly session_start delivery: always-on "
+                        "guidance plus TL;DR (no query required)"
+                    ),
+                }
+
+            bundle = self.client.get_context_for_change(
+                changed_files=files,
+                token_budget=token_budget,
+            )
+            return {
+                "cue": cue_raw or "path",
+                "delivery": "cue_anchored",
+                "mode": "path",
+                "files": files,
+                "layers": layer_payload,
+                "specs": [
+                    {
+                        "id": spec.id,
+                        "type": spec.type,
+                        "title": spec.title,
+                        "summary": spec.summary,
+                        "relevance": spec.relevance,
+                        "pinned": spec.pinned,
+                    }
+                    for spec in bundle.specs
+                ],
+                "designs": [
+                    {
+                        "id": design.id,
+                        "type": design.type,
+                        "title": design.title,
+                        "summary": design.summary,
+                        "relevance": design.relevance,
+                    }
+                    for design in bundle.designs
+                ],
+                "tldr": bundle.tldr,
+                "total_tokens": bundle.total_tokens,
+                "token_budget": bundle.token_budget,
+                "message": (
+                    bundle.message
+                    or "Path-cue delivery: file-scoped guidelines plus context bundle"
+                ),
+            }
+        except Exception as e:
+            logger.error(f"Cue delivery failed: {e}")
+            return {
+                "error": "cues_failed",
+                "message": str(e),
+            }
+
     async def handle_coverage(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """Handle specmem_coverage tool call.
 

@@ -79,11 +79,17 @@ specmem init --force
 specmem init --hooks
 ```
 
-This generates Kiro hook configurations in `.kiro/hooks/`:
+This generates Kiro hook configurations in `.kiro/hooks/` (existing hook
+files are never overwritten):
 
-- **specmem-validate-on-save** - Validates specs when you save a `.md` file
-- **specmem-coverage-on-test** - Updates coverage when you save a test file
-- **specmem-spec-reminder** - Reminds the agent about relevant specs when coding
+- **specmem-validate-on-save** - Validates specs when you save `.kiro/specs/**/*.md`
+- **specmem-coverage-on-test-save** - Updates coverage when you save a test file
+- **specmem-path-context** - Path cue: `specmem guidelines context --file ${file}`
+- **specmem-session-context** - Event cue: `specmem guidelines context` on `session_start`
+- **specmem-context-reminder** - Manual SpecImpact for the current file
+
+See [Cue-Anchored Delivery](../advanced/cue-anchored-delivery.md) for why hooks
+own delivery instead of voluntary NL queries.
 
 ## Generated Files
 

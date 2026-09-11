@@ -145,7 +145,7 @@ Get optimized context bundle for files.
 
 ### specmem_tldr
 
-Get TL;DR summary of key specifications.
+Get TL;DR summary of key specifications (useful for session_start re-injection; prefer hooks / specmem_cues for automatic delivery).
 
 ```python
 {
@@ -163,6 +163,50 @@ Get TL;DR summary of key specifications.
     }
 }
 ```
+
+### specmem_cues
+
+Cue-anchored delivery of pinned and path-matched context without inventing a
+natural-language query. Prefer Kiro hooks for automatic injection; this tool is
+the voluntary-compatible twin (Towards #16).
+
+```python
+{
+    "name": "specmem_cues",
+    "description": "Cue-anchored delivery of pinned and path-matched blocks",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "cue": {
+                "type": "string",
+                "enum": ["session_start", "path", "event", "semantic", "symbol", "temporal"],
+                "description": "Delivery cue"
+            },
+            "files": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "File paths for path-cue delivery"
+            },
+            "token_budget": {
+                "type": "integer",
+                "default": 4000,
+                "description": "Token budget for path-cue context"
+            },
+            "tldr_budget": {
+                "type": "integer",
+                "default": 500,
+                "description": "Token budget for session_start TL;DR"
+            }
+        }
+    }
+}
+```
+
+`cue=session_start` (or empty args) returns always-on guideline layers plus
+TL;DR. `cue=path` with `files` returns file-scoped layers plus a context
+bundle from `get_context_for_change()`.
+
+See [Cue-Anchored Delivery](../advanced/cue-anchored-delivery.md).
 
 ### specmem_coverage
 

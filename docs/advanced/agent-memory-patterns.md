@@ -120,6 +120,16 @@ Start with dense vectors and payload filters for `status`, `source`, `tags`,
 and `pinned`. Add sparse vectors or reranking only after measuring retrieval
 misses.
 
+
+## Cue-Anchored Delivery
+
+Voluntary MCP lookup is useful, but harness-owned injection on cues (especially
+`session_start` and path / file-save) is the primary way SpecMem should survive
+compaction. See [Cue-Anchored Delivery](cue-anchored-delivery.md) for the
+experiment that upgrades Kiro hooks and adds MCP `specmem_cues` on top of
+existing `guidelines context`, TL;DR, and context APIs (Towards #16;
+arXiv:2607.20972).
+
 ## References
 
 - [AGENTS.md open format](https://github.com/openai/agents.md)
