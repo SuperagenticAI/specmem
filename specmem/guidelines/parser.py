@@ -52,6 +52,11 @@ class GuidelinesParser:
         elif source_type == "codex_skill":
             # Legacy .codex/skills path; prefer .agents/skills
             return self.parse_skill(file_path, SourceType.CODEX_SKILL, ["codex", "skill"])
+        elif source_type == "gemini_skill":
+            # Gemini CLI native .gemini/skills; .agents/skills still preferred
+            return self.parse_skill(
+                file_path, SourceType.GEMINI_SKILL, ["gemini", "skill", "agentskills"]
+            )
         elif source_type == "copilot":
             return self.parse_markdown_file(
                 file_path, SourceType.COPILOT, ["copilot", "instructions"]
