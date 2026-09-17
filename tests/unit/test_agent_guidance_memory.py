@@ -323,6 +323,41 @@ def test_parser_preserves_agents_skill_frontmatter(tmp_path: Path) -> None:
     assert "agentskills" in guidelines[0].tags
 
 
+def test_scanner_finds_gemini_skills(tmp_path: Path) -> None:
+    """Gemini CLI native .gemini/skills/*/SKILL.md is discovered as an alias."""
+    skill_dir = tmp_path / ".gemini" / "skills" / "deploy"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: deploy\ndescription: Deploy the app\n---\n# Deploy\n\nShip it."
+    )
+
+    scanned = GuidelinesScanner(tmp_path).scan()
+    guidelines = GuidelinesParser().parse_file(scanned["gemini_skill"][0], "gemini_skill")
+
+    assert "gemini_skill" in scanned
+    assert len(scanned["gemini_skill"]) == 1
+    assert guidelines[0].source_type == SourceType.GEMINI_SKILL
+    assert guidelines[0].title == "deploy"
+    assert "agentskills" in guidelines[0].tags
+
+
+def test_gemini_skills_flow_into_skill_context(tmp_path: Path) -> None:
+    skill = tmp_path / ".gemini" / "skills" / "review" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\n"
+        "name: review\n"
+        "description: Review code changes\n"
+        "---\n"
+        "# Review\n\nFind regressions."
+    )
+
+    aggregator = GuidelinesAggregator(tmp_path)
+    context = aggregator.build_context(task="review code changes")
+
+    assert [g.source_type for g in context["skills"]] == [SourceType.GEMINI_SKILL]
+
+
 def test_legacy_codex_skills_still_discovered(tmp_path: Path) -> None:
     skill_dir = tmp_path / ".codex" / "skills" / "legacy"
     skill_dir.mkdir(parents=True)
