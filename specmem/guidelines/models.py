@@ -19,6 +19,7 @@ class SourceType(StrEnum):
     FACTORY_SKILL = "factory_skill"
     CLAUDE_SKILL = "claude_skill"
     CODEX_SKILL = "codex_skill"  # legacy alias for .codex/skills
+    GEMINI_SKILL = "gemini_skill"  # Gemini CLI native .gemini/skills alias
     COPILOT = "copilot"
     GEMINI = "gemini"
     OPENCODE = "opencode"
@@ -33,6 +34,7 @@ SKILL_SOURCE_TYPES: frozenset[SourceType] = frozenset(
         SourceType.FACTORY_SKILL,
         SourceType.CLAUDE_SKILL,
         SourceType.CODEX_SKILL,  # legacy .codex/skills alias
+        SourceType.GEMINI_SKILL,  # Gemini CLI .gemini/skills alias
     }
 )
 
