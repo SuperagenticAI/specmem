@@ -16,6 +16,7 @@ SpecMem detects and parses guidelines from:
 | **Factory skills** | `.factory/skills/*/SKILL.md` | Factory Agent Skills (+ `.agents/skills` compat) |
 | **Claude skills** | `.claude/skills/*/SKILL.md` | Claude procedural skills |
 | **Codex skills (legacy)** | `.codex/skills/*/SKILL.md` | Legacy Codex path; prefer `.agents/skills` |
+| **Gemini skills** | `.gemini/skills/*/SKILL.md` | Gemini CLI native skills path; prefer `.agents/skills` when sharing |
 
 ## Viewing Guidelines
 
