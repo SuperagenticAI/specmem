@@ -228,9 +228,10 @@ SpecMem reads these agent guidance sources:
 | Factory skills | `.factory/skills/*/SKILL.md` |
 | Claude | `CLAUDE.md`, `.claude/skills/*/SKILL.md` |
 | Codex skills (legacy) | `.codex/skills/*/SKILL.md` |
+| Gemini skills | `.gemini/skills/*/SKILL.md` (Gemini CLI native alias) |
 | Cursor | `.cursorrules`, `cursor.rules`, `.cursor/rules/*.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` |
-| Gemini CLI | `GEMINI.md` |
+| Gemini CLI | `GEMINI.md`, `.gemini/skills/*/SKILL.md` |
 | OpenCode | `OPENCODE.md` |
 | Qwen Code | `QWEN.md` |
 | Kiro | `.kiro/steering/*.md` |
